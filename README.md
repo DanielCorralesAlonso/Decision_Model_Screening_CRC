@@ -1,2 +1,2 @@
-# decision_analysis_screening_CRC
+# A decision analysis model for colorectal cancer screening
 Building a decision analysis model for different colorectal cancer screening methods 
