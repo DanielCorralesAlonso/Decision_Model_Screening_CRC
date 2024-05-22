@@ -15,6 +15,7 @@ def plot_df(df, net, outcomes, mod = "cmi"):
         index = pd.MultiIndex.from_tuples([(i, j) for i in crc_outcomes for j in scr_outcomes], names=[outcomes[1], outcomes[2]])
     elif mod == "mi":
         index = crc_outcomes
+        
     # Create a DataFrame with the multi-index
     df_new = pd.DataFrame(new_data, index=res_scr_outcomes, columns=index)
 
