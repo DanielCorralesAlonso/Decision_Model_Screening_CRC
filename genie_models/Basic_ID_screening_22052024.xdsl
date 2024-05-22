@@ -111,7 +111,7 @@
 		<decision id="Colonoscopy">
 			<state id="No_Colonoscopy" />
 			<state id="Colonoscopy" />
-			<parents>Screening Results_of_Screening</parents>
+			<parents>Screening</parents>
 		</decision>
 		<cpt id="Results_of_Colonoscopy">
 			<state id="no_pred" />
@@ -120,7 +120,7 @@
 			<parents>Colonoscopy CRC</parents>
 			<probabilities>1 0 0 1 0 0 0 0.99 0.01000000000000001 0 0.03000000000000003 0.97</probabilities>
 		</cpt>
-		<utility id="Value_of_CRC_screening_detection">
+		<utility id="Value_of_CRC_detection_by_screening">
 			<parents>CRC Screening Results_of_Screening</parents>
 			<utilities>3.63e-10 0 0 0 0.00031461 -0.01388676 0 0.000532906 -0.015023341 0 0.00045033 -0.004541972 0 0.000655089 -0.004223316 0 0.000557416 -0.004498606 0 0.000617408 -0.007072926 3.63e-10 0 0 0 -0.575276782 3.00431837 0 -1.35117001 3.07868934 0 -0.984048652 1.987888193 0 -2.419424398 1.925566119 0 -1.49234668 1.979632756 0 -1.956221811 2.379393651</utilities>
 		</utility>
@@ -141,7 +141,7 @@
 			<parents>Complications</parents>
 			<utilities>0 -1241 -1241 -2810 -6621.47</utilities>
 		</utility>
-		<utility id="Value_of_CRC_detection_through_colonoscopy">
+		<utility id="Value_of_CRC_detection_by_colonoscopy">
 			<parents>CRC Colonoscopy Results_of_Colonoscopy</parents>
 			<utilities>3.63e-10 0 0 0 0.000697247 -0.066726745 3.63e-10 0 0 0 -3.495810315 4.507984233</utilities>
 		</utility>
@@ -149,9 +149,17 @@
 			<parents>Screening Colonoscopy</parents>
 			<utilities>1 0.75 0.95 0.7 0.95 0.7 0.98 0.73 0.95 0.7 0.9 0.65 0.9 0.65</utilities>
 		</utility>
-		<maux id="Utility">
-			<parents>Cost_of_Screening Cost_of_complications Value_of_CRC_detection_through_colonoscopy Value_of_CRC_screening_detection</parents>
-			<expression>5000*(Value_of_CRC_screening_detection+Value_of_CRC_detection_through_colonoscopy)/2+(Cost_of_Screening+Cost_of_complications)</expression>
+		<mau id="VALUE">
+			<parents>Value_of_CRC_detection_by_colonoscopy Value_of_CRC_detection_by_screening</parents>
+			<weights>1 1</weights>
+		</mau>
+		<mau id="COST">
+			<parents>Cost_of_complications Cost_of_Screening</parents>
+			<weights>1 1</weights>
+		</mau>
+		<maux id="V">
+			<parents>COST VALUE</parents>
+			<expression>COST+30*VALUE</expression>
 		</maux>
 	</nodes>
 	<extensions>
@@ -249,7 +257,7 @@
 				<interior color="99ccff" />
 				<outline color="000080" />
 				<font color="000000" name="Arial" size="8" />
-				<position>501 470 573 518</position>
+				<position>499 470 571 518</position>
 				<barchart active="true" width="128" height="64" />
 			</node>
 			<node id="Hypertension">
@@ -273,7 +281,7 @@
 				<interior color="e5f6f7" />
 				<outline color="000080" />
 				<font color="000000" name="Arial" size="8" />
-				<position>309 422 375 472</position>
+				<position>309 423 375 473</position>
 				<barchart active="true" width="128" height="144" />
 			</node>
 			<node id="Results_of_Screening">
@@ -289,16 +297,8 @@
 				<interior color="e5f6f7" />
 				<outline color="000080" />
 				<font color="000000" name="Arial" size="8" />
-				<position>396 861 503 893</position>
+				<position>394 861 501 893</position>
 				<barchart active="true" width="128" height="64" />
-			</node>
-			<node id="Utility">
-				<name>Utility</name>
-				<interior color="e5f6f7" />
-				<outline color="000080" />
-				<font color="000000" name="Arial" size="8" />
-				<position>451 1096 521 1128</position>
-				<barchart active="true" width="207" height="74" />
 			</node>
 			<node id="Complications">
 				<name>Complications</name>
@@ -324,12 +324,12 @@
 				<position>457 686 542 721</position>
 				<barchart active="true" width="128" height="64" />
 			</node>
-			<node id="Value_of_CRC_screening_detection">
-				<name>Value of CRC screening detection</name>
+			<node id="Value_of_CRC_detection_by_screening">
+				<name>Value of CRC detection by screening</name>
 				<interior color="e5f6f7" />
 				<outline color="000080" />
 				<font color="000000" name="Arial" size="8" />
-				<position>933 945 1086 993</position>
+				<position>933 944 1086 992</position>
 				<comment>This corresponds to the value/utility of detecting CRC using the screening methods proposed.</comment>
 				<barchart active="true" width="236" height="134" />
 			</node>
@@ -341,8 +341,8 @@
 				<position>642 807 729 861</position>
 				<barchart active="true" width="163" height="72" />
 			</node>
-			<node id="Value_of_CRC_detection_through_colonoscopy">
-				<name>Value of CRC detection through colonoscopy</name>
+			<node id="Value_of_CRC_detection_by_colonoscopy">
+				<name>Value of CRC detection by colonoscopy</name>
 				<interior color="e5f6f7" />
 				<outline color="000080" />
 				<font color="000000" name="Arial" size="8" />
@@ -356,6 +356,27 @@
 				<font color="000000" name="Arial" size="8" />
 				<position>217 809 353 857</position>
 				<barchart active="true" width="131" height="102" />
+			</node>
+			<node id="VALUE">
+				<name>VALUE</name>
+				<interior color="e5f6f7" />
+				<outline color="000080" />
+				<font color="000000" name="Arial" size="8" />
+				<position>686 1093 800 1151</position>
+			</node>
+			<node id="COST">
+				<name>COST</name>
+				<interior color="e5f6f7" />
+				<outline color="000080" />
+				<font color="000000" name="Arial" size="8" />
+				<position>231 1007 316 1057</position>
+			</node>
+			<node id="V">
+				<name>V</name>
+				<interior color="e5f6f7" />
+				<outline color="000080" />
+				<font color="000000" name="Arial" size="8" />
+				<position>414 1117 503 1160</position>
 			</node>
 		</genie>
 	</extensions>
