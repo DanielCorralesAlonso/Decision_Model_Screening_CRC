@@ -346,7 +346,7 @@
 				<interior color="e5f6f7" />
 				<outline color="000080" />
 				<font color="000000" name="Arial" size="8" />
-				<position>589 955 755 1001</position>
+				<position>589 966 755 1012</position>
 				<barchart active="true" width="195" height="82" />
 			</node>
 			<node id="Value_of_comfort">

@@ -69,11 +69,13 @@ def conditional_mutual_info(net):
 
 
 def pointwise_conditional_mutual_info(net, normalize = False):
-    net.set_evidence("CRC", False)
+    '''net.set_evidence("CRC", False)
     p_CRC_false = net.prob_evidence()
 
     net.set_evidence("CRC", True)
-    p_CRC_true = net.prob_evidence()
+    p_CRC_true = net.prob_evidence()'''
+
+    p_CRC_false, p_CRC_true = net.get_node_value("CRC")
 
     p_y = np.array([p_CRC_false, p_CRC_true])
     H_y = np.sum(p_y * np.log(1 / p_y) )
@@ -93,11 +95,11 @@ def pointwise_conditional_mutual_info(net, normalize = False):
     if normalize:
         point_cond_mut_info_scr = np.log( p_x_yz.reshape((2,7,3)) / p_x_z ) /  - np.log( p_x_yz.reshape((2,7,3)) * p_y)
         point_cond_mut_info_scr = np.nan_to_num(point_cond_mut_info_scr, 0)
-        pd.DataFrame(point_cond_mut_info_scr.flatten()).transpose().to_csv("value_of_info_csv/norm_point_cond_mut_info_scr.csv")
+        # pd.DataFrame(point_cond_mut_info_scr.flatten()).transpose().to_csv("value_of_info_csv/norm_point_cond_mut_info_scr.csv")
     else:
         point_cond_mut_info_scr = np.log( p_x_yz.reshape((2,7,3)) / p_x_z )
         point_cond_mut_info_scr = np.nan_to_num(point_cond_mut_info_scr, 0)
-        pd.DataFrame(point_cond_mut_info_scr.flatten()).transpose().to_csv("value_of_info_csv/point_cond_mut_info_scr.csv")
+        # pd.DataFrame(point_cond_mut_info_scr.flatten()).transpose().to_csv("value_of_info_csv/point_cond_mut_info_scr.csv")
 
     # Print the DataFrame
     df_plotted_scr = plot_df(point_cond_mut_info_scr, net, ["Results_of_Screening", "CRC", "Screening"])
@@ -130,7 +132,7 @@ def pointwise_conditional_mutual_info(net, normalize = False):
 
 
 
-    return df_plotted_scr, df_plotted_col
+    return point_cond_mut_info_scr, df_plotted_scr, point_cond_mut_info_col, df_plotted_col
 
 
 def cond_kl_divergence(net):

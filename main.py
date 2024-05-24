@@ -2,6 +2,7 @@ import pysmile
 import pysmile_license
 import numpy as np
 import pandas as pd
+from plot_cond_mut_info import plot_cond_mut_info
 
 np.seterr(divide='ignore', invalid = 'ignore')
 
@@ -24,3 +25,6 @@ print(point_cond_mut_info_col)
 point_cond_mut_info_scr, point_cond_mut_info_col = pointwise_conditional_mutual_info(net, normalize = True)
 
 print(point_cond_mut_info_col)
+
+
+plot_cond_mut_info(net)
