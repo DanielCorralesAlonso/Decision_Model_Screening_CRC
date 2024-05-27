@@ -28,8 +28,10 @@ def save_info_values(net, normalize = False, weighted = False):
 
         p_CRC_false, p_CRC_true = net.get_node_value("CRC")
 
-        point_cond_mut_info_scr, cond_mut_info_scr, point_cond_mut_info_col, cond_mut_info_col = mutual_info_measures(net, p_CRC_false, p_CRC_true, normalize = normalize, weighted = weighted)
-
+        dict_scr, dict_col = mutual_info_measures(net, p_CRC_false, p_CRC_true, normalize = normalize, weighted = weighted)
+        
+        point_cond_mut_info_scr = dict_scr["rel_point_cond_mut_info"]
+        point_cond_mut_info_col = dict_col["rel_point_cond_mut_info"]
 
         value_scr_array = np.concatenate((value_scr_array, point_cond_mut_info_scr.flatten()), axis = 0)
         value_col_array = np.concatenate((value_col_array, point_cond_mut_info_col.flatten()), axis = 0)

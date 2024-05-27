@@ -2,13 +2,13 @@ import pysmile
 import pysmile_license
 import numpy as np
 import pandas as pd
-from plot_cond_mut_info import plot_cond_mut_info
+from plots import plot_cond_mut_info
 from save_info_values import save_info_values
 np.seterr(divide='ignore', invalid = 'ignore')
 
 from df_plot import plot_df 
 from info_value_to_net import info_value_to_net
-from get_info_values import conditional_mutual_info, mutual_info_measures
+from get_info_values import mutual_info_measures
 
 
 # Read the network
