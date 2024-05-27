@@ -3,28 +3,31 @@ import pysmile_license
 import numpy as np
 import pandas as pd
 from plot_cond_mut_info import plot_cond_mut_info
-
+from save_info_values import save_info_values
 np.seterr(divide='ignore', invalid = 'ignore')
 
 from df_plot import plot_df 
 from info_value_to_net import info_value_to_net
 from get_info_values import conditional_mutual_info, pointwise_conditional_mutual_info
 
+
 # Read the network
+print("Reading network...")
 net = pysmile.Network()
-net.read_file("genie_models/Basic_ID_screening_22052024.xdsl")
-
-cond_mut_info_scr, cond_mut_info_col = conditional_mutual_info(net)
-
-print(cond_mut_info_col)
-
-point_cond_mut_info_scr, point_cond_mut_info_col = pointwise_conditional_mutual_info(net)
-
-print(point_cond_mut_info_col)
-
-point_cond_mut_info_scr, point_cond_mut_info_col = pointwise_conditional_mutual_info(net, normalize = True)
-
-print(point_cond_mut_info_col)
+net.read_file("genie_models/Basic_ID_screening_current.xdsl")
 
 
+print("Calculating pointwise conditional mutual information values...")
+df_value_scr, df_value_col = save_info_values(net)
+net = info_value_to_net(df_value_scr, df_value_col, net)
+
+
+print("Saving network...")
+net.write_file("genie_models/Basic_ID_screening_current.xdsl")
+
+
+print("Plotting value functions...")
 plot_cond_mut_info(net)
+
+
+print("Done!")

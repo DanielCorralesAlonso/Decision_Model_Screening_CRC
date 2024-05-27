@@ -5,6 +5,7 @@ import pandas as pd
 
 from df_plot import plot_df 
 from info_value_to_net import info_value_to_net
+import pdb
 
 
 def conditional_mutual_info(net):
