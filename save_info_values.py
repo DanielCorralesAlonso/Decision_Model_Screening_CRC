@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import itertools
 
-from get_info_values import pointwise_conditional_mutual_info
+from get_info_values import mutual_info_measures
 
 def save_info_values(net, normalize = False, weighted = False):
 
@@ -28,7 +28,7 @@ def save_info_values(net, normalize = False, weighted = False):
 
         p_CRC_false, p_CRC_true = net.get_node_value("CRC")
 
-        point_cond_mut_info_scr, cond_mut_info_scr, point_cond_mut_info_col, cond_mut_info_col = pointwise_conditional_mutual_info(net, p_CRC_false, p_CRC_true, normalize = normalize, weighted = weighted)
+        point_cond_mut_info_scr, cond_mut_info_scr, point_cond_mut_info_col, cond_mut_info_col = mutual_info_measures(net, p_CRC_false, p_CRC_true, normalize = normalize, weighted = weighted)
 
 
         value_scr_array = np.concatenate((value_scr_array, point_cond_mut_info_scr.flatten()), axis = 0)

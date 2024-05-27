@@ -8,7 +8,7 @@ np.seterr(divide='ignore', invalid = 'ignore')
 
 from df_plot import plot_df 
 from info_value_to_net import info_value_to_net
-from get_info_values import conditional_mutual_info, pointwise_conditional_mutual_info
+from get_info_values import conditional_mutual_info, mutual_info_measures
 
 
 # Read the network

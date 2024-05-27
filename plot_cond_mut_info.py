@@ -5,7 +5,7 @@ import pandas as pd
 
 from df_plot import plot_df 
 from info_value_to_net import info_value_to_net
-from get_info_values import conditional_mutual_info, pointwise_conditional_mutual_info, cond_kl_divergence, pcmi_cmi
+from get_info_values import conditional_mutual_info, mutual_info_measures, cond_kl_divergence, pcmi_cmi
 
 np.seterr(divide='ignore', invalid = 'ignore')
 
@@ -21,7 +21,7 @@ def plot_cond_mut_info(net):
 
         p_CRC_false, p_CRC_true = [1-prob, prob] 
 
-        point_cond_mut_info_scr, cond_mut_info_scr, point_cond_mut_info_col, cond_mut_info_col = pointwise_conditional_mutual_info(net, p_CRC_false, p_CRC_true)
+        point_cond_mut_info_scr, cond_mut_info_scr, point_cond_mut_info_col, cond_mut_info_col = mutual_info_measures(net, p_CRC_false, p_CRC_true)
         
 
         # Save the conditional mutual information for screening
