@@ -7,7 +7,7 @@ import itertools
 
 from get_info_values import pointwise_conditional_mutual_info
 
-def save_info_values(net):
+def save_info_values(net, normalize = False, weighted = False):
 
     # Get all combinations of possible parent states
     parents = net.get_parent_ids("CRC")
@@ -26,7 +26,9 @@ def save_info_values(net):
             net.set_evidence(parents[i], elem[i])
         net.update_beliefs()
 
-        point_cond_mut_info_scr, df_plotted_scr, point_cond_mut_info_col, df_plotted_col = pointwise_conditional_mutual_info(net)
+        p_CRC_false, p_CRC_true = net.get_node_value("CRC")
+
+        point_cond_mut_info_scr, cond_mut_info_scr, point_cond_mut_info_col, cond_mut_info_col = pointwise_conditional_mutual_info(net, p_CRC_false, p_CRC_true, normalize = normalize, weighted = weighted)
 
 
         value_scr_array = np.concatenate((value_scr_array, point_cond_mut_info_scr.flatten()), axis = 0)
