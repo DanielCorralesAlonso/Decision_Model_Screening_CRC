@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: Corrales
+  given-names: Daniel
+  orcid: https://orcid.org/0009-0002-2860-2639
+
+title: "Decision_Analysis_Screening_CRC"
+version: 1.0.0
+date-released: 2024-05-28
+url: "https://github.com/DanielCorralesAlonso/Decision_Analysis_Screening_CRC"
