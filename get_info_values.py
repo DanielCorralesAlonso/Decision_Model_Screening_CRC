@@ -13,11 +13,11 @@ np.seterr(divide='ignore', invalid = 'ignore', over = 'ignore')
 def mutual_info_measures(net, p_CRC_false, p_CRC_true, normalize = False, weighted = False):
 
     # --- Screening -----------------------------------------------------------
-    point_cond_mut_info_scr, rel_point_cond_mut_info_scr, cond_mut_info_scr, rel_cond_mut_info_scr = pcmi_cmi(net, p_CRC_false, p_CRC_true, "Screening", "Results_of_Screening", normalize = normalize, weighted = weighted)
+    point_cond_mut_info_scr, rel_point_cond_mut_info_scr, cond_mut_info_scr, rel_cond_mut_info_scr = calculate_values(net, p_CRC_false, p_CRC_true, "Screening", "Results_of_Screening", normalize = normalize, weighted = weighted)
     df_plotted_scr = plot_df(point_cond_mut_info_scr, net, ["Results_of_Screening", "CRC", "Screening"])
 
     # --- Colonoscopy ---------------------------------------------------------
-    point_cond_mut_info_col, rel_point_cond_mut_info_col, cond_mut_info_col, rel_cond_mut_info_col = pcmi_cmi(net, p_CRC_false, p_CRC_true, "Colonoscopy", "Results_of_Colonoscopy", normalize = normalize, weighted = weighted)
+    point_cond_mut_info_col, rel_point_cond_mut_info_col, cond_mut_info_col, rel_cond_mut_info_col = calculate_values(net, p_CRC_false, p_CRC_true, "Colonoscopy", "Results_of_Colonoscopy", normalize = normalize, weighted = weighted)
     df_plotted_col = plot_df(point_cond_mut_info_col, net, ["Results_of_Colonoscopy", "CRC", "Colonoscopy"])
 
     dict_scr = {"point_cond_mut_info": point_cond_mut_info_scr, "rel_point_cond_mut_info": rel_point_cond_mut_info_scr, "cond_mut_info": cond_mut_info_scr, "rel_cond_mut_info": rel_cond_mut_info_scr}
@@ -26,7 +26,7 @@ def mutual_info_measures(net, p_CRC_false, p_CRC_true, normalize = False, weight
     return dict_scr, dict_col
 
 
-def pcmi_cmi(net, p_CRC_false, p_CRC_true, decision_node, value_node, normalize = False, weighted = False):
+def calculate_values(net, p_CRC_false, p_CRC_true, decision_node, value_node, normalize = False, weighted = False):
 
     p_y = np.array([p_CRC_false, p_CRC_true])
     H_y = np.sum(p_y * np.log(1 / p_y) )
@@ -47,7 +47,7 @@ def pcmi_cmi(net, p_CRC_false, p_CRC_true, decision_node, value_node, normalize 
         point_cond_mut_info = np.nan_to_num(point_cond_mut_info, 0)
 
     elif weighted:
-        point_cond_mut_info = np.log( p_x_yz.reshape((2,n,3)) / p_x_z ) * p_y
+        point_cond_mut_info = np.log( p_x_yz.reshape((2,n,3)) / p_x_z ) * ((1-p_y))
         point_cond_mut_info = np.nan_to_num(point_cond_mut_info, 0)
     else:
         point_cond_mut_info = np.log( p_x_yz.reshape((2,n,3)) / p_x_z )
