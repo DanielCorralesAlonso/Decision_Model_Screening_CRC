@@ -163,7 +163,7 @@
 		</mau>
 		<maux id="V">
 			<parents>COST VALUE Value_of_comfort</parents>
-			<expression>COST+200*VALUE+Value_of_comfort</expression>
+			<expression>1-1*Exp(-0.005*(1*COST+2500*VALUE+0*Value_of_comfort))</expression>
 		</maux>
 	</nodes>
 	<extensions>

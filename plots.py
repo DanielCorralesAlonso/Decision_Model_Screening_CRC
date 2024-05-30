@@ -12,13 +12,13 @@ np.seterr(divide='ignore', invalid = 'ignore')
 import matplotlib.pyplot as plt
 
 # Make an array and iterate over possible values of probabilities
-def plot_cond_mut_info(net):
+def plot_cond_mut_info(net, plot = True):
 
     arr = []
     h_y_arr = []
     i = 0
 
-    for prob in np.arange(0, 1.01, 0.01):
+    for prob in np.arange(0, 1.001, 0.001):
 
         p_CRC_false, p_CRC_true = [1-prob, prob] 
 
@@ -50,52 +50,54 @@ def plot_cond_mut_info(net):
         arr = np.append(arr, np.append(aux_arr_scr, np.expand_dims(aux_arr_col[1], axis = 0) ,0) , 0)  
         h_y_arr = np.append(h_y_arr, H_y)
 
-    arr = arr.reshape(101,8)
+    arr = arr.reshape(1001,8)
     arr = arr.transpose()
 
     h_y_arr = np.nan_to_num(h_y_arr, 0)
 
-    fig, ax = plt.subplots()
-    labels = net.get_outcome_ids("Screening") + ["Colonoscopy"]
-    for screening in range(arr.shape[0]):
-        ax.plot(np.arange(0,1.01,0.01), arr[screening], label = f"{labels[screening]}")
-    
-    ax.plot(np.arange(0,1.01,0.01), h_y_arr, label = "H(CRC)")
-    leg = plt.legend(loc='upper right', shadow=True)
-    title = "Conditional Mutual Information for Screening"
-    plt.title(title)
+    if plot:
 
-    # save plot
-    plt.savefig(f"output_images/{title}.png")
-
-    fig, ax = plt.subplots()
-    labels = net.get_outcome_ids("Screening") + ["Colonoscopy"]
-    for screening in range(arr.shape[0]):
-        ax.plot(np.arange(0,1.01,0.01), arr[screening], label = f"{labels[screening]}")
-    
-    ax.plot(np.arange(0,1.01,0.01), h_y_arr, label = "H(CRC)")
-    leg = plt.legend(loc='upper right', shadow=True)
+        fig, ax = plt.subplots()
+        labels = net.get_outcome_ids("Screening") + ["Colonoscopy"]
+        for screening in range(arr.shape[0]):
+            ax.plot(np.arange(0,1.001,0.001), arr[screening], label = f"{labels[screening]}")
         
-    ax.set_xlim(0, 0.1)
-    ax.set_ylim(0,0.1)
+        ax.plot(np.arange(0,1.001,0.001), h_y_arr, label = "H(CRC)")
+        leg = plt.legend(loc='upper right', shadow=True)
+        title = "Conditional Mutual Information for Screening"
+        plt.title(title)
 
-    plt.savefig(f"output_images/{title}_zoom.png")
+        # save plot
+        plt.savefig(f"output_images/{title}.png")
 
-
-    fig, ax = plt.subplots()
-    labels = net.get_outcome_ids("Screening") + ["Colonoscopy"]
-    for screening in range(arr.shape[0]):
-        ax.plot(np.arange(0,1.01,0.01), arr[screening], label = f"{labels[screening]}")
+        fig, ax = plt.subplots()
+        labels = net.get_outcome_ids("Screening") + ["Colonoscopy"]
+        for screening in range(arr.shape[0]):
+            ax.plot(np.arange(0,1.001,0.001), arr[screening], label = f"{labels[screening]}")
         
-    ax.plot(np.arange(0,1.01,0.01), h_y_arr, label = "H(CRC)")  
-    leg = plt.legend(loc='upper right', shadow=True)
-        
-    ax.set_xlim(0.90, 1)
-    ax.set_ylim(0,0.1)
+        ax.plot(np.arange(0,1.001,0.001), h_y_arr, label = "H(CRC)")
+        leg = plt.legend(loc='upper right', shadow=True)
+            
+        ax.set_xlim(0, 0.1)
+        ax.set_ylim(0,0.1)
 
-    plt.savefig(f"output_images/{title}_zoom2.png")
+        plt.savefig(f"output_images/{title}_zoom.png")
 
-    return
+
+        fig, ax = plt.subplots()
+        labels = net.get_outcome_ids("Screening") + ["Colonoscopy"]
+        for screening in range(arr.shape[0]):
+            ax.plot(np.arange(0,1.001,0.001), arr[screening], label = f"{labels[screening]}")
+            
+        ax.plot(np.arange(0,1.001,0.001), h_y_arr, label = "H(CRC)")  
+        leg = plt.legend(loc='upper right', shadow=True)
+            
+        ax.set_xlim(0.90, 1)
+        ax.set_ylim(0,0.1)
+
+        plt.savefig(f"output_images/{title}_zoom2.png")
+
+    return arr
 
 
 
@@ -113,7 +115,7 @@ def plot_cond_mut_info_bounds(net1, net2 = None):
         h_y_arr = []
         i = 0
 
-        for prob in np.arange(0, 1.01, 0.01):
+        for prob in np.arange(0, 1.001, 0.001):
 
             p_CRC_false, p_CRC_true = [1-prob, prob] 
 
@@ -145,7 +147,7 @@ def plot_cond_mut_info_bounds(net1, net2 = None):
             arr = np.append(arr, np.append(aux_arr_scr, np.expand_dims(aux_arr_col[1], axis = 0) ,0) , 0)  
             h_y_arr = np.append(h_y_arr, H_y)
 
-        arr = arr.reshape(101,8)
+        arr = arr.reshape(1001,8)
         arr = arr.transpose()
 
         h_y_arr = np.nan_to_num(h_y_arr, 0)
@@ -159,7 +161,7 @@ def plot_cond_mut_info_bounds(net1, net2 = None):
 
     for screening in range(arr.shape[0]):
         color = colors[screening]
-        x = np.arange(0,1.01,0.01)
+        x = np.arange(0,1.001,0.001)
         y1 = dict_net[net_array[0]][0][screening]
         y2 = dict_net[net_array[1]][0][screening]
 
@@ -168,7 +170,7 @@ def plot_cond_mut_info_bounds(net1, net2 = None):
         ax.fill_between(x, y1, y2, alpha = 0.1, label = f"{labels[screening]}", color = color)
     
 
-    ax.plot(np.arange(0,1.01,0.01), h_y_arr, label = "H(CRC)")
+    ax.plot(np.arange(0,1.001,0.001), h_y_arr, label = "H(CRC)")
     leg = plt.legend(loc='upper right', shadow=True)
     title = "Conditional Mutual Information for Screening"
     plt.title(title)
@@ -186,7 +188,7 @@ def plot_relative_cond_mut_info(net):
     # h_y_arr = []
     i = 0
 
-    for prob in np.arange(0, 1.01, 0.01):
+    for prob in np.arange(0, 1.001, 0.001):
 
         p_CRC_false, p_CRC_true = [1-prob, prob] 
 
@@ -211,16 +213,16 @@ def plot_relative_cond_mut_info(net):
         # h_y_arr = np.append(h_y_arr, H_y)
 
 
-    arr = arr.reshape(101,8)
+    arr = arr.reshape(1001,8)
     arr = arr.transpose()
 
 
     fig, ax = plt.subplots()
     labels = net.get_outcome_ids("Screening") + ["Colonoscopy"]
     for screening in range(arr.shape[0]):
-        ax.plot(np.arange(0,1.01,0.01), arr[screening], label = f"{labels[screening]}")
+        ax.plot(np.arange(0,1.001,0.001), arr[screening], label = f"{labels[screening]}")
 
-    # ax.plot(np.arange(0,1.01,0.01), h_y_arr, label = "H(Y)")
+    # ax.plot(np.arange(0,1.001,0.001), h_y_arr, label = "H(Y)")
     leg = plt.legend(loc='upper right', shadow=True)
     title = "Relative Reduction of Uncertainty with respect to CRC"
     plt.title(title)
@@ -232,14 +234,14 @@ def plot_relative_cond_mut_info(net):
     fig, ax = plt.subplots()
     labels = net.get_outcome_ids("Screening") + ["Colonoscopy"]
     for screening in range(arr.shape[0]):
-        ax.plot(np.arange(0,1.01,0.01), arr[screening], label = f"{labels[screening]}")
+        ax.plot(np.arange(0,1.001,0.001), arr[screening], label = f"{labels[screening]}")
 
-    # ax.plot(np.arange(0,1.01,0.01), h_y_arr, label = "H(Y)")
+    # ax.plot(np.arange(0,1.001,0.001), h_y_arr, label = "H(Y)")
     leg = plt.legend(loc='upper right', shadow=True)
     title = "Relative Reduction of Uncertainty with respect to CRC"
     plt.title(title)
      
-    ax.set_xlim(0, 0.01)
+    ax.set_xlim(0, 0.001)
     ax.set_ylim(0,0.1)
 
     plt.savefig(f"output_images/rel_cond_mut_info_zoom.png")
