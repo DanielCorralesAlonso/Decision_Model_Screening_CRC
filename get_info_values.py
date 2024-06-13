@@ -42,11 +42,7 @@ def calculate_values(net, p_CRC_false, p_CRC_true, decision_node, value_node, no
     p_x_z = np.sum(p_x_z, axis = 0)
     p_x_z = np.tile(p_x_z, (2,1)).reshape((2,n,3))
 
-    if normalize:
-        point_cond_mut_info = np.log( p_x_yz.reshape((2,n,3)) / p_x_z ) /  - np.log( p_x_yz.reshape((2,n,3)) * p_y)
-        point_cond_mut_info = np.nan_to_num(point_cond_mut_info, 0)
-
-    elif weighted:
+    if weighted:
         point_cond_mut_info = np.log( p_x_yz.reshape((2,n,3)) / p_x_z ) * ((1-p_y))
         point_cond_mut_info = np.nan_to_num(point_cond_mut_info, 0)
     else:

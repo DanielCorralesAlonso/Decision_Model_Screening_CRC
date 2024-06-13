@@ -147,7 +147,7 @@
 		</utility>
 		<utility id="Value_of_comfort">
 			<parents>Screening Colonoscopy</parents>
-			<utilities>1 0.8 0.95 0.78 0.95 0.78 0.95 0.78 0.95 0.78 0.85 0.75 0.85 0.75</utilities>
+			<utilities>72 2906 75 2906 75 2906 72 2906 75 2906 6580 2906 6580 2906</utilities>
 		</utility>
 		<mau id="Mutual_information_between_tests">
 			<parents>Value_of_CRC_detection_by_colonoscopy Value_of_CRC_detection_by_screening Colonoscopy</parents>
@@ -163,7 +163,7 @@
 		</mau>
 		<maux id="V">
 			<parents>COST VALUE Value_of_comfort</parents>
-			<expression>1*COST+350*VALUE*Value_of_comfort</expression>
+			<expression>1*COST+VALUE*Value_of_comfort</expression>
 		</maux>
 		<maux id="U">
 			<parents>V</parents>
@@ -401,7 +401,7 @@
 				<interior color="e5f6f7" />
 				<outline color="000080" />
 				<font color="000000" name="Arial" size="8" />
-				<position>402 1208 523 1240</position>
+				<position>391 1205 512 1237</position>
 			</node>
 		</genie>
 	</extensions>

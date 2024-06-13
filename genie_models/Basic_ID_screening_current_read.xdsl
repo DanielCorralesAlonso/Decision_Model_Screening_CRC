@@ -357,7 +357,7 @@
 				<interior color="e5f6f7" />
 				<outline color="000080" />
 				<font color="000000" name="Arial" size="8" />
-				<position>217 809 353 857</position>
+				<position>219 808 355 856</position>
 				<barchart active="true" width="131" height="102" />
 			</node>
 			<node id="Mutual_information_between_tests">
