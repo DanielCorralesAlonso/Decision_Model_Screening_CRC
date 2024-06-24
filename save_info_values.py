@@ -20,7 +20,7 @@ def save_info_values(net, value_function = "pcmi", normalize = False, weighted =
 
 
     for elem in parent_combinations:
-        net.clear_all_evidence()
+        # net.clear_all_evidence()
 
         for i in range(len(parents)):
             net.set_evidence(parents[i], elem[i])
