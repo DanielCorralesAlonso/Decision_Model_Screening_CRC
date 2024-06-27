@@ -1,0 +1,6 @@
+project: decision_for_screening
+
+PE_cost: 300
+PE_info: 0.4
+PE_prob: 0.7
+rho_comfort: 0.17
