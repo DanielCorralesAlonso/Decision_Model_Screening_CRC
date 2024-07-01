@@ -161,3 +161,8 @@ cython_debug/
 /value_of_info_csv
 /documents
 pysmile_license.py
+elicitation.ipynb
+cost_effectiveness.ipynb
+inf_diagram_SMILE.ipynb
+df_2016.csv
+influence_diagram.ipynb

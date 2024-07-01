@@ -2,6 +2,7 @@ import pysmile
 import pysmile_license
 import numpy as np
 import pandas as pd
+import itertools
 from plots import plot_cond_mut_info
 from save_info_values import save_info_values
 np.seterr(divide='ignore', invalid = 'ignore')
@@ -15,16 +16,15 @@ from elicitation import parameter_elicitation_utilities
 import yaml
 with open('config.yaml', 'r') as file:
     cfg = yaml.safe_load(file)
-
 import pdb
 
-
-# Read the network
+# Read the network -----------------------------------------------------
 print("Reading network...")
 net = pysmile.Network()
 net.read_file("genie_models/decision_models/DM_screening_submodel_tanh_rel_pcmi.xdsl")
+# ----------------------------------------------------------------------
 
-
+# ----------------------------------------------------------------------
 print("Calculating relative pointwise conditional mutual information values...")
 
 try:
@@ -40,13 +40,35 @@ net2 = info_value_to_net(df_value_scr, df_value_col, net)
 
 print("Saving network...")
 net2.write_file(f"genie_models/decision_models/DM_screening_submodel_tanh_{value_function}.xdsl")
+# ----------------------------------------------------------------------
 
 
-print("Plotting value functions...")
+# ----------------------------------------------------------------------
+print("Plotting info functions...")
 plot_cond_mut_info(net2)
+# ----------------------------------------------------------------------
 
 
-print("Getting final utilities...")
+
+# ----------------------------------------------------------------------
+print("Calculating final utilities...")
+params = parameter_elicitation_utilities(PE_info = cfg["PE_info"], PE_cost = cfg["PE_cost"], rho_comfort = cfg["rho_comfort"])
+
+if params is None:
+    print("Please try another initial value for the system of equations...")
+    exit()
+
+else:
+    print("Parameters found: ", params)
+    net2.set_mau_expressions(node_id = "U", expressions = [f"({params[0]} - {params[1]}*Exp( - {params[2]} * V)) / {params[0]}"])
+    net2.write_file(f"genie_models/decision_models/DM_screening_submodel_tanh_{value_function}.xdsl")
+    print("Done!")
+# ----------------------------------------------------------------------
+
+
+
+# ----------------------------------------------------------------------
+print("Calculating utilities for patient X...")
 
 # Set evidence for the patient
 net2.set_evidence("Age", "age_2_young")
@@ -63,22 +85,43 @@ net2.set_evidence("Hypertension", False)  # not mandatory
 net2.set_evidence("Diabetes", False)  # not mandatory
 net2.set_evidence("Hyperchol_", False)  # not mandatory
 
-
-# Calculate parameters for the utility node.
 net2.update_beliefs()
-best_info = net2.get_node_value("Value_of_CRC_detection_by_colonoscopy")[1]
-params = parameter_elicitation_utilities(PE_info = cfg["PE_info"], best_info = best_info, PE_cost = cfg["PE_cost"], rho_comfort = cfg["rho_comfort"])
 
-if params is None:
-    print("Please try another initial value for the system of equations...")
-    exit()
+# pdb.set_trace()
+if len(net2.get_node_value("U")) == 14:
+    vars1 = ["No scr", "gFOBT", "FIT", "Blood_test", "sDNA", "CTC", "CC"]
+    vars2 = ["No colonoscopy", "Colonoscopy"]
 
-else:
-    print("Parameters found: ", params)
-    net2.set_mau_expressions(node_id = "U", expressions = [f"{params[0]} - {params[1]}*Exp( - {params[2]} * V)"])
-    net2.update_beliefs()
-    net2.write_file(f"genie_models/decision_models/DM_screening_submodel_tanh_{value_function}.xdsl")
+    comb = list(itertools.product(vars1, vars2))
 
-    print(net2.get_node_value("U"))
+    index = pd.MultiIndex.from_tuples(comb)
+    arr = np.array(net2.get_node_value("U"))
 
-    print("Done!")
+    df_U = pd.DataFrame(arr.reshape(1,-1), index=["U"], columns=index)
+
+print(df_U)
+# ----------------------------------------------------------------------
+
+
+# ----------------------------------------------------------------------
+net2.add_arc("Results_of_Screening", "Colonoscopy")
+net2.update_beliefs()
+
+vars1 = ["No scr", "gFOBT", "FIT", "Blood_test", "sDNA", "CTC", "CC"]
+vars2 = ["No pred", "Pred False", "Pred True"]
+vars3 = ["No colonoscopy", "Colonoscopy"]
+
+comb = list(itertools.product(vars1, vars2, vars3))
+
+index = pd.MultiIndex.from_tuples(comb)
+arr = np.array(net2.get_node_value("U"))
+
+df_U_ext = pd.DataFrame(arr.reshape(1,-1), index=["U"], columns=index)
+print(df_U_ext)
+df_U_ext.to_csv("U_values.csv")
+# ----------------------------------------------------------------------
+
+
+# ----------------------------------------------------------------------
+print("Done!")
+# ----------------------------------------------------------------------

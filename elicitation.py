@@ -8,9 +8,9 @@ with open('config.yaml', 'r') as file:
 import pdb
     
 
-def parameter_elicitation_utilities(PE_info, best_info, PE_cost, rho_comfort):
+def parameter_elicitation_utilities(PE_info, PE_cost, rho_comfort):
 
-    best_info = best_info
+    best_info = 1   # 0.601
     worst_info = 0      # 0.042 
     PE_info = cfg["PE_info"]
 
@@ -18,7 +18,7 @@ def parameter_elicitation_utilities(PE_info, best_info, PE_cost, rho_comfort):
     worst_cost = 8131.71    #1000
     PE_cost = cfg["PE_cost"] 
 
-    rho_comfort = 0.17
+    rho_comfort = 0.17 
 
     w_best = tanh_fun(best_info, rho_comfort)
     w_worst = tanh_fun(worst_info, rho_comfort)
