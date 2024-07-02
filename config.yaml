@@ -4,3 +4,17 @@ PE_cost: 300
 PE_info: 0.4
 PE_prob: 0.7
 rho_comfort: 0.17
+
+
+colors:
+  No_screening: '#1f77b4'
+  gFOBT: '#ff7f0e'
+  FIT: '#2ca02c'
+  Blood_based: '#d62728'
+  Stool_DNA: '#9467bd'
+  CTC: '#8c564b'
+  Colon_capsule: '#e377c2'
+  Colonoscopy: '#bcbd22'
+  NewTest: '#17becf'
+  H(CRC): '#7f7f7f' 
+  

@@ -3,7 +3,7 @@ import pysmile_license
 import numpy as np
 import pandas as pd
 import itertools
-from plots import plot_cond_mut_info
+from plots import plot_cond_mut_info, plot_relative_cond_mut_info
 from save_info_values import save_info_values
 np.seterr(divide='ignore', invalid = 'ignore')
 
@@ -46,6 +46,7 @@ net2.write_file(f"genie_models/decision_models/DM_screening_submodel_tanh_{value
 # ----------------------------------------------------------------------
 print("Plotting info functions...")
 plot_cond_mut_info(net2)
+plot_relative_cond_mut_info(net2, subtitle = '', zoom = (0.001, 0.1))
 # ----------------------------------------------------------------------
 
 

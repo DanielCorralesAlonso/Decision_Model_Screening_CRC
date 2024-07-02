@@ -111,7 +111,7 @@
 		<decision id="Colonoscopy">
 			<state id="No_Colonoscopy" />
 			<state id="Colonoscopy" />
-			<parents>Screening</parents>
+			<parents>Screening Results_of_Screening</parents>
 		</decision>
 		<cpt id="Results_of_Colonoscopy">
 			<state id="no_pred" />
