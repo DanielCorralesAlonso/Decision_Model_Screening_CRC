@@ -45,4 +45,4 @@ def parameter_elicitation_utilities(PE_info, PE_cost, rho_comfort):
         print("No solution found...")
         return None
 
-    return params
+    return params 
