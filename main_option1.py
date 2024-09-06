@@ -11,17 +11,28 @@ from df_plot import plot_df
 from info_value_to_net import info_value_to_net
 from get_info_values import mutual_info_measures
 from functions import system_of_eq, tanh_fun
-from elicitation import parameter_elicitation_utilities_tanh
+from elicitation import parameter_elicitation_utilities_option1, parameter_elicitation_utilities_tanh
 
 import yaml
 with open('config.yaml', 'r') as file:
     cfg = yaml.safe_load(file)
 import pdb
 
+# ----------------------------------------------------------------------
+# Read model type from input in the command line
+import sys
+if len(sys.argv) > 1:
+    model_type = sys.argv[1]
+else:
+    model_type = "tanh" # "tanh" or "linear"
+# ----------------------------------------------------------------------
+
+print("Model type: ", model_type)
+
 # Read the network -----------------------------------------------------
 print("Reading network...")
 net = pysmile.Network()
-net.read_file("decision_models/DM_screening_submodel_tanh_rel_pcmi.xdsl")
+net.read_file(f"decision_models/DM_screening_rel_pcmi_{model_type}.xdsl")
 # ----------------------------------------------------------------------
 
 # ----------------------------------------------------------------------
@@ -36,10 +47,36 @@ value_function = "rel_pcmi"
 df_value_scr, df_value_col = save_info_values(net, value_function = value_function, weighted=False)
 net2 = info_value_to_net(df_value_scr, df_value_col, net)
 
-# net2.add_arc("Results_of_Screening", "Colonoscopy")
 
+# ----------------------------------------------------------------------
+if model_type == "tanh":
+    print("Defining value of comfort...")
+    rho_4 = 0.6
+    rho_3 = 0.55
+    rho_2 = 0.50
+    rho_1 = 0.40
+    arr_comft = np.array([rho_4, rho_4, rho_4, rho_4, rho_4, rho_4, rho_4, rho_4, rho_4, rho_4, rho_4, rho_4, rho_4, rho_4,
+                        rho_4, rho_1, rho_3, rho_1, rho_3, rho_1, rho_3, rho_1, rho_3, rho_1, rho_2, rho_1, rho_2, rho_1, # Added discomfort when colonoscopy is not mandatory
+                        rho_4, rho_4, rho_3, rho_3, rho_3, rho_3, rho_3, rho_3, rho_3, rho_3, rho_2, rho_2, rho_2, rho_2,]) #No added discomfort when colonoscopy is mandatory
+    net2.set_node_definition("Value_of_comfort", arr_comft)
+
+    net2.set_mau_expressions(node_id = "V", expressions = [f"((8131.71-COST)/8131.71)*Tanh(VALUE*Value_of_comfort)"])
+
+elif model_type == "linear":
+    print("Defining value of comfort...")
+    rho_4 = 8
+    rho_3 = 6.5
+    rho_2 = 6.25
+    rho_1 = 5.5 
+    arr_comft = np.array([rho_4, rho_1, rho_3, rho_1, rho_3, rho_1, rho_3, rho_1, rho_3, rho_1, rho_2, rho_1, rho_2, rho_1,])
+    net2.set_node_definition("Value_of_comfort", arr_comft)
+
+    net2.set_mau_expressions(node_id = "V", expressions = [f"Value_of_comfort*VALUE - Log10(COST+1)"])
+
+
+# ----------------------------------------------------------------------
 print("Saving network...")
-net2.write_file(f"decision_models/DM_screening_submodel_tanh_{value_function}.xdsl")
+net2.write_file(f"decision_models/DM_screening_{value_function}_{model_type}.xdsl")
 # ----------------------------------------------------------------------
 
 
@@ -53,7 +90,11 @@ plot_relative_cond_mut_info(net2, subtitle = '', zoom = (0.001, 0.1))
 
 # ----------------------------------------------------------------------
 print("Calculating final utilities...")
-params = parameter_elicitation_utilities_tanh(PE_info = cfg["PE_info"], PE_cost = cfg["PE_cost"], rho_comfort = cfg["rho_comfort"])
+
+if model_type == "tanh":
+    params = parameter_elicitation_utilities_tanh(PE_info = cfg["PE_info"], PE_cost = cfg["PE_cost"], rho_comfort = rho_3)
+elif model_type == "linear":
+    params = parameter_elicitation_utilities_option1(PE_info = cfg["PE_info"], PE_cost = cfg["PE_cost"], rho_comfort = rho_3)
 
 if params is None:
     print("Please try another initial value for the system of equations...")
@@ -61,8 +102,8 @@ if params is None:
 
 else:
     print("Parameters found: ", params)
-    net2.set_mau_expressions(node_id = "U", expressions = [f"({params[0]} - {params[1]}*Exp( - {params[2]} * V)) / {params[0]}"])
-    net2.write_file(f"decision_models/DM_screening_submodel_tanh_{value_function}.xdsl")
+    net2.set_mau_expressions(node_id = "U", expressions = [f"({params[0]} - {params[1]}*Exp( - {params[2]} * V))"])
+    net2.write_file(f"decision_models/DM_screening_{value_function}_{model_type}.xdsl")
     print("Done!")
 # ----------------------------------------------------------------------
 
@@ -72,19 +113,20 @@ else:
 print("Calculating utilities for patient X...")
 
 # Set evidence for the patient
-net2.set_evidence("Age", "age_2_young")
+net2.clear_all_evidence()
+net2.set_evidence("Age", "age_5_old_adult")
 net2.set_evidence("Sex", "M")
-net2.set_evidence("SES", "ses_0")  # not mandatory
+# net2.set_evidence("SES", "ses_0")  # not mandatory
 net2.set_evidence("SD", "SD_1_short")
 net2.set_evidence("PA", "PA_1")
-net2.set_evidence("Smoking", "sm_1_not_smoker")
-net2.set_evidence("Depression", False)  # not mandatory
-net2.set_evidence("Anxiety", False)  # not mandatory
-net2.set_evidence("BMI", "bmi_1_underweight")
-net2.set_evidence("Alcohol", "high")
-net2.set_evidence("Hypertension", False)  # not mandatory
-net2.set_evidence("Diabetes", False)  # not mandatory
-net2.set_evidence("Hyperchol_", False)  # not mandatory
+net2.set_evidence("Smoking", "sm_3_ex_smoker")
+#net2.set_evidence("Depression", False)  # not mandatory
+#net2.set_evidence("Anxiety", False)  # not mandatory
+net2.set_evidence("BMI", "bmi_3_overweight")
+net2.set_evidence("Alcohol", "low")
+#net2.set_evidence("Hypertension", False)  # not mandatory
+#net2.set_evidence("Diabetes", False)  # not mandatory
+#net2.set_evidence("Hyperchol_", False)  # not mandatory
 
 net2.update_beliefs()
 

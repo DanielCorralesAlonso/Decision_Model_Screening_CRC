@@ -162,4 +162,5 @@ cython_debug/
 /documents
 /old
 /private
+/genie_models
 pysmile_license.py

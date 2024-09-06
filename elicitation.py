@@ -8,17 +8,13 @@ with open('config.yaml', 'r') as file:
 import pdb
     
 
-def parameter_elicitation_utilities(PE_info, PE_cost, rho_comfort):
+def parameter_elicitation_utilities_tanh(PE_info, PE_cost, rho_comfort):
 
     best_info = 1   # 0.601
     worst_info = 0      # 0.042 
-    PE_info = cfg["PE_info"]
 
     best_cost = 0       #12.14
     worst_cost = 8131.71    #1000
-    PE_cost = cfg["PE_cost"] 
-
-    rho_comfort = cfg["rho_comfort"] 
 
     w_best = tanh_fun(best_info, rho_comfort)
     w_worst = tanh_fun(worst_info, rho_comfort)
@@ -45,4 +41,37 @@ def parameter_elicitation_utilities(PE_info, PE_cost, rho_comfort):
         print("No solution found...")
         return None
 
-    return params 
+    return params
+
+
+def parameter_elicitation_utilities_option1(PE_info, PE_cost, rho_comfort):
+
+    best_info = 1  # 0.601
+    worst_info = 0      # 0.042 
+
+    best_cost = 0       #12.14
+    worst_cost = 8131.71    #1000
+
+    v_best = rho_comfort * best_info - np.log10(best_cost+1)
+    v_worst =  rho_comfort * worst_info - np.log10(worst_cost+1)
+    v_PE =  rho_comfort * PE_info - np.log10(PE_cost+1)
+
+    print("Searching for a solution of the system of equations...")
+    num_points = 100
+
+    # Generate a list of tuples with random initial points
+    init_list = [tuple(np.random.uniform(-10, 10, 3)) for _ in range(num_points)]
+
+    params = None
+    for init in init_list:
+        try:
+            # pdb.set_trace()
+            params = system_of_eq(y = v_PE, p = cfg["PE_prob"] , init = init, min_value = v_worst, max_value = v_best)
+        except:
+            continue
+
+    if params is None:
+        print("No solution found...")
+        return None
+
+    return params

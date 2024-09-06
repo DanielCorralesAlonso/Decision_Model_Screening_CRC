@@ -147,7 +147,7 @@
 		</utility>
 		<utility id="Value_of_comfort">
 			<parents>Screening Colonoscopy</parents>
-			<utilities>1 0.77 0.96 0.77 0.96 0.77 0.96 0.77 0.96 0.77 0.9 0.77 0.9 0.77</utilities>
+			<utilities>0.0054 0.1 0.0135 0.1 0.0135 0.1 0.0135 0.1 0.0135 0.1 0.03 0.1 0.03 0.1</utilities>
 		</utility>
 		<mau id="Mutual_information_between_tests">
 			<parents>Value_of_CRC_detection_by_colonoscopy Value_of_CRC_detection_by_screening Colonoscopy</parents>
@@ -163,7 +163,7 @@
 		</mau>
 		<maux id="V">
 			<parents>COST VALUE Value_of_comfort</parents>
-			<expression>1*COST+600*VALUE*Value_of_comfort</expression>
+			<expression>(8131.71-COST)/8131.71*Tanh(VALUE*Value_of_comfort)</expression>
 		</maux>
 		<maux id="U">
 			<parents>V</parents>
