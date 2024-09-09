@@ -164,3 +164,4 @@ cython_debug/
 /private
 /genie_models
 pysmile_license.py
+tests.ipynb
