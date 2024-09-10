@@ -12,6 +12,7 @@ from info_value_to_net import info_value_to_net
 from get_info_values import mutual_info_measures
 from functions import system_of_eq, tanh_fun
 from elicitation import parameter_elicitation_utilities_option1, parameter_elicitation_utilities_tanh
+from elicit_lambda import elicit_lambda
 
 import yaml
 with open('config.yaml', 'r') as file:
@@ -21,10 +22,15 @@ import pdb
 # ----------------------------------------------------------------------
 # Read model type from input in the command line
 import sys
-if len(sys.argv) > 1:
+if len(sys.argv) > 2:
     model_type = sys.argv[1]
+    elicit = sys.argv[2]
+elif len(sys.argv) > 1 and len(sys.argv) <= 2:
+    model_type = sys.argv[1]
+    elicit = False  
 else:
     model_type = "tanh" # "tanh" or "linear"
+    elicit = False
 # ----------------------------------------------------------------------
 
 print("Model type: ", model_type)
@@ -49,6 +55,22 @@ net2 = info_value_to_net(df_value_scr, df_value_col, net)
 
 
 # ----------------------------------------------------------------------
+# Define referent patient characteristics
+patient_chars = {"Age": "age_3_young_adult", 
+                         "Sex": "M",
+                         "SD": "SD_2_normal",
+                         "PA": "PA_2",
+                         "Smoking": "sm_1_not_smoker",
+                         "BMI": "bmi_2_normal",
+                         "Alcohol": "low",
+                         #"Diabetes": True,
+                         #"Hypertension": True,
+                         }
+
+# ----------------------------------------------------------------------
+
+
+# ----------------------------------------------------------------------
 if model_type == "tanh":
     print("Defining value of comfort...")
     rho_4 = 0.6
@@ -63,15 +85,32 @@ if model_type == "tanh":
     net2.set_mau_expressions(node_id = "V", expressions = [f"((8131.71-COST)/8131.71)*Tanh(VALUE*Value_of_comfort)"])
 
 elif model_type == "linear":
-    print("Defining value of comfort...")
-    rho_4 = 8
-    rho_3 = 6.5
-    rho_2 = 6.25
-    rho_1 = 5.5 
-    arr_comft = np.array([rho_4, rho_1, rho_3, rho_1, rho_3, rho_1, rho_3, rho_1, rho_3, rho_1, rho_2, rho_1, rho_2, rho_1,])
-    net2.set_node_definition("Value_of_comfort", arr_comft)
+    print("Eliciting value of comfort...")
 
-    net2.set_mau_expressions(node_id = "V", expressions = [f"Value_of_comfort*VALUE - Log10(COST+1)"])
+    if elicit == "elicit":
+
+        lambdas = elicit_lambda(patient_chars = patient_chars,
+                                net = net2)
+        
+        net.set_node_definition("Value_of_comfort", lambdas)
+        net.set_mau_expressions(node_id = "V", expressions = [f"Value_of_comfort*VALUE - Log10(COST+1)"])
+
+    else:
+        rho_4 = 8
+        rho_3 = 6.5
+        rho_2 = 6.25
+        rho_1 = 6 # Not a bad choice of values. Try to justify them correctly.
+        arr_comft = np.array([rho_4, rho_1, rho_3, rho_1, rho_3, rho_1, rho_3, rho_1, rho_3, rho_1, rho_2, rho_1, rho_2, rho_1,])
+        net2.set_node_definition("Value_of_comfort", arr_comft)
+
+        net2.set_mau_expressions(node_id = "V", expressions = [f"Value_of_comfort*VALUE - Log10(COST+1)"])
+        
+
+        lambdas = net2.get_node_value("Value_of_comfort")
+
+        print("No elicitation of lambda values, taking default values...")
+
+
 
 
 # ----------------------------------------------------------------------
@@ -92,9 +131,9 @@ plot_relative_cond_mut_info(net2, subtitle = '', zoom = (0.001, 0.1))
 print("Calculating final utilities...")
 
 if model_type == "tanh":
-    params = parameter_elicitation_utilities_tanh(PE_info = cfg["PE_info"], PE_cost = cfg["PE_cost"], rho_comfort = rho_3)
+    params = parameter_elicitation_utilities_tanh(PE_info = cfg["PE_info"], PE_cost = cfg["PE_cost"], rho_comfort = lambdas[2])
 elif model_type == "linear":
-    params = parameter_elicitation_utilities_option1(PE_info = cfg["PE_info"], PE_cost = cfg["PE_cost"], rho_comfort = rho_3)
+    params = parameter_elicitation_utilities_option1(PE_info = cfg["PE_info"], PE_cost = cfg["PE_cost"], rho_comfort = lambdas[2])
 
 if params is None:
     print("Please try another initial value for the system of equations...")
@@ -112,23 +151,12 @@ else:
 # ----------------------------------------------------------------------
 print("Calculating utilities for patient X...")
 
-# Set evidence for the patient
-net2.clear_all_evidence()
-net2.set_evidence("Age", "age_5_old_adult")
-net2.set_evidence("Sex", "M")
-# net2.set_evidence("SES", "ses_0")  # not mandatory
-net2.set_evidence("SD", "SD_1_short")
-net2.set_evidence("PA", "PA_1")
-net2.set_evidence("Smoking", "sm_3_ex_smoker")
-#net2.set_evidence("Depression", False)  # not mandatory
-#net2.set_evidence("Anxiety", False)  # not mandatory
-net2.set_evidence("BMI", "bmi_3_overweight")
-net2.set_evidence("Alcohol", "low")
-#net2.set_evidence("Hypertension", False)  # not mandatory
-#net2.set_evidence("Diabetes", False)  # not mandatory
-#net2.set_evidence("Hyperchol_", False)  # not mandatory
+net.clear_all_evidence()
 
-net2.update_beliefs()
+for key, value in patient_chars.items():
+    net.set_evidence(key, value)
+
+net.update_beliefs()
 
 # pdb.set_trace()
 if len(net2.get_node_value("U")) == 14:
