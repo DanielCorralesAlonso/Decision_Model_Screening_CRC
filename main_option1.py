@@ -14,10 +14,53 @@ from functions import system_of_eq, tanh_fun
 from elicitation import parameter_elicitation_utilities_option1, parameter_elicitation_utilities_tanh
 from elicit_lambda import elicit_lambda
 
+import logging
+import datetime 
+import os
+
 import yaml
 with open('config.yaml', 'r') as file:
     cfg = yaml.safe_load(file)
 import pdb
+
+# Get the current working directory
+current_dir = os.getcwd()
+
+# Define the path for the logs directory within the current directory
+log_dir = os.path.join(current_dir, 'logs')
+
+# Create the logs directory if it doesn't exist
+if not os.path.exists(log_dir):
+    os.makedirs(log_dir)
+
+# Get the current timestamp
+timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
+# Define the log file path with the timestamp
+log_filename = os.path.join(log_dir, f"decision_model_{timestamp}.log")
+
+# Create a custom logger
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)  # Set the minimum logging level
+
+# Create handlers for file and console
+file_handler = logging.FileHandler(log_filename)  # Logs to file
+console_handler = logging.StreamHandler()  # Logs to console
+
+# Set the logging level for both handlers
+file_handler.setLevel(logging.INFO)
+console_handler.setLevel(logging.INFO)
+
+# Define the formatter for logs
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+
+# Add the formatter to the handlers
+file_handler.setFormatter(formatter)
+console_handler.setFormatter(formatter)
+
+# Add handlers to the logger
+logger.addHandler(file_handler)
+logger.addHandler(console_handler)
 
 # ----------------------------------------------------------------------
 # Read model type from input in the command line
@@ -33,21 +76,21 @@ else:
     elicit = False
 # ----------------------------------------------------------------------
 
-print("Model type: ", model_type)
+logger.info(f"Model type: {model_type}")
 
 # Read the network -----------------------------------------------------
-print("Reading network...")
+logger.info("Reading network...")
 net = pysmile.Network()
 net.read_file(f"decision_models/DM_screening_rel_pcmi_{model_type}.xdsl")
 # ----------------------------------------------------------------------
 
 # ----------------------------------------------------------------------
-print("Calculating relative pointwise conditional mutual information values...")
+logger.info("Calculating relative pointwise conditional mutual information values...")
 
 try:
     net.delete_arc("Results_of_Screening", "Colonoscopy")
 except:
-    print("No arc to delete")
+    logger.info("No arc to delete")
 
 value_function = "rel_pcmi"
 df_value_scr, df_value_col = save_info_values(net, value_function = value_function, weighted=False)
@@ -72,7 +115,7 @@ patient_chars = {"Age": "age_3_young_adult",
 
 # ----------------------------------------------------------------------
 if model_type == "tanh":
-    print("Defining value of comfort...")
+    logging.info("Defining value of comfort...")
     rho_4 = 0.6
     rho_3 = 0.55
     rho_2 = 0.50
@@ -85,12 +128,12 @@ if model_type == "tanh":
     net2.set_mau_expressions(node_id = "V", expressions = [f"((8131.71-COST)/8131.71)*Tanh(VALUE*Value_of_comfort)"])
 
 elif model_type == "linear":
-    print("Eliciting value of comfort...")
+    logger.info("Eliciting value of comfort...")
 
     if elicit == "elicit":
 
         lambdas = elicit_lambda(patient_chars = patient_chars,
-                                net = net2)
+                                net = net2, logging = logger)
         
         net.set_node_definition("Value_of_comfort", lambdas)
         net.set_mau_expressions(node_id = "V", expressions = [f"Value_of_comfort*VALUE - Log10(COST+1)"])
@@ -108,19 +151,19 @@ elif model_type == "linear":
 
         lambdas = net2.get_node_value("Value_of_comfort")
 
-        print("No elicitation of lambda values, taking default values...")
+        logger.info("No elicitation of lambda values, taking default values...")
 
 
 
 
 # ----------------------------------------------------------------------
-print("Saving network...")
+logger.info("Saving network...")
 net2.write_file(f"decision_models/DM_screening_{value_function}_{model_type}.xdsl")
 # ----------------------------------------------------------------------
 
 
 # ----------------------------------------------------------------------
-print("Plotting info functions...")
+logger.info("Plotting info functions...")
 plot_cond_mut_info(net2)
 plot_relative_cond_mut_info(net2, subtitle = '', zoom = (0.001, 0.1))
 # ----------------------------------------------------------------------
@@ -128,28 +171,28 @@ plot_relative_cond_mut_info(net2, subtitle = '', zoom = (0.001, 0.1))
 
 
 # ----------------------------------------------------------------------
-print("Calculating final utilities...")
+logger.info("Calculating final utilities...")
 
 if model_type == "tanh":
     params = parameter_elicitation_utilities_tanh(PE_info = cfg["PE_info"], PE_cost = cfg["PE_cost"], rho_comfort = lambdas[2])
 elif model_type == "linear":
-    params = parameter_elicitation_utilities_option1(PE_info = cfg["PE_info"], PE_cost = cfg["PE_cost"], rho_comfort = lambdas[2])
+    params = parameter_elicitation_utilities_option1(PE_info = cfg["PE_info"], PE_cost = cfg["PE_cost"], rho_comfort = lambdas[2], logging = logger)
 
 if params is None:
-    print("Please try another initial value for the system of equations...")
+    logger.warning("Please try another initial value for the system of equations...")
     exit()
 
 else:
-    print("Parameters found: ", params)
+    logger.info("Parameters found: {params}")
     net2.set_mau_expressions(node_id = "U", expressions = [f"({params[0]} - {params[1]}*Exp( - {params[2]} * V))"])
     net2.write_file(f"decision_models/DM_screening_{value_function}_{model_type}.xdsl")
-    print("Done!")
+    logger.info("Done!")
 # ----------------------------------------------------------------------
 
 
 
 # ----------------------------------------------------------------------
-print("Calculating utilities for patient X...")
+logger.info("Calculating utilities for patient X...")
 
 net.clear_all_evidence()
 
@@ -170,7 +213,7 @@ if len(net2.get_node_value("U")) == 14:
 
     df_U = pd.DataFrame(arr.reshape(1,-1), index=["U"], columns=index)
 
-print(df_U)
+logger.info(df_U)
 # ----------------------------------------------------------------------
 
 
@@ -188,11 +231,11 @@ index = pd.MultiIndex.from_tuples(comb)
 arr = np.array(net2.get_node_value("U"))
 
 df_U_ext = pd.DataFrame(arr.reshape(1,-1), index=["U"], columns=index)
-print(df_U_ext)
+logger.info(df_U_ext)
 df_U_ext.to_csv("U_values.csv")
 # ----------------------------------------------------------------------
 
 
 # ----------------------------------------------------------------------
-print("Done!")
+logger.info("Done!")
 # ----------------------------------------------------------------------

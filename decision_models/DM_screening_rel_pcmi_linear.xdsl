@@ -147,7 +147,7 @@
 		</utility>
 		<utility id="Value_of_comfort">
 			<parents>Screening Colonoscopy</parents>
-			<utilities>11 5.246153460750341 10.1378385801626 5.246153460750341 10.1378385801626 5.246153460750341 10.1378385801626 5.246153460750341 10.1378385801626 5.246153460750341 7.341410589428593 5.246153460750341 7.341410589428593 5.246153460750341</utilities>
+			<utilities>8 6 6.5 6 6.5 6 6.5 6 6.5 6 6.25 6 6.25 6</utilities>
 		</utility>
 		<mau id="Mutual_information_between_tests">
 			<parents>Value_of_CRC_detection_by_colonoscopy Value_of_CRC_detection_by_screening Colonoscopy</parents>
@@ -167,7 +167,7 @@
 		</maux>
 		<maux id="U">
 			<parents>V</parents>
-			<expression>1.07092-0.503032*Exp(-0.193242*V)</expression>
+			<expression>1.06832-0.380322*Exp(-0.264133*V)</expression>
 		</maux>
 	</nodes>
 	<extensions>
