@@ -50,8 +50,8 @@ def elicit_lambda(patient_chars, net, logging):
         if len(sel_vars) > 1:
             for comb in combinations(sel_vars, 2):
 
-                logging.info(f"{comb[0]} || Comfort:  {comf_levels[vars == comb[0]].item()}; Value of info: {util_levels[vars == comb[0]].item()}; Cost: {cost_levels[vars == comb[0]].item()}; log10(Cost): {np.log10(cost_levels[vars == comb[0]].item())}") 
-                logging.info(f"{comb[1]} || Comfort: {comf_levels[vars == comb[1]].item()}; Value of info: {util_levels[vars == comb[1]].item()}; Cost: {cost_levels[vars == comb[1]].item()}; log10(Cost): {np.log10(cost_levels[vars == comb[1]].item())}")
+                logging.info(f"{comb[0]:<10} || Comfort: {comf_levels[vars == comb[0]].item():<4}| Value of info: {util_levels[vars == comb[0]].item():<6.3f}| Cost: {cost_levels[vars == comb[0]].item():<6.2f}| log10(Cost): {np.log10(cost_levels[vars == comb[0]].item()):<6.3f}|") 
+                logging.info(f"{comb[1]:<10} || Comfort: {comf_levels[vars == comb[1]].item():<4}| Value of info: {util_levels[vars == comb[1]].item():<6.3f}| Cost: {cost_levels[vars == comb[1]].item():<6.2f}| log10(Cost): {np.log10(cost_levels[vars == comb[1]].item()):<6.3f}|")
 
 
                 if (cost_levels[vars == comb[0]].item() <= cost_levels[vars == comb[1]].item()) and (util_levels[vars == comb[0]].item() > util_levels[vars == comb[1]].item()):
@@ -82,7 +82,7 @@ def elicit_lambda(patient_chars, net, logging):
 
         if i == 1:
             var = "Colonoscopy"
-            logging.info(f"Colonoscopy || Comfort:  {comf_levels[vars == var].item()}; Value of info: {util_levels[vars == var].item()}; Cost: {cost_levels[vars == var].item()}; log10(Cost): {np.log10(cost_levels[vars == var].item())}")
+            logging.info(f"{var:<5} || Comfort: {comf_levels[vars == var].item():<4}| Value of info: {util_levels[vars == var].item():<6.3f}| Cost: {cost_levels[vars == var].item():<6.2f}| log10(Cost): {np.log10(cost_levels[vars == var].item()):<6.3f}|")
 
             logging.info("We need you to give us a level of info and cost for a synthetic option that you would be indifferent between colonoscopy and the synthetic option.")
             synthetic_info = float(input("---> Info? Please insert a number: "))

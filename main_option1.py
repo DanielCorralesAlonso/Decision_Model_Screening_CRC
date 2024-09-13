@@ -99,7 +99,7 @@ net2 = info_value_to_net(df_value_scr, df_value_col, net)
 
 # ----------------------------------------------------------------------
 # Define referent patient characteristics
-patient_chars = {"Age": "age_3_young_adult", 
+patient_chars = {"Age": "age_4_adult", 
                          "Sex": "M",
                          "SD": "SD_2_normal",
                          "PA": "PA_2",
@@ -139,19 +139,24 @@ elif model_type == "linear":
         net.set_mau_expressions(node_id = "V", expressions = [f"Value_of_comfort*VALUE - Log10(COST+1)"])
 
     else:
-        rho_4 = 8
-        rho_3 = 6.5
-        rho_2 = 6.25
-        rho_1 = 6 # Not a bad choice of values. Try to justify them correctly.
-        arr_comft = np.array([rho_4, rho_1, rho_3, rho_1, rho_3, rho_1, rho_3, rho_1, rho_3, rho_1, rho_2, rho_1, rho_2, rho_1,])
-        net2.set_node_definition("Value_of_comfort", arr_comft)
+        try:
+            lambdas = net2.get_node_value("Value_of_comfort")
 
-        net2.set_mau_expressions(node_id = "V", expressions = [f"Value_of_comfort*VALUE - Log10(COST+1)"])
+            logger.info("No elicitation of lambda values, taking default values...")
         
+        except:
+            logger.info("No default values found, setting custom values...")
+            rho_4 = 8
+            rho_3 = 6.5
+            rho_2 = 6.25
+            rho_1 = 6 # Not a bad choice of values. Try to justify them correctly.
+            arr_comft = np.array([rho_4, rho_1, rho_3, rho_1, rho_3, rho_1, rho_3, rho_1, rho_3, rho_1, rho_2, rho_1, rho_2, rho_1,])
+            net2.set_node_definition("Value_of_comfort", arr_comft)
 
-        lambdas = net2.get_node_value("Value_of_comfort")
+            net2.set_mau_expressions(node_id = "V", expressions = [f"Value_of_comfort*VALUE - Log10(COST+1)"])
 
-        logger.info("No elicitation of lambda values, taking default values...")
+            lambdas = net2.get_node_value("Value_of_comfort")
+
 
 
 
@@ -183,7 +188,7 @@ if params is None:
     exit()
 
 else:
-    logger.info("Parameters found: {params}")
+    logger.info(f"Parameters found: {params}")
     net2.set_mau_expressions(node_id = "U", expressions = [f"({params[0]} - {params[1]}*Exp( - {params[2]} * V))"])
     net2.write_file(f"decision_models/DM_screening_{value_function}_{model_type}.xdsl")
     logger.info("Done!")
@@ -213,7 +218,7 @@ if len(net2.get_node_value("U")) == 14:
 
     df_U = pd.DataFrame(arr.reshape(1,-1), index=["U"], columns=index)
 
-logger.info(df_U)
+logger.info(f"\n {df_U}")
 # ----------------------------------------------------------------------
 
 
@@ -231,7 +236,7 @@ index = pd.MultiIndex.from_tuples(comb)
 arr = np.array(net2.get_node_value("U"))
 
 df_U_ext = pd.DataFrame(arr.reshape(1,-1), index=["U"], columns=index)
-logger.info(df_U_ext)
+logger.info(f"\n {df_U_ext}")
 df_U_ext.to_csv("U_values.csv")
 # ----------------------------------------------------------------------
 
