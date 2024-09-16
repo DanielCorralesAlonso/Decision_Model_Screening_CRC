@@ -7,6 +7,26 @@ PE_prob: 0.7
 rho_comfort: 100
 
 
+model_type: "linear"
+
+value_function: "rel_pcmi"
+
+elicit: False
+
+patient_chars: {"Age": "age_4_adult", 
+                        "Sex": "M",
+                        "SD": "SD_2_normal",
+                        "PA": "PA_2",
+                        "Smoking": "sm_1_not_smoker",
+                        "BMI": "bmi_2_normal",
+                        "Alcohol": "low",
+                        #"Diabetes": True,
+                        #"Hypertension": True,
+                        }
+
+new_test: False 
+
+
 colors:
   No_screening: '#1f77b4'
   gFOBT: '#ff7f0e'
@@ -16,6 +36,6 @@ colors:
   CTC: '#8c564b'
   Colon_capsule: '#e377c2'
   Colonoscopy: '#bcbd22'
-  NewTest: '#17becf'
+  New_test: '#17becf'  # Possible name for new test, change if necessary.
   H(CRC): '#7f7f7f' 
   

@@ -44,7 +44,7 @@ def parameter_elicitation_utilities_tanh(PE_info, PE_cost, rho_comfort):
     return params
 
 
-def parameter_elicitation_utilities_option1(PE_info, PE_cost, rho_comfort, logging):
+def parameter_elicitation_utilities_option1(PE_info, PE_cost, rho_comfort, logging = None):
 
     best_info = 1  # 0.601
     worst_info = 0      # 0.042 
@@ -56,7 +56,9 @@ def parameter_elicitation_utilities_option1(PE_info, PE_cost, rho_comfort, loggi
     v_worst =  rho_comfort * worst_info - np.log10(worst_cost+1)
     v_PE =  rho_comfort * PE_info - np.log10(PE_cost+1)
 
-    logging.info("Searching for a solution of the system of equations...")
+    if logging is not None:
+        logging.info("Searching for a solution of the system of equations...")
+
     num_points = 100
 
     # Generate a list of tuples with random initial points
@@ -71,7 +73,8 @@ def parameter_elicitation_utilities_option1(PE_info, PE_cost, rho_comfort, loggi
             continue
 
     if params is None:
-        logging.warning("No solution found...")
+        if logging is not None:
+            logging.warning("No solution found...")
         return None
 
     return params

@@ -11,118 +11,81 @@ from df_plot import plot_df
 from info_value_to_net import info_value_to_net
 from get_info_values import mutual_info_measures
 from functions import system_of_eq, tanh_fun
-from elicitation import parameter_elicitation_utilities_tanh
+from elicitation import parameter_elicitation_utilities_option1, parameter_elicitation_utilities_tanh
+from elicit_lambda import elicit_lambda
+from update import update_influence_diagram
+
+import logging
+import datetime 
+import os
 
 import yaml
 with open('config.yaml', 'r') as file:
     cfg = yaml.safe_load(file)
 import pdb
 
-# Read the network -----------------------------------------------------
-print("Reading network...")
-net = pysmile.Network()
-net.read_file("decision_models/DM_screening_submodel_tanh_rel_pcmi.xdsl")
-# ----------------------------------------------------------------------
-
-# ----------------------------------------------------------------------
-print("Calculating relative pointwise conditional mutual information values...")
-
-try:
-    net.delete_arc("Results_of_Screening", "Colonoscopy")
-except:
-    print("No arc to delete")
-
-value_function = "rel_pcmi"
-df_value_scr, df_value_col = save_info_values(net, value_function = value_function, weighted=False)
-net2 = info_value_to_net(df_value_scr, df_value_col, net)
-
-# net2.add_arc("Results_of_Screening", "Colonoscopy")
-
-print("Saving network...")
-net2.write_file(f"decision_models/DM_screening_submodel_tanh_{value_function}.xdsl")
-# ----------------------------------------------------------------------
-
-
-# ----------------------------------------------------------------------
-print("Plotting info functions...")
-plot_cond_mut_info(net2)
-plot_relative_cond_mut_info(net2, subtitle = '', zoom = (0.001, 0.1))
-# ----------------------------------------------------------------------
+import argparse
 
 
 
-# ----------------------------------------------------------------------
-print("Calculating final utilities...")
-params = parameter_elicitation_utilities_tanh(PE_info = cfg["PE_info"], PE_cost = cfg["PE_cost"], rho_comfort = cfg["rho_comfort"])
 
-if params is None:
-    print("Please try another initial value for the system of equations...")
-    exit()
+# Get the current working directory
+current_dir = os.getcwd()
 
-else:
-    print("Parameters found: ", params)
-    net2.set_mau_expressions(node_id = "U", expressions = [f"({params[0]} - {params[1]}*Exp( - {params[2]} * V)) / {params[0]}"])
-    net2.write_file(f"decision_models/DM_screening_submodel_tanh_{value_function}.xdsl")
-    print("Done!")
-# ----------------------------------------------------------------------
+# Define the path for the logs directory within the current directory
+log_dir = os.path.join(current_dir, 'logs')
 
+# Create the logs directory if it doesn't exist
+if not os.path.exists(log_dir):
+    os.makedirs(log_dir)
 
+# Get the current timestamp
+timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
-# ----------------------------------------------------------------------
-print("Calculating utilities for patient X...")
+# Define the log file path with the timestamp
+log_filename = os.path.join(log_dir, f"decision_model_{timestamp}.log")
 
-# Set evidence for the patient
-net2.set_evidence("Age", "age_2_young")
-net2.set_evidence("Sex", "M")
-net2.set_evidence("SES", "ses_0")  # not mandatory
-net2.set_evidence("SD", "SD_1_short")
-net2.set_evidence("PA", "PA_1")
-net2.set_evidence("Smoking", "sm_1_not_smoker")
-net2.set_evidence("Depression", False)  # not mandatory
-net2.set_evidence("Anxiety", False)  # not mandatory
-net2.set_evidence("BMI", "bmi_1_underweight")
-net2.set_evidence("Alcohol", "high")
-net2.set_evidence("Hypertension", False)  # not mandatory
-net2.set_evidence("Diabetes", False)  # not mandatory
-net2.set_evidence("Hyperchol_", False)  # not mandatory
+# Create a custom logger
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)  # Set the minimum logging level
 
-net2.update_beliefs()
+# Create handlers for file and console
+file_handler = logging.FileHandler(log_filename)  # Logs to file
+console_handler = logging.StreamHandler()  # Logs to console
 
-# pdb.set_trace()
-if len(net2.get_node_value("U")) == 14:
-    vars1 = ["No scr", "gFOBT", "FIT", "Blood_test", "sDNA", "CTC", "CC"]
-    vars2 = ["No colonoscopy", "Colonoscopy"]
+# Set the logging level for both handlers
+file_handler.setLevel(logging.INFO)
+console_handler.setLevel(logging.INFO)
 
-    comb = list(itertools.product(vars1, vars2))
+# Define the formatter for logs
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 
-    index = pd.MultiIndex.from_tuples(comb)
-    arr = np.array(net2.get_node_value("U"))
+# Add the formatter to the handlers
+file_handler.setFormatter(formatter)
+console_handler.setFormatter(formatter)
 
-    df_U = pd.DataFrame(arr.reshape(1,-1), index=["U"], columns=index)
-
-print(df_U)
-# ----------------------------------------------------------------------
+# Add handlers to the logger
+logger.addHandler(file_handler)
+logger.addHandler(console_handler)
 
 
-# ----------------------------------------------------------------------
-net2.add_arc("Results_of_Screening", "Colonoscopy")
-net2.update_beliefs()
+parser = argparse.ArgumentParser(description="Update the influence diagram")
+    
+# Mandatory argument (positional argument)
+parser.add_argument('--model_type', type=str, default=cfg["model_type"], help='Model type, choose between linear or tanh')
+parser.add_argument('--value_function', type=str, default= cfg["value_function"], help='Value function, choose between rel_pcmi or pcmi')
+parser.add_argument('--elicit', type=bool, default=cfg["elicit"], help='Elicitation method, choose between option1 or tanh')
+parser.add_argument('--new_test', type=bool, default=cfg["new_test"], help='New test to be added to the model')
 
-vars1 = ["No scr", "gFOBT", "FIT", "Blood_test", "sDNA", "CTC", "CC"]
-vars2 = ["No pred", "Pred False", "Pred True"]
-vars3 = ["No colonoscopy", "Colonoscopy"]
-
-comb = list(itertools.product(vars1, vars2, vars3))
-
-index = pd.MultiIndex.from_tuples(comb)
-arr = np.array(net2.get_node_value("U"))
-
-df_U_ext = pd.DataFrame(arr.reshape(1,-1), index=["U"], columns=index)
-print(df_U_ext)
-df_U_ext.to_csv("U_values.csv")
-# ----------------------------------------------------------------------
+# Parse the arguments
+args = parser.parse_args()
 
 
-# ----------------------------------------------------------------------
-print("Done!")
-# ----------------------------------------------------------------------
+net = update_influence_diagram(
+    model_type = args.model_type,
+    value_function = args.value_function,
+    elicit = args.elicit,
+    ref_patient_chars = cfg["patient_chars"],
+    new_test = args.new_test,
+    logger = logger
+)
