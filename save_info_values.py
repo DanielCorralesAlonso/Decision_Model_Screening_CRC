@@ -7,7 +7,7 @@ import itertools
 
 from get_info_values import mutual_info_measures
 
-def save_info_values(net, value_function = "pcmi", normalize = False, weighted = False):
+def save_info_values(net, value_function = "pcmi", new_test = False, normalize = False, weighted = False):
 
     # Get all combinations of possible parent states
     parents = net.get_parent_ids("CRC")
@@ -53,7 +53,10 @@ def save_info_values(net, value_function = "pcmi", normalize = False, weighted =
     index = pd.MultiIndex.from_tuples(total_combinations_scr, names=total_variables_scr)
         
     df_value_scr = pd.DataFrame(value_scr_array.reshape(1,-1), index=["Value"], columns=index)
-    df_value_scr.to_csv("value_of_info_csv/point_cond_mut_info_scr.csv")
+    if new_test:
+        df_value_scr.to_csv("value_of_info_csv/point_cond_mut_info_scr_new_test.csv")
+    else:
+        df_value_scr.to_csv("value_of_info_csv/point_cond_mut_info_scr.csv")
 
 
 
@@ -66,6 +69,9 @@ def save_info_values(net, value_function = "pcmi", normalize = False, weighted =
     index = pd.MultiIndex.from_tuples(total_combinations_col, names=total_variables_col)
 
     df_value_col = pd.DataFrame(value_col_array.reshape(1,-1), index=["Value"], columns=index)
-    df_value_col.to_csv("value_of_info_csv/point_cond_mut_info_col.csv")
+    if new_test:
+        df_value_col.to_csv("value_of_info_csv/point_cond_mut_info_col_new_test.csv")
+    else:
+        df_value_col.to_csv("value_of_info_csv/point_cond_mut_info_col.csv")
 
     return df_value_scr, df_value_col

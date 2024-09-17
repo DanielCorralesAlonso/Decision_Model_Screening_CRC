@@ -99,8 +99,8 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
     if new_test:
         net.add_outcome("Screening", "New_test")
         logger.info("Adding new test values...")
-        net2 = values_for_new_test(net2)
-        df_value_scr, df_value_col = save_info_values(net, value_function = value_function, weighted=False)
+        net2 = values_for_new_test(net2, config = cfg)
+        df_value_scr, df_value_col = save_info_values(net, value_function = value_function, new_test=True, weighted=False)
         net2 = info_value_to_net(df_value_scr, df_value_col, net2)
 
 
@@ -118,10 +118,10 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
     logger.info("Plotting info functions...")
     if new_test:
         plot_cond_mut_info(net2, subtitle='new_test')
-        plot_relative_cond_mut_info(net2, subtitle = 'new_test', zoom = (0.001, 0.1))
+        plot_relative_cond_mut_info(net2, subtitle = 'new_test', zoom = (0.0001, 0.1))
     else: 
         plot_cond_mut_info(net2, subtitle='')
-        plot_relative_cond_mut_info(net2, subtitle = '', zoom = (0.001, 0.1))
+        plot_relative_cond_mut_info(net2, subtitle = '', zoom = (0.0001, 0.1))
     # ----------------------------------------------------------------------
 
 
@@ -229,14 +229,14 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
 
 
 
-def values_for_new_test(net):
+def values_for_new_test(net, config):
     num_scr_tests = len(net.get_outcome_ids("Screening"))
 
 
     # ---Set comfort ----
     comfort_definition = net.get_node_definition("Value_of_comfort")
 
-    value_of_comfort_new_test = 8.2
+    value_of_comfort_new_test = comfort_definition[2]
     comfort_definition[-2] = value_of_comfort_new_test
     comfort_definition[-1] = comfort_definition[1]
 
@@ -246,7 +246,7 @@ def values_for_new_test(net):
     # --- Set cost ---.
     cost_definition = net.get_node_definition("Cost_of_Screening")
 
-    cost_new_test = 3
+    cost_new_test = config["cost_new_test"]
     cost_definition[-2] = cost_new_test
     cost_definition[-1] = cost_definition[1] + cost_new_test
 
@@ -257,8 +257,8 @@ def values_for_new_test(net):
 
     sens_spec_arr = np.array(net.get_node_definition("Results_of_Screening")).reshape(2,-1,3)
 
-    sens_spec_arr[0,-1,:] = [0, 0.94, 0.06]
-    sens_spec_arr[1,-1,:] = [0, 0.15, 0.85]
+    sens_spec_arr[0,-1,:] = [0, config["specificity_new_test"], 1 - config["specificity_new_test"]]
+    sens_spec_arr[1,-1,:] = [0, 1 - config["sensitivity_new_test"], config["sensitivity_new_test"]]
 
     net.set_node_definition("Results_of_Screening", sens_spec_arr.reshape(-1))
 
