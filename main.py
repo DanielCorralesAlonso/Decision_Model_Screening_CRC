@@ -56,17 +56,56 @@ parser.add_argument('--model_type', type=str, default=cfg["model_type"], help='M
 parser.add_argument('--value_function', type=str, default= cfg["value_function"], help='Value function, choose between rel_pcmi or pcmi')
 parser.add_argument('--elicit', type=bool, default=cfg["elicit"], help='Elicitation method, choose between option1 or tanh')
 parser.add_argument('--new_test', type=bool, default=cfg["new_test"], help='New test to be added to the model')
+parser.add_argument('--sens_analysis_metrics', type=bool, default=False, help='Perform sensitivity analysis with respect to the performance metrics of the screening methods')
 
 # Parse the arguments
 args = parser.parse_args()
 
 
-# Update the influence diagram
-net = update_influence_diagram(
-    model_type = args.model_type,
-    value_function = args.value_function,
-    elicit = args.elicit,
-    ref_patient_chars = cfg["patient_chars"],
-    new_test = args.new_test,
-    logger = logger
-)
+# Normal update.
+if not args.sens_analysis_metrics:
+
+    # Update the influence diagram
+    net = update_influence_diagram(
+        model_type = args.model_type,
+        value_function = args.value_function,
+        elicit = args.elicit,
+        ref_patient_chars = cfg["patient_chars"],
+        new_test = args.new_test,
+        logger = logger
+    )
+    
+
+# Sensitivity analysis with respect to the performance metrics of the screening methods.
+else:
+
+    # Update the influence diagram
+    net_lower = update_influence_diagram(
+        model_type = args.model_type,
+        value_function = args.value_function,
+        elicit = args.elicit,
+        ref_patient_chars = cfg["patient_chars"],
+        new_test = args.new_test,
+        sens_analysis_metrics = "lower", # Lower bound
+        logger = logger
+    )
+
+
+
+    net_upper = update_influence_diagram(
+        model_type = args.model_type,
+        value_function = args.value_function,
+        elicit = args.elicit,
+        ref_patient_chars = cfg["patient_chars"],
+        new_test = args.new_test,
+        sens_analysis_metrics = "upper", # Upper bound
+        logger = logger
+    )
+
+    df_U_lower = pd.read_csv("U_values_sens_analysis_lower.csv", index_col=0)
+    df_U_upper = pd.read_csv("U_values_sens_analysis_upper.csv", index_col=0)
+
+    df_U_lower.loc["Upper bound"] = df_U_upper.loc["U"]
+    df_U_lower.rename(index={"U": "Lower bound"}, inplace=True)
+
+    df_U_lower.to_csv("U_values_sens_analysis.csv")

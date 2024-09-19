@@ -25,7 +25,7 @@ with open('config.yaml', 'r') as file:
 
 
 
-def update_influence_diagram(model_type = None, value_function = None, elicit = None, ref_patient_chars = None, new_test = None, logger = None):
+def update_influence_diagram(model_type = None, value_function = None, elicit = None, ref_patient_chars = None, new_test = None, sens_analysis_metrics = None, logger = None):
 
     logger.info(f"Model type: {model_type}")
 
@@ -34,6 +34,17 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
     net = pysmile.Network()
     net.read_file(f"decision_models/DM_screening_{value_function}_{model_type}.xdsl")
     # ----------------------------------------------------------------------
+
+    # ----------------------------------------------------------------------
+    if sens_analysis_metrics == "lower":
+        net.set_node_definition("Results_of_Screening", cfg["sens_analysis_metrics_lower"]["screening"])
+        net.set_node_definition("Results_of_Colonoscopy", cfg["sens_analysis_metrics_lower"]["colonoscopy"])
+
+    if sens_analysis_metrics == "upper":
+        net.set_node_definition("Results_of_Screening", cfg["sens_analysis_metrics_upper"]["screening"])
+        net.set_node_definition("Results_of_Colonoscopy", cfg["sens_analysis_metrics_upper"]["colonoscopy"])
+    
+
 
     # ----------------------------------------------------------------------
     logger.info("Calculating relative pointwise conditional mutual information values...")
@@ -109,6 +120,10 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
     logger.info("Saving network...")
     if new_test:
         net2.write_file(f"decision_models/DM_screening_{value_function}_{model_type}_new_test.xdsl")
+    if sens_analysis_metrics == "lower":
+        net2.write_file(f"decision_models/DM_screening_{value_function}_{model_type}_sens_analysis_lower.xdsl")
+    if sens_analysis_metrics == "upper":
+        net2.write_file(f"decision_models/DM_screening_{value_function}_{model_type}_sens_analysis_upper.xdsl")
     else:
         net2.write_file(f"decision_models/DM_screening_{value_function}_{model_type}.xdsl")
     # ----------------------------------------------------------------------
@@ -119,6 +134,12 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
     if new_test:
         plot_cond_mut_info(net2, subtitle='new_test')
         plot_relative_cond_mut_info(net2, subtitle = 'new_test', zoom = (0.0001, 0.1))
+    if sens_analysis_metrics == "lower":
+        plot_cond_mut_info(net2, subtitle='sens_analysis_lower')
+        plot_relative_cond_mut_info(net2, subtitle = 'sens_analysis_lower', zoom = (0.001, 0.1))
+    if sens_analysis_metrics == "upper":
+        plot_cond_mut_info(net2, subtitle='sens_analysis_upper')
+        plot_relative_cond_mut_info(net2, subtitle = 'sens_analysis_upper', zoom = (0.001, 0.1))
     else: 
         plot_cond_mut_info(net2, subtitle='')
         plot_relative_cond_mut_info(net2, subtitle = '', zoom = (0.0001, 0.1))
@@ -144,6 +165,10 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
         
         if new_test:
             net2.write_file(f"decision_models/DM_screening_{value_function}_{model_type}_new_test.xdsl")
+        if sens_analysis_metrics == "lower":
+            net2.write_file(f"decision_models/DM_screening_{value_function}_{model_type}_sens_analysis_lower.xdsl")
+        if sens_analysis_metrics == "upper":
+            net2.write_file(f"decision_models/DM_screening_{value_function}_{model_type}_sens_analysis_upper.xdsl")
         else:
             net2.write_file(f"decision_models/DM_screening_{value_function}_{model_type}.xdsl")
         logger.info("Done!")
@@ -187,6 +212,10 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
 
     if new_test:
         df_U.to_csv("U_values_new_test.csv")
+    if sens_analysis_metrics == "lower":
+        df_U.to_csv("U_values_sens_analysis_lower.csv")
+    if sens_analysis_metrics == "upper":
+        df_U.to_csv("U_values_sens_analysis_upper.csv")
     else:  
         df_U.to_csv("U_values.csv")
 
@@ -216,6 +245,10 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
 
     if new_test:
         df_U_ext.to_csv("U_values_cond_new_test.csv")
+    if sens_analysis_metrics == "lower":
+        df_U_ext.to_csv("U_values_cond_sens_analysis_lower.csv")
+    if sens_analysis_metrics == "upper":
+        df_U_ext.to_csv("U_values_cond_sens_analysis_upper.csv")
     else:
         df_U_ext.to_csv("U_values_cond.csv")
     # ----------------------------------------------------------------------
