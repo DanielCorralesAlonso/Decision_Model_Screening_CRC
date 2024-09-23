@@ -13,7 +13,7 @@ from df_plot import plot_df
 from info_value_to_net import info_value_to_net
 from get_info_values import mutual_info_measures
 from functions import system_of_eq, tanh_fun
-from elicitation import parameter_elicitation_utilities_option1, parameter_elicitation_utilities_tanh
+from elicitation import parameter_elicitation_utilities_linear, parameter_elicitation_utilities_tanh
 
 import yaml
 with open('config.yaml', 'r') as file:

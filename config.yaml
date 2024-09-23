@@ -4,6 +4,7 @@ project: decision_for_screening
 model_type: "linear"
 value_function: "rel_pcmi"
 elicit: False
+
 patient_chars: {"Age": "age_4_adult", 
                         "Sex": "M",
                         "SD": "SD_2_normal",
@@ -15,20 +16,22 @@ patient_chars: {"Age": "age_4_adult",
                         #"Hypertension": True,
                         }
 
+
+
 # -- Flag for assigning a new test
 new_test: False 
-
 # --------- If new_test = True, the following parameters must be defined
 cost_new_test: 3
 sensitivity_new_test: 0.85
 specificity_new_test: 0.94
-
+# -------------------------------------------------------------------------
 
 
 # -- For the elicitation step
 PE_cost: 300          # Probability equivalent cost
 PE_info: 0.4          # Probability equivalent info
 PE_prob: 0.7          # Probability of equivalence
+# -------------------------------------------------------------------------
 
 
 # -- Lower bound of estimation of performance metrics
@@ -103,6 +106,7 @@ sens_analysis_metrics_upper: {
 
 }
 
+# -------------------------------------------------------------------------
 
 
 

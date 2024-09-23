@@ -126,7 +126,7 @@
 		</utility>
 		<utility id="Cost_of_Screening">
 			<parents>Screening Colonoscopy</parents>
-			<utilities>0 -1000 -12.14 -1012.14 -14.34 -1014.34 -125.13 -1125.13 -236.88 -1236.88 -95.41 -1095.41 -510.24 -2005.65</utilities>
+			<utilities>0 -1000 -12.14 -1012.14 -14.34 -1014.34 -125.13 -1125.13 -236.88 -1236.88 -95.41 -1095.41 -510.24 -1510.24</utilities>
 		</utility>
 		<cpt id="Complications">
 			<state id="No_complications" />

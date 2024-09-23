@@ -44,7 +44,7 @@ def parameter_elicitation_utilities_tanh(PE_info, PE_cost, rho_comfort):
     return params
 
 
-def parameter_elicitation_utilities_option1(PE_info, PE_cost, rho_comfort, logging = None):
+def parameter_elicitation_utilities_linear(PE_info, PE_cost, rho_comfort, logging = None):
 
     best_info = 1  # 0.601
     worst_info = 0      # 0.042 

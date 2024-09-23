@@ -11,7 +11,7 @@ from df_plot import plot_df
 from info_value_to_net import info_value_to_net
 from get_info_values import mutual_info_measures
 from functions import system_of_eq, tanh_fun
-from elicitation import parameter_elicitation_utilities_option1, parameter_elicitation_utilities_tanh
+from elicitation import parameter_elicitation_utilities_linear, parameter_elicitation_utilities_tanh
 from elicit_lambda import elicit_lambda
 
 import logging
@@ -25,7 +25,13 @@ with open('config.yaml', 'r') as file:
 
 
 
-def update_influence_diagram(model_type = None, value_function = None, elicit = None, ref_patient_chars = None, new_test = None, sens_analysis_metrics = None, logger = None):
+def update_influence_diagram(model_type = None, value_function = None, elicit = None, ref_patient_chars = None, new_test = None, sens_analysis_metrics = None, logger = None, output_dir = None):
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+        os.makedirs(f"{output_dir}/decision_models")
+        os.makedirs(f"{output_dir}/output_images")
+        os.makedirs(f"{output_dir}/output_data")
+
 
     logger.info(f"Model type: {model_type}")
 
@@ -96,7 +102,7 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
                 rho_4 = 8
                 rho_3 = 6.5
                 rho_2 = 6.25
-                rho_1 = 6 # Not a bad choice of values. Try to justify them correctly.
+                rho_1 = 6 
                 arr_comft = np.array([rho_4, rho_1, rho_3, rho_1, rho_3, rho_1, rho_3, rho_1, rho_3, rho_1, rho_2, rho_1, rho_2, rho_1,])
                 net2.set_node_definition("Value_of_comfort", arr_comft)
 
@@ -119,30 +125,31 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
     # ----------------------------------------------------------------------
     logger.info("Saving network...")
     if new_test:
-        net2.write_file(f"decision_models/DM_screening_{value_function}_{model_type}_new_test.xdsl")
+        net2.write_file(f"{output_dir}/decision_models/DM_screening_{value_function}_{model_type}_new_test.xdsl")
+
     if sens_analysis_metrics == "lower":
-        net2.write_file(f"decision_models/DM_screening_{value_function}_{model_type}_sens_analysis_lower.xdsl")
-    if sens_analysis_metrics == "upper":
-        net2.write_file(f"decision_models/DM_screening_{value_function}_{model_type}_sens_analysis_upper.xdsl")
-    else:
-        net2.write_file(f"decision_models/DM_screening_{value_function}_{model_type}.xdsl")
+        net2.write_file(f"{output_dir}/decision_models/DM_screening_{value_function}_{model_type}_sens_analysis_lower.xdsl")
+    elif sens_analysis_metrics == "upper":
+        net2.write_file(f"{output_dir}/decision_models/DM_screening_{value_function}_{model_type}_sens_analysis_upper.xdsl")
+    elif not new_test:
+        net2.write_file(f"{output_dir}/decision_models/DM_screening_{value_function}_{model_type}.xdsl")
     # ----------------------------------------------------------------------
 
 
     # ----------------------------------------------------------------------
     logger.info("Plotting info functions...")
     if new_test:
-        plot_cond_mut_info(net2, subtitle='new_test')
-        plot_relative_cond_mut_info(net2, subtitle = 'new_test', zoom = (0.0001, 0.1))
+        plot_cond_mut_info(net2, subtitle='new_test', output_dir = output_dir)
+        plot_relative_cond_mut_info(net2, subtitle = 'new_test', zoom = (0.001, 0.1), step = 0.001, output_dir = output_dir)
     if sens_analysis_metrics == "lower":
-        plot_cond_mut_info(net2, subtitle='sens_analysis_lower')
-        plot_relative_cond_mut_info(net2, subtitle = 'sens_analysis_lower', zoom = (0.001, 0.1))
+        plot_cond_mut_info(net2, subtitle='sens_analysis_lower', output_dir = output_dir)
+        plot_relative_cond_mut_info(net2, subtitle = 'sens_analysis_lower', zoom = (0.001, 0.1), step = 0.001, output_dir = output_dir)
     if sens_analysis_metrics == "upper":
-        plot_cond_mut_info(net2, subtitle='sens_analysis_upper')
-        plot_relative_cond_mut_info(net2, subtitle = 'sens_analysis_upper', zoom = (0.001, 0.1))
+        plot_cond_mut_info(net2, subtitle='sens_analysis_upper', output_dir = output_dir)
+        plot_relative_cond_mut_info(net2, subtitle = 'sens_analysis_upper', zoom = (0.001, 0.1), step = 0.001, output_dir = output_dir)
     else: 
-        plot_cond_mut_info(net2, subtitle='')
-        plot_relative_cond_mut_info(net2, subtitle = '', zoom = (0.0001, 0.1))
+        plot_cond_mut_info(net2, subtitle='', output_dir = output_dir)
+        plot_relative_cond_mut_info(net2, subtitle = '', zoom = (0.001, 0.1), step = 0.001, output_dir = output_dir)
     # ----------------------------------------------------------------------
 
 
@@ -153,7 +160,7 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
     if model_type == "tanh":
         params = parameter_elicitation_utilities_tanh(PE_info = cfg["PE_info"], PE_cost = cfg["PE_cost"], rho_comfort = lambdas[2])
     elif model_type == "linear":
-        params = parameter_elicitation_utilities_option1(PE_info = cfg["PE_info"], PE_cost = cfg["PE_cost"], rho_comfort = lambdas[2], logging = logger)
+        params = parameter_elicitation_utilities_linear(PE_info = cfg["PE_info"], PE_cost = cfg["PE_cost"], rho_comfort = lambdas[2], logging = logger)
 
     if params is None:
         logger.warning("Please try another initial value for the system of equations...")
@@ -164,13 +171,14 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
         net2.set_mau_expressions(node_id = "U", expressions = [f"({params[0]} - {params[1]}*Exp( - {params[2]} * V))"])
         
         if new_test:
-            net2.write_file(f"decision_models/DM_screening_{value_function}_{model_type}_new_test.xdsl")
+            net2.write_file(f"{output_dir}/decision_models/DM_screening_{value_function}_{model_type}_new_test.xdsl")
+
         if sens_analysis_metrics == "lower":
-            net2.write_file(f"decision_models/DM_screening_{value_function}_{model_type}_sens_analysis_lower.xdsl")
-        if sens_analysis_metrics == "upper":
-            net2.write_file(f"decision_models/DM_screening_{value_function}_{model_type}_sens_analysis_upper.xdsl")
-        else:
-            net2.write_file(f"decision_models/DM_screening_{value_function}_{model_type}.xdsl")
+            net2.write_file(f"{output_dir}/decision_models/DM_screening_{value_function}_{model_type}_sens_analysis_lower.xdsl")
+        elif sens_analysis_metrics == "upper":
+            net2.write_file(f"{output_dir}/decision_models/DM_screening_{value_function}_{model_type}_sens_analysis_upper.xdsl")
+        elif not new_test:
+            net2.write_file(f"{output_dir}/decision_models/DM_screening_{value_function}_{model_type}.xdsl")
         logger.info("Done!")
     # ----------------------------------------------------------------------
 
@@ -211,13 +219,13 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
 
 
     if new_test:
-        df_U.to_csv("U_values_new_test.csv")
+        df_U.to_csv(f"{output_dir}/output_data/U_values_new_test.csv")
     if sens_analysis_metrics == "lower":
-        df_U.to_csv("U_values_sens_analysis_lower.csv")
+        df_U.to_csv(f"{output_dir}/output_data/U_values_sens_analysis_lower.csv")
     if sens_analysis_metrics == "upper":
-        df_U.to_csv("U_values_sens_analysis_upper.csv")
+        df_U.to_csv(f"{output_dir}/output_data/U_values_sens_analysis_upper.csv")
     else:  
-        df_U.to_csv("U_values.csv")
+        df_U.to_csv(f"{output_dir}/output_data/U_values.csv")
 
     logger.info(f"\n {df_U}")
     # ----------------------------------------------------------------------
@@ -244,18 +252,13 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
     logger.info(f"\n {df_U_ext}")
 
     if new_test:
-        df_U_ext.to_csv("U_values_cond_new_test.csv")
+        df_U_ext.to_csv(f"{output_dir}/output_data/U_values_cond_new_test.csv")
     if sens_analysis_metrics == "lower":
-        df_U_ext.to_csv("U_values_cond_sens_analysis_lower.csv")
+        df_U_ext.to_csv(f"{output_dir}/output_data/U_values_cond_sens_analysis_lower.csv")
     if sens_analysis_metrics == "upper":
-        df_U_ext.to_csv("U_values_cond_sens_analysis_upper.csv")
+        df_U_ext.to_csv(f"{output_dir}/output_data/U_values_cond_sens_analysis_upper.csv")
     else:
-        df_U_ext.to_csv("U_values_cond.csv")
-    # ----------------------------------------------------------------------
-
-
-    # ----------------------------------------------------------------------
-    logger.info("Done!")
+        df_U_ext.to_csv(f"{output_dir}/output_data/U_values_cond.csv")
     # ----------------------------------------------------------------------
 
     return net2
