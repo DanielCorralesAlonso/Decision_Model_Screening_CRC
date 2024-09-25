@@ -84,8 +84,11 @@ def elicit_lambda(patient_chars, net, logging):
             var = "Colonoscopy"
             logging.info(f"{var:<5} || Comfort: {comf_levels[vars == var].item():<4}| Value of info: {util_levels[vars == var].item():<6.3f}| Cost: {cost_levels[vars == var].item():<6.2f}| log10(Cost): {np.log10(cost_levels[vars == var].item()):<6.3f}|")
 
-            logging.info("We need you to give us a level of info and cost for a synthetic option that you would be indifferent between colonoscopy and the synthetic option.")
-            synthetic_info = float(input("---> Info? Please insert a number: "))
+            # logging.info("We need you to give us a level of info and cost for a synthetic option that you would be indifferent between colonoscopy and the synthetic option.")
+            # synthetic_info = float(input("---> Info? Please insert a number: "))
+
+            synthetic_info = 0.4
+            logging.info(f"We need you to give us the cost for a synthetic option with info {synthetic_info}, for which you would be indifferent between colonoscopy and the synthetic option")
             logging.info(f"User info for synthetic option: {synthetic_info}")
             synthetic_indiff_cost = float(input("---> Cost? Please insert a number: "))
             logging.info(f"User cost for synthetic option: {synthetic_indiff_cost}")
@@ -95,7 +98,6 @@ def elicit_lambda(patient_chars, net, logging):
             lambda_k_list.append(lambda_k)
 
         elif i == 4:
-            # lambda_k_list = 10
             lambda_k_list = np.ceil(lambda_list[-1])   # Take smallest integer greater than lambda_approx
         
 

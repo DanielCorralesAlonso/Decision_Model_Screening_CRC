@@ -168,3 +168,4 @@ cython_debug/
 /genie_models
 pysmile_license.py
 tests.ipynb
+use_cases.ipynb
