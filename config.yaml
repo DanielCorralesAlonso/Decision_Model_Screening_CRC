@@ -28,9 +28,9 @@ specificity_new_test: 0.94
 
 
 # -- For the elicitation step
-PE_cost: 300          # Probability equivalent cost
-PE_info: 0.4          # Probability equivalent info
-PE_prob: 0.7          # Probability of equivalence
+PE_cost: 100         # Probability equivalent cost
+PE_info: 8      # Probability equivalent info
+PE_prob: 0.6      # Probability of equivalence
 # -------------------------------------------------------------------------
 
 

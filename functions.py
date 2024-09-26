@@ -1,7 +1,7 @@
 from sympy import *
 import numpy as np
 
-def system_of_eq(y, p, fun = 'exp', init = (1,1, 0.00000001), min_value = -52830496.02941906, max_value = 69121610.5847813 ):
+def system_of_eq(y, p, fun = 'exp', init = (1,1, 0.01), min_value = -52830496.02941906, max_value = 69121610.5847813 ):
 
     x1 = Symbol('x1')
     x2 = Symbol('x2')

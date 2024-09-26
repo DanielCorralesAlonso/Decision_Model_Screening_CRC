@@ -241,25 +241,35 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
         vars1 = ["No scr", "gFOBT", "FIT", "Blood_test", "sDNA", "CTC", "CC"]
 
     vars2 = ["No pred", "Pred False", "Pred True"]
-    vars3 = ["No colonoscopy", "Colonoscopy"]
-
-    comb = list(itertools.product(vars1, vars2, vars3))
+    
+    comb = list(itertools.product(vars1, vars2))
 
     index = pd.MultiIndex.from_tuples(comb)
     arr = np.array(net2.get_node_value("U"))
+    rounded_arr = np.round(arr, 2)
 
-    df_U_ext = pd.DataFrame(arr.reshape(1,-1), index=["U"], columns=index)
+    df_U_ext = pd.DataFrame(rounded_arr.reshape(-1,2).transpose(), index = ["No colonoscopy", "Colonoscopy"], columns=index)
     logger.info(f"\n {df_U_ext}")
 
     if new_test:
         df_U_ext.to_csv(f"{output_dir}/output_data/U_values_cond_new_test.csv")
+        net2.write_file(f"{output_dir}/decision_models/DM_screening_{value_function}_{model_type}_new_test.xdsl")
+
     if sens_analysis_metrics == "lower":
         df_U_ext.to_csv(f"{output_dir}/output_data/U_values_cond_sens_analysis_lower.csv")
+        net2.write_file(f"{output_dir}/decision_models/DM_screening_{value_function}_{model_type}_sens_analysis_lower.xdsl")
     if sens_analysis_metrics == "upper":
         df_U_ext.to_csv(f"{output_dir}/output_data/U_values_cond_sens_analysis_upper.csv")
+        net2.write_file(f"{output_dir}/decision_models/DM_screening_{value_function}_{model_type}_sens_analysis_upper.xdsl")
     else:
         df_U_ext.to_csv(f"{output_dir}/output_data/U_values_cond.csv")
+        net2.write_file(f"{output_dir}/decision_models/DM_screening_{value_function}_{model_type}.xdsl")
+            
     # ----------------------------------------------------------------------
+
+    logger.info("Value of screening...")
+    
+    
 
     return net2
 

@@ -111,7 +111,7 @@
 		<decision id="Colonoscopy">
 			<state id="No_Colonoscopy" />
 			<state id="Colonoscopy" />
-			<parents>Screening Results_of_Screening</parents>
+			<parents>Screening</parents>
 		</decision>
 		<cpt id="Results_of_Colonoscopy">
 			<state id="no_pred" />
@@ -147,7 +147,7 @@
 		</utility>
 		<utility id="Value_of_comfort">
 			<parents>Screening Colonoscopy</parents>
-			<utilities>9 5.772236511547754 8.200542212669168 5.772236511547754 8.200542212669168 5.772236511547754 8.200542212669168 5.772236511547754 8.200542212669168 5.772236511547754 5.822990332940679 5.772236511547754 5.822990332940679 5.772236511547754</utilities>
+			<utilities>7 2.314217380400187 6.584662155691025 2.314217380400187 6.584662155691025 2.314217380400187 6.584662155691025 2.314217380400187 6.584662155691025 2.314217380400187 4.898071343924789 2.314217380400187 4.898071343924789 2.314217380400187</utilities>
 		</utility>
 		<mau id="Mutual_information_between_tests">
 			<parents>Value_of_CRC_detection_by_colonoscopy Value_of_CRC_detection_by_screening Colonoscopy</parents>
@@ -167,7 +167,7 @@
 		</maux>
 		<maux id="U">
 			<parents>V</parents>
-			<expression>2.4492-2.41839*Exp(-0.00421932*V)</expression>
+			<expression>1.0684-0.383689*Exp(-0.261898*V)</expression>
 		</maux>
 	</nodes>
 	<extensions>

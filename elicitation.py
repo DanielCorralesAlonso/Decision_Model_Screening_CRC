@@ -46,11 +46,11 @@ def parameter_elicitation_utilities_tanh(PE_info, PE_cost, rho_comfort):
 
 def parameter_elicitation_utilities_linear(PE_info, PE_cost, rho_comfort, logging = None):
 
-    best_info = 1  # 0.601
-    worst_info = 0      # 0.042 
+    best_info = 14.8 # 1 # 0.601
+    worst_info = 0   # 0   # 0.042 
 
-    best_cost = 0       #12.14
-    worst_cost = 8131.71    #1000
+    best_cost = 0    # 0    #12.14
+    worst_cost = 1000 #  8131.71    #1000
 
     v_best = rho_comfort * best_info - np.log10(best_cost+1)
     v_worst =  rho_comfort * worst_info - np.log10(worst_cost+1)
@@ -59,7 +59,7 @@ def parameter_elicitation_utilities_linear(PE_info, PE_cost, rho_comfort, loggin
     if logging is not None:
         logging.info("Searching for a solution of the system of equations...")
 
-    num_points = 100
+    num_points = 300
 
     # Generate a list of tuples with random initial points
     init_list = [tuple(np.random.uniform(-10, 10, 3)) for _ in range(num_points)]
