@@ -46,11 +46,11 @@ def parameter_elicitation_utilities_tanh(PE_info, PE_cost, rho_comfort):
 
 def parameter_elicitation_utilities_linear(PE_info, PE_cost, rho_comfort, logging = None):
 
-    best_info = 14.8 # 1 # 0.601
+    best_info = 2 # 1 # 0.601
     worst_info = 0   # 0   # 0.042 
 
     best_cost = 0    # 0    #12.14
-    worst_cost = 1000 #  8131.71    #1000
+    worst_cost = 8000 #  8131.71    #1000
 
     v_best = rho_comfort * best_info - np.log10(best_cost+1)
     v_worst =  rho_comfort * worst_info - np.log10(worst_cost+1)

@@ -54,7 +54,6 @@ def elicit_lambda(patient_chars, net, logging):
                 logging.info(f"{comb[1]:<10} || Comfort: {comf_levels[vars == comb[1]].item():<4}| Value of info: {util_levels[vars == comb[1]].item():<6.3f}| Cost: {cost_levels[vars == comb[1]].item():<6.2f}| log10(Cost): {np.log10(cost_levels[vars == comb[1]].item()):<6.3f}|")
 
                 current_lambda = (np.log10(cost_levels[vars == comb[0]].item()) - np.log10(cost_levels[vars == comb[1]].item()))/(util_levels[vars == comb[0]].item() - util_levels[vars == comb[1]].item())
-                # pdb.set_trace()
 
                 if (cost_levels[vars == comb[0]].item() <= cost_levels[vars == comb[1]].item()) and (util_levels[vars == comb[0]].item() > util_levels[vars == comb[1]].item()):
                     logging.info(f"{comb[0]} must be preferred over {comb[1]} ! Thus new price for {comb[1]} must be cheaper than price for {comb[0]}")
@@ -63,7 +62,7 @@ def elicit_lambda(patient_chars, net, logging):
 
                     if current_lambda < lambda_list[-1]:
                         logging.info(f"Furthermore, for consistency, the new cost of {comb[1]} must be smaller than {np.power(10, np.log10(cost_levels[vars == comb[0]].item()) - lambda_list[-1] * (util_levels[vars == comb[0]].item() - util_levels[vars == comb[1]].item())):.2f} €")
-
+                        logging.info(f"Keep in mind this is just for guidance and the new cost may not be that close to this value")
 
 
                 elif (cost_levels[vars == comb[0]].item() >= cost_levels[vars == comb[1]].item()) and (util_levels[vars == comb[0]].item() < util_levels[vars == comb[1]].item()):
@@ -73,7 +72,7 @@ def elicit_lambda(patient_chars, net, logging):
 
                     if current_lambda < lambda_list[-1]:
                         logging.info(f"Furthermore, for consistency, the new cost of {comb[0]} must be smaller than {np.power(10, np.log10(- cost_levels[vars == comb[1]].item()) + lambda_list[-1] * (util_levels[vars == comb[0]].item() - util_levels[vars == comb[1]].item())):.2f} €")
-
+                        logging.info(f"Keep in mind this is just for guidance and the new cost may not be that close to this value")
 
 
                 else:

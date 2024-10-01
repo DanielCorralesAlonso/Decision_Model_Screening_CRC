@@ -10,20 +10,109 @@ import pdb
 np.seterr(divide='ignore', invalid = 'ignore', over = 'ignore')
 
 
-def mutual_info_measures(net, p_CRC_false, p_CRC_true, normalize = False, weighted = False):
+def mutual_info_measures(net, normalize = False, weighted = False):
+
+    n = net.get_outcome_count("Screening")
+
+    try:
+        net.delete_arc("Results_of_Screening", "Colonoscopy")
+        net.update_beliefs()
+    except:
+        pass
+    
+    p_CRC_false, p_CRC_true = net.get_node_value("CRC")
 
     # --- Screening -----------------------------------------------------------
-    point_cond_mut_info_scr, rel_point_cond_mut_info_scr, cond_mut_info_scr, rel_cond_mut_info_scr = calculate_values(net, p_CRC_false, p_CRC_true, "Screening", "Results_of_Screening", normalize = normalize, weighted = weighted)
+    point_cond_mut_info_scr, rel_point_cond_mut_info_scr, cond_mut_info_scr, rel_cond_mut_info_scr = calculate_values(net, p_CRC_false, p_CRC_true, "Screening", "Results_of_Screening")
     df_plotted_scr = plot_df(point_cond_mut_info_scr, net, ["Results_of_Screening", "CRC", "Screening"])
 
+    
+
     # --- Colonoscopy ---------------------------------------------------------
-    point_cond_mut_info_col, rel_point_cond_mut_info_col, cond_mut_info_col, rel_cond_mut_info_col = calculate_values(net, p_CRC_false, p_CRC_true, "Colonoscopy", "Results_of_Colonoscopy", normalize = normalize, weighted = weighted)
-    df_plotted_col = plot_df(point_cond_mut_info_col, net, ["Results_of_Colonoscopy", "CRC", "Colonoscopy"])
+
+    net.update_beliefs()
+    try:
+        net.add_arc("Results_of_Screening", "Colonoscopy")
+        net.update_beliefs()
+    except:
+        pass
+
+    point_cond_mut_info_col_array = []
+    rel_point_cond_mut_info_col_array = []
+    cond_mut_info_col_array = []
+    rel_cond_mut_info_col_array = []
+
+    net.update_beliefs()
+    for scr in net.get_outcome_ids("Screening"):
+        net.set_evidence("Screening", scr)
+
+        for elem in net.get_outcome_ids("Results_of_Screening"):
+            net.update_beliefs()
+            try: 
+                net.set_evidence("Results_of_Screening", elem)
+                
+                net.update_beliefs()
+
+                p_CRC_false, p_CRC_true = net.get_node_value("CRC")
+                
+                point_cond_mut_info_col, rel_point_cond_mut_info_col, cond_mut_info_col, rel_cond_mut_info_col = calculate_values(net, p_CRC_false, p_CRC_true, "Colonoscopy", "Results_of_Colonoscopy")
+                df_plotted_col = plot_df(point_cond_mut_info_col, net, ["Results_of_Colonoscopy", "CRC", "Colonoscopy"])
+            
+            except:
+                point_cond_mut_info_col = np.zeros((2,2,3))
+                rel_point_cond_mut_info_col = np.zeros((2,2,3))
+                cond_mut_info_col = np.zeros((2,2,3))
+                rel_cond_mut_info_col = np.zeros((2,2,3))
+
+            point_cond_mut_info_col_array.append(point_cond_mut_info_col)
+            rel_point_cond_mut_info_col_array.append(rel_point_cond_mut_info_col)
+            cond_mut_info_col_array.append(cond_mut_info_col)
+            rel_cond_mut_info_col_array.append(rel_cond_mut_info_col)
+
+        
+            net.clear_evidence("Results_of_Screening")
+
+        net.clear_evidence("Screening")
+        net.update_beliefs()
+    
+    point_cond_mut_info_col_array = np.stack(point_cond_mut_info_col_array, axis = 0).reshape(n,3,2,2,3)
+    rel_point_cond_mut_info_col_array = np.stack(rel_point_cond_mut_info_col_array, axis = 0).reshape(n,3,2,2,3)
+    cond_mut_info_col_array = np.stack(cond_mut_info_col_array, axis = 0).reshape(n,3,2,2,3)
+    rel_cond_mut_info_col_array = np.stack(rel_cond_mut_info_col_array, axis = 0).reshape(n,3,2,2,3)
+
+    point_cond_mut_info = point_cond_mut_info_col_array
+    rel_point_cond_mut_info = rel_point_cond_mut_info_col_array
+    cond_mut_info = cond_mut_info_col_array
+    rel_cond_mut_info = rel_cond_mut_info_col_array
+
+    for i_scr in range(len(net.get_outcome_ids("Screening"))):
+        for i_res_scr in range(len(net.get_outcome_ids("Results_of_Screening"))):
+            if not i_res_scr == 0:
+                point_cond_mut_info[i_scr, i_res_scr, :, 0, 0] = point_cond_mut_info_scr[:, i_scr, i_res_scr]
+                point_cond_mut_info[i_scr, i_res_scr, :, 1, 1:] = point_cond_mut_info_col_array[i_scr, i_res_scr, :, 1, 1:] +  point_cond_mut_info_scr[:, i_scr, i_res_scr].reshape(1,-1).transpose()
+
+                rel_point_cond_mut_info[i_scr, i_res_scr, :, 0, 0] = rel_point_cond_mut_info_scr[:, i_scr, i_res_scr]
+                rel_point_cond_mut_info[i_scr, i_res_scr, :, 1, 1:] = rel_point_cond_mut_info_col_array[i_scr, i_res_scr, :, 1, 1:] +  rel_point_cond_mut_info_scr[:, i_scr, i_res_scr].reshape(1,-1).transpose()
+
+                cond_mut_info[i_scr, i_res_scr, :, 0, 0] = cond_mut_info_scr[:, i_scr, i_res_scr]
+                cond_mut_info[i_scr, i_res_scr, :, 1, 1:] = cond_mut_info_col_array[i_scr, i_res_scr, :, 1, 1:] +  cond_mut_info_scr[:, i_scr, i_res_scr].reshape(1,-1).transpose()
+
+                rel_cond_mut_info[i_scr, i_res_scr, :, 0, 0] = rel_cond_mut_info_scr[:, i_scr, i_res_scr]
+                rel_cond_mut_info[i_scr, i_res_scr, :, 1, 1:] = rel_cond_mut_info_col_array[i_scr, i_res_scr, :, 1, 1:] +  rel_cond_mut_info_scr[:, i_scr, i_res_scr].reshape(1,-1).transpose()
+
+
+    # pdb.set_trace() 
 
     dict_scr = {"point_cond_mut_info": point_cond_mut_info_scr, "rel_point_cond_mut_info": rel_point_cond_mut_info_scr, "cond_mut_info": cond_mut_info_scr, "rel_cond_mut_info": rel_cond_mut_info_scr}
-    dict_col = {"point_cond_mut_info": point_cond_mut_info_col, "rel_point_cond_mut_info": rel_point_cond_mut_info_col, "cond_mut_info": cond_mut_info_col, "rel_cond_mut_info": rel_cond_mut_info_col}
+    dict_col = {"point_cond_mut_info": point_cond_mut_info_col_array, "rel_point_cond_mut_info": rel_point_cond_mut_info_col_array, "cond_mut_info": cond_mut_info_col_array, "rel_cond_mut_info": rel_cond_mut_info_col_array}
 
-    return dict_scr, dict_col
+    dict = {"point_cond_mut_info": point_cond_mut_info, "rel_point_cond_mut_info": rel_point_cond_mut_info, "cond_mut_info": cond_mut_info, "rel_cond_mut_info": rel_cond_mut_info}
+
+    return dict, dict_scr, dict_col
+
+
+# def calculate_values_new(net, scr, res_scr, p_CRC_false, p_CRC_true, decision_node, chance_node, normalize = False, weighted = False):
+
 
 
 def calculate_values(net, p_CRC_false, p_CRC_true, decision_node, value_node, normalize = False, weighted = False):

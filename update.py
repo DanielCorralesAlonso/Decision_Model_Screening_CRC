@@ -18,6 +18,8 @@ import logging
 import datetime 
 import os
 
+import pdb
+
 import yaml
 
 with open('config.yaml', 'r') as file:
@@ -55,16 +57,12 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
     # ----------------------------------------------------------------------
     logger.info("Calculating relative pointwise conditional mutual information values...")
 
-    try:
-        net.delete_arc("Results_of_Screening", "Colonoscopy")
-    except:
-        logger.info("No arc to delete")
-
     value_function = "rel_pcmi"
-    df_value_scr, df_value_col = save_info_values(net, value_function = value_function, weighted=False)
-    net2 = info_value_to_net(df_value_scr, df_value_col, net)
+    df_value_col = save_info_values(net, value_function = value_function, weighted=False)
+    # pdb.set_trace()
 
-
+    net2 = info_value_to_net( df_value_col, net)
+    # pdb.set_trace()
 
     # ----------------------------------------------------------------------
     if model_type == "tanh":
@@ -138,7 +136,7 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
 
     # ----------------------------------------------------------------------
     logger.info("Plotting info functions...")
-    if new_test:
+    '''if new_test:
         plot_cond_mut_info(net2, subtitle='new_test', output_dir = output_dir)
         plot_relative_cond_mut_info(net2, subtitle = 'new_test', zoom = (0.001, 0.1), step = 0.001, output_dir = output_dir)
     if sens_analysis_metrics == "lower":
@@ -151,7 +149,7 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
         plot_cond_mut_info(net2, subtitle='', output_dir = output_dir)
         plot_relative_cond_mut_info(net2, subtitle = '', zoom = (0.001, 0.1), step = 0.001, output_dir = output_dir)
     # ----------------------------------------------------------------------
-
+'''
 
 
     # ----------------------------------------------------------------------
@@ -194,28 +192,17 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
 
     net.update_beliefs()
 
-    # pdb.set_trace()
-    if len(net2.get_node_value("U")) == 14:
-        vars1 = ["No scr", "gFOBT", "FIT", "Blood_test", "sDNA", "CTC", "CC"]
-        vars2 = ["No colonoscopy", "Colonoscopy"]
 
-        comb = list(itertools.product(vars1, vars2))
+    vars1 = net.get_outcome_ids("Screening")
+    vars2 = net.get_outcome_ids("Results_of_Screening")
+    vars3 = net.get_outcome_ids("Colonoscopy")
 
-        index = pd.MultiIndex.from_tuples(comb)
-        arr = np.array(net2.get_node_value("U"))
+    comb = list(itertools.product(vars1, vars2, vars3))
 
-        df_U = pd.DataFrame(arr.reshape(1,-1), index=["U"], columns=index)
+    index = pd.MultiIndex.from_tuples(comb)
+    arr = np.array(net2.get_node_value("U"))
 
-    elif len(net2.get_node_value("U")) == 16:
-        vars1 = ["No scr", "gFOBT", "FIT", "Blood_test", "sDNA", "CTC", "CC", "New_test"]
-        vars2 = ["No colonoscopy", "Colonoscopy"]
-
-        comb = list(itertools.product(vars1, vars2))
-
-        index = pd.MultiIndex.from_tuples(comb)
-        arr = np.array(net2.get_node_value("U"))
-
-        df_U = pd.DataFrame(arr.reshape(1,-1), index=["U"], columns=index)
+    df_U = pd.DataFrame(arr.reshape(1,-1), index=["U"], columns=index)
 
 
     if new_test:
@@ -232,7 +219,7 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
 
 
     # ----------------------------------------------------------------------
-    net2.add_arc("Results_of_Screening", "Colonoscopy")
+    '''net2.add_arc("Results_of_Screening", "Colonoscopy")
     net2.update_beliefs()
 
     if new_test:
@@ -267,7 +254,7 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
             
     # ----------------------------------------------------------------------
 
-    logger.info("Value of screening...")
+    logger.info("Value of screening...")'''
     
     
 
