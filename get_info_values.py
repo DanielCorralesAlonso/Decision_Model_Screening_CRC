@@ -42,7 +42,11 @@ def mutual_info_measures(net, normalize = False, weighted = False):
     cond_mut_info_col_array = []
     rel_cond_mut_info_col_array = []
 
+    net.set_evidence("Screening", "No_screening")
+    net.set_evidence("Results_of_Screening", "No_pred_screening")
     net.update_beliefs()
+
+    p_CRC_false_prior, p_CRC_true_prior = net.get_node_value("CRC")
     for scr in net.get_outcome_ids("Screening"):
         net.set_evidence("Screening", scr)
 
@@ -56,6 +60,17 @@ def mutual_info_measures(net, normalize = False, weighted = False):
                 p_CRC_false, p_CRC_true = net.get_node_value("CRC")
                 
                 point_cond_mut_info_col, rel_point_cond_mut_info_col, cond_mut_info_col, rel_cond_mut_info_col = calculate_values(net, p_CRC_false, p_CRC_true, "Colonoscopy", "Results_of_Colonoscopy")
+                
+                p_y = np.array([p_CRC_false, p_CRC_true])
+                H_y = np.sum(p_y * np.log(1 / p_y) )
+
+                p_y_prior = np.array([p_CRC_false_prior, p_CRC_true_prior])
+                H_y_prior = np.sum(p_y_prior * np.log(1 / p_y_prior) )
+
+                
+                rel_point_cond_mut_info_col = rel_point_cond_mut_info_col*H_y / H_y_prior
+                rel_cond_mut_info_col = rel_cond_mut_info_col*H_y / H_y_prior
+
                 df_plotted_col = plot_df(point_cond_mut_info_col, net, ["Results_of_Colonoscopy", "CRC", "Colonoscopy"])
             
             except:
@@ -87,7 +102,7 @@ def mutual_info_measures(net, normalize = False, weighted = False):
 
     for i_scr in range(len(net.get_outcome_ids("Screening"))):
         for i_res_scr in range(len(net.get_outcome_ids("Results_of_Screening"))):
-            if not i_res_scr == 0:
+            # if not i_res_scr == 0:
                 point_cond_mut_info[i_scr, i_res_scr, :, 0, 0] = point_cond_mut_info_scr[:, i_scr, i_res_scr]
                 point_cond_mut_info[i_scr, i_res_scr, :, 1, 1:] = point_cond_mut_info_col_array[i_scr, i_res_scr, :, 1, 1:] +  point_cond_mut_info_scr[:, i_scr, i_res_scr].reshape(1,-1).transpose()
 

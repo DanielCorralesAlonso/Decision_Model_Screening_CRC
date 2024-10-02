@@ -44,9 +44,11 @@ def parameter_elicitation_utilities_tanh(PE_info, PE_cost, rho_comfort):
     return params
 
 
-def parameter_elicitation_utilities_linear(PE_info, PE_cost, rho_comfort, logging = None):
+def parameter_elicitation_utilities_linear(net, PE_info, PE_cost, rho_comfort, logging = None):
+    net.update_beliefs()
 
-    best_info = 2 # 1 # 0.601
+    # pdb.set_trace()
+    best_info = max(net.get_node_value("INFO")) # 1 # 0.601
     worst_info = 0   # 0   # 0.042 
 
     best_cost = 0    # 0    #12.14

@@ -58,10 +58,11 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
     logger.info("Calculating relative pointwise conditional mutual information values...")
 
     value_function = "rel_pcmi"
-    df_value_col = save_info_values(net, value_function = value_function, weighted=False)
+    df_value = save_info_values(net, value_function = value_function, output_dir=output_dir)
     # pdb.set_trace()
 
-    net2 = info_value_to_net( df_value_col, net)
+    net2 = info_value_to_net( df_value, net)
+    df_value.to_csv(f"{output_dir}/output_data/INFO_node.csv")
     # pdb.set_trace()
 
     # ----------------------------------------------------------------------
@@ -115,8 +116,8 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
         net.add_outcome("Screening", "New_test")
         logger.info("Adding new test values...")
         net2 = values_for_new_test(net2, config = cfg)
-        df_value_scr, df_value_col = save_info_values(net, value_function = value_function, new_test=True, weighted=False)
-        net2 = info_value_to_net(df_value_scr, df_value_col, net2)
+        df_value = save_info_values(net, value_function = value_function, new_test=True, output_dir = output_dir)
+        net2 = info_value_to_net(df_value, net2)
 
 
 
@@ -158,7 +159,7 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
     if model_type == "tanh":
         params = parameter_elicitation_utilities_tanh(PE_info = cfg["PE_info"], PE_cost = cfg["PE_cost"], rho_comfort = lambdas[2])
     elif model_type == "linear":
-        params = parameter_elicitation_utilities_linear(PE_info = cfg["PE_info"], PE_cost = cfg["PE_cost"], rho_comfort = lambdas[2], logging = logger)
+        params = parameter_elicitation_utilities_linear(net, PE_info = cfg["PE_info"], PE_cost = cfg["PE_cost"], rho_comfort = lambdas[2], logging = logger)
 
     if params is None:
         logger.warning("Please try another initial value for the system of equations...")

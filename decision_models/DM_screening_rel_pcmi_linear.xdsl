@@ -118,7 +118,7 @@
 			<state id="colon_pred_false" />
 			<state id="colon_pred_true" />
 			<parents>CRC Colonoscopy</parents>
-			<probabilities>1 0 0 0 0.99 0.01 1 0 0 0 0.03 0.97</probabilities>
+			<probabilities>1 0 0 0 0.99 0.01000000000000001 1 0 0 0 0.03000000000000003 0.97</probabilities>
 		</cpt>
 		<utility id="INFO">
 			<parents>Age Alcohol Diabetes Hyperchol_ Hypertension Sex Smoking Screening Results_of_Screening CRC Colonoscopy Results_of_Colonoscopy</parents>
