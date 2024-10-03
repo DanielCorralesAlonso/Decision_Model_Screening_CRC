@@ -23,10 +23,18 @@ def mutual_info_measures(net, normalize = False, weighted = False):
     p_CRC_false, p_CRC_true = net.get_node_value("CRC")
 
     # --- Screening -----------------------------------------------------------
-    point_cond_mut_info_scr, rel_point_cond_mut_info_scr, cond_mut_info_scr, rel_cond_mut_info_scr = calculate_values(net, p_CRC_false, p_CRC_true, "Screening", "Results_of_Screening")
-    df_plotted_scr = plot_df(point_cond_mut_info_scr, net, ["Results_of_Screening", "CRC", "Screening"])
-
+    point_cond_mut_info_scr, cond_mut_info_scr = calculate_values(net, p_CRC_false, p_CRC_true, "Screening", "Results_of_Screening")
     
+    p_y = np.array([p_CRC_false, p_CRC_true])
+    H_y = np.sum(p_y * np.log(1 / p_y) )
+
+    rel_point_cond_mut_info_scr = point_cond_mut_info_scr / H_y
+    rel_point_cond_mut_info_scr = np.nan_to_num(rel_point_cond_mut_info_scr, 0)
+
+    rel_cond_mut_info_scr = cond_mut_info_scr / H_y
+    rel_cond_mut_info_scr = np.nan_to_num(rel_cond_mut_info_scr, 0)
+    
+    df_plotted_scr = plot_df(point_cond_mut_info_scr, net, ["Results_of_Screening", "CRC", "Screening"])
 
     # --- Colonoscopy ---------------------------------------------------------
 
@@ -57,19 +65,18 @@ def mutual_info_measures(net, normalize = False, weighted = False):
                 
                 net.update_beliefs()
 
-                p_CRC_false, p_CRC_true = net.get_node_value("CRC")
+                p_CRC_false_pos, p_CRC_true_pos = net.get_node_value("CRC")
                 
-                point_cond_mut_info_col, rel_point_cond_mut_info_col, cond_mut_info_col, rel_cond_mut_info_col = calculate_values(net, p_CRC_false, p_CRC_true, "Colonoscopy", "Results_of_Colonoscopy")
+                point_cond_mut_info_col, cond_mut_info_col = calculate_values(net, p_CRC_false_pos, p_CRC_true_pos, "Colonoscopy", "Results_of_Colonoscopy")
                 
-                p_y = np.array([p_CRC_false, p_CRC_true])
+                p_y = np.array([p_CRC_false_prior, p_CRC_true_prior])
                 H_y = np.sum(p_y * np.log(1 / p_y) )
 
-                p_y_prior = np.array([p_CRC_false_prior, p_CRC_true_prior])
-                H_y_prior = np.sum(p_y_prior * np.log(1 / p_y_prior) )
+                rel_point_cond_mut_info_col = point_cond_mut_info_col / H_y
+                rel_point_cond_mut_info_col = np.nan_to_num(rel_point_cond_mut_info_col, 0)
 
-                
-                rel_point_cond_mut_info_col = rel_point_cond_mut_info_col*H_y / H_y_prior
-                rel_cond_mut_info_col = rel_cond_mut_info_col*H_y / H_y_prior
+                rel_cond_mut_info_col = cond_mut_info_col / H_y
+                rel_cond_mut_info_col = np.nan_to_num(rel_cond_mut_info_col, 0)
 
                 df_plotted_col = plot_df(point_cond_mut_info_col, net, ["Results_of_Colonoscopy", "CRC", "Colonoscopy"])
             
@@ -157,14 +164,14 @@ def calculate_values(net, p_CRC_false, p_CRC_true, decision_node, value_node, no
     cond_mut_info = (p_y * ( p_x_yz * point_cond_mut_info ) )# .reshape(2,n,3))
     cond_mut_info = np.nan_to_num(cond_mut_info, 0)
 
-    rel_point_cond_mut_info = point_cond_mut_info / H_y
+    '''rel_point_cond_mut_info = point_cond_mut_info / H_y
     rel_point_cond_mut_info = np.nan_to_num(rel_point_cond_mut_info, 0)
 
     rel_cond_mut_info = cond_mut_info / H_y
-    rel_cond_mut_info = np.nan_to_num(rel_cond_mut_info, 0)
+    rel_cond_mut_info = np.nan_to_num(rel_cond_mut_info, 0)'''
 
 
-    return point_cond_mut_info, rel_point_cond_mut_info, cond_mut_info, rel_cond_mut_info
+    return point_cond_mut_info, cond_mut_info
 
 
 

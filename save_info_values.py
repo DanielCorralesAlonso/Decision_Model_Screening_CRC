@@ -45,22 +45,7 @@ def save_info_values(net, value_function = "rel_pcmi", new_test = False, normali
         value_scr_array = np.concatenate((value_scr_array, value_scr.flatten()), axis = 0)
         value_col_array = np.concatenate((value_col_array, value_col.flatten()), axis = 0)
 
-        value_array = np.concatenate((value_array, dict["rel_point_cond_mut_info"].flatten()), axis = 0)
-
-
-    '''# Create a dataframe with the values of the conditional mutual information for screening
-    added_variables_scr = ["CRC", "Screening", "Results_of_Screening"]
-    total_variables_scr = list(parents + added_variables_scr)
-    total_variables_scr_states = [net.get_outcome_ids(variable) for variable in total_variables_scr]
-    total_combinations_scr = list(itertools.product(*total_variables_scr_states))
-
-    index = pd.MultiIndex.from_tuples(total_combinations_scr, names=total_variables_scr)
-        
-    df_value_scr = pd.DataFrame(value_scr_array.reshape(1,-1), index=["Value"], columns=index)
-    if new_test:
-        df_value_scr.to_csv(f"{output_dir}/output_data/point_cond_mut_info_scr_new_test.csv")
-    else:
-        df_value_scr.to_csv(f"{output_dir}/output_data/point_cond_mut_info_scr.csv")'''
+        value_array = np.concatenate((value_array, dict["point_cond_mut_info"].flatten()), axis = 0)
 
 
     # Create a dataframe with the values of the conditional mutual information for colonoscopy

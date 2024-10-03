@@ -62,6 +62,7 @@ parser = argparse.ArgumentParser(description="Update the influence diagram")
 parser.add_argument('--model_type', type=str, default=cfg["model_type"], help='Model type, choose between linear or tanh')
 parser.add_argument('--value_function', type=str, default= cfg["value_function"], help='Value function, choose between rel_pcmi or pcmi')
 parser.add_argument('--elicit', type=bool, default=cfg["elicit"], help='Elicitation method, choose between linear or tanh')
+parser.add_argument('--calculate_info_values', type=bool, default=cfg["calculate_info_values"], help='Calculate the information values')
 parser.add_argument('--new_test', type=bool, default=cfg["new_test"], help='New test to be added to the model')
 parser.add_argument('--sens_analysis_metrics', type=bool, default=False, help='Perform sensitivity analysis with respect to the performance metrics of the screening methods')
 
@@ -79,6 +80,7 @@ if not args.sens_analysis_metrics:
         model_type = args.model_type,
         value_function = args.value_function,
         elicit = args.elicit,
+        calculate_info_values=args.calculate_info_values,
         ref_patient_chars = cfg["patient_chars"],
         new_test = args.new_test,
         logger = logger,

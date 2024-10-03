@@ -27,7 +27,7 @@ with open('config.yaml', 'r') as file:
 
 
 
-def update_influence_diagram(model_type = None, value_function = None, elicit = None, ref_patient_chars = None, new_test = None, sens_analysis_metrics = None, logger = None, output_dir = None):
+def update_influence_diagram(model_type = None, value_function = None, elicit = None, calculate_info_values = None , ref_patient_chars = None, new_test = None, sens_analysis_metrics = None, logger = None, output_dir = None):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
         os.makedirs(f"{output_dir}/decision_models")
@@ -53,17 +53,21 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
         net.set_node_definition("Results_of_Colonoscopy", cfg["sens_analysis_metrics_upper"]["colonoscopy"])
     
 
-
     # ----------------------------------------------------------------------
-    logger.info("Calculating relative pointwise conditional mutual information values...")
+    if calculate_info_values:
 
-    value_function = "rel_pcmi"
-    df_value = save_info_values(net, value_function = value_function, output_dir=output_dir)
-    # pdb.set_trace()
+        logger.info("Calculating relative pointwise conditional mutual information values...")
 
-    net2 = info_value_to_net( df_value, net)
-    df_value.to_csv(f"{output_dir}/output_data/INFO_node.csv")
-    # pdb.set_trace()
+        value_function = "rel_pcmi"
+        df_value = save_info_values(net, value_function = value_function, output_dir=output_dir)
+        # pdb.set_trace()
+
+        net2 = info_value_to_net( df_value, net)
+        df_value.to_csv(f"{output_dir}/output_data/INFO_node.csv")
+        # pdb.set_trace()
+    else:
+        net2 = net
+        net2.update_beliefs()
 
     # ----------------------------------------------------------------------
     if model_type == "tanh":
