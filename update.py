@@ -56,7 +56,7 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
     # ----------------------------------------------------------------------
     if calculate_info_values:
 
-        logger.info("Calculating relative pointwise conditional mutual information values...")
+        logger.info("Calculating information values...")
 
         value_function = "rel_pcmi"
         df_value = save_info_values(net, value_function = value_function, output_dir=output_dir)
@@ -81,7 +81,7 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
                             rho_4, rho_4, rho_3, rho_3, rho_3, rho_3, rho_3, rho_3, rho_3, rho_3, rho_2, rho_2, rho_2, rho_2,]) #No added discomfort when colonoscopy is mandatory
         net2.set_node_definition("Value_of_comfort", arr_comft)
 
-        net2.set_mau_expressions(node_id = "V", expressions = [f"((8131.71-COST)/8131.71)*Tanh(VALUE*Value_of_comfort)"])
+        net2.set_mau_expressions(node_id = "V", expressions = [f"((8131.71-COST)/8131.71)*Tanh(INFO*Value_of_comfort)"])
 
     elif model_type == "linear":
         logger.info("Eliciting value of comfort...")
@@ -92,7 +92,7 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
                                     net = net2, logging = logger)
             
             net.set_node_definition("Value_of_comfort", lambdas)
-            net.set_mau_expressions(node_id = "V", expressions = [f"Value_of_comfort*VALUE - Log10(COST+1)"])
+            net.set_mau_expressions(node_id = "V", expressions = [f"Value_of_comfort*INFO - Log10(COST+1)"])
 
         else:
             try:
@@ -109,7 +109,7 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
                 arr_comft = np.array([rho_4, rho_1, rho_3, rho_1, rho_3, rho_1, rho_3, rho_1, rho_3, rho_1, rho_2, rho_1, rho_2, rho_1,])
                 net2.set_node_definition("Value_of_comfort", arr_comft)
 
-                net2.set_mau_expressions(node_id = "V", expressions = [f"Value_of_comfort*VALUE - Log10(COST+1)"])
+                net2.set_mau_expressions(node_id = "V", expressions = [f"Value_of_comfort*INFO - Log10(COST+1)"])
 
                 lambdas = net2.get_node_value("Value_of_comfort")
 
@@ -171,7 +171,7 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
 
     else:
         logger.info(f"Parameters found: {params}")
-        net2.set_mau_expressions(node_id = "U", expressions = [f"({params[0]} - {params[1]}*Exp( - {params[2]} * V))"])
+        net2.set_mau_expressions(node_id = "U", expressions = [f"Max(0, Min({params[0]} - {params[1]}*Exp( - {params[2]} * V), 1))"])
         
         if new_test:
             net2.write_file(f"{output_dir}/decision_models/DM_screening_{value_function}_{model_type}_new_test.xdsl")

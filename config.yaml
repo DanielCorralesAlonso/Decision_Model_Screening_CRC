@@ -17,7 +17,7 @@ patient_chars: {"Age": "age_4_adult",
                         }
 
 # -- Flag for calculating values
-calculate_info_values: True
+calculate_info_values: False
 
 
 # -- Flag for assigning a new test
@@ -33,11 +33,10 @@ specificity_new_test: 0.94
 
 
 # -- For the elicitation step
-PE_cost: 200        # Probability equivalent cost
-PE_info: 3   # Probability equivalent info
+PE_cost: 200     # Probability equivalent cost
+PE_info: 0.01     # Probability equivalent info
 PE_prob: 0.7     # Probability of equivalence
 # -------------------------------------------------------------------------
-
 
 # -- Lower bound of estimation of performance metrics
 

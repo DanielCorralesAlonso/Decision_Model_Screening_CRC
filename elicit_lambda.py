@@ -42,7 +42,12 @@ def elicit_lambda(patient_chars, net, logging):
     vars = np.array(["No scr", "Colonoscopy", "gFOBT", "Colonoscopy", "FIT", "Colonoscopy", "Blood_test", "Colonoscopy", "sDNA", "Colonoscopy", "CTC", "Colonoscopy", "CC", "Colonoscopy"])
     comf_levels = np.array([4,1,3,1,3,1,3,1,3,1,2,1,2,1])
     # util_levels = np.array(net.get_node_value("Value_of_CRC_detection_by_screening") + net.get_node_value("Value_of_CRC_detection_by_colonoscopy"))
-    util_levels = np.array(net.get_node_value("INFO"))
+    
+    p_CRC_false, p_CRC_true = net.get_node_value("CRC")
+    p_y = np.array([p_CRC_false, p_CRC_true])
+    H_y = np.sum(p_y * np.log(1 / p_y) )
+
+    util_levels = np.array(net.get_node_value("INFO")) / H_y
 
     cost_levels = np.array(net.get_node_value("Cost_of_Screening"))
     # cost_levels = np.concatenate((cost_levels[::2], [0, cost_levels[1]]), axis = 0)
@@ -55,15 +60,14 @@ def elicit_lambda(patient_chars, net, logging):
         logging.info("#################################################")
         logging.info(f"Comfort level {i}: {sel_vars}")
 
-        # pdb.set_trace()
         if len(sel_vars) > 1 and i != 4:
             for comb in combinations(sel_vars, 2):
                 
 
-                logging.info(f"{comb[0]:<10} || Comfort: {comf_levels[vars == comb[0]].item():<4}| Value of info: {util_levels[vars == comb[0]].item():<6.3f}| Cost: {cost_levels[vars == comb[0]].item():<6.2f}| log10(Cost): {np.log10(cost_levels[vars == comb[0]].item()):<6.3f}|") 
-                logging.info(f"{comb[1]:<10} || Comfort: {comf_levels[vars == comb[1]].item():<4}| Value of info: {util_levels[vars == comb[1]].item():<6.3f}| Cost: {cost_levels[vars == comb[1]].item():<6.2f}| log10(Cost): {np.log10(cost_levels[vars == comb[1]].item()):<6.3f}|")
+                logging.info(f"{comb[0]:<10} || Comfort: {comf_levels[vars == comb[0]].item():<4}| Value of info: {util_levels[vars == comb[0]].item():<6.3f}| Cost: {cost_levels[vars == comb[0]].item():<6.2f}| log10(Cost): {np.log10(cost_levels[vars == comb[0]].item() + 1):<6.3f}|") 
+                logging.info(f"{comb[1]:<10} || Comfort: {comf_levels[vars == comb[1]].item():<4}| Value of info: {util_levels[vars == comb[1]].item():<6.3f}| Cost: {cost_levels[vars == comb[1]].item():<6.2f}| log10(Cost): {np.log10(cost_levels[vars == comb[1]].item() + 1):<6.3f}|")
 
-                current_lambda = (np.log10(cost_levels[vars == comb[0]].item()) - np.log10(cost_levels[vars == comb[1]].item()))/(util_levels[vars == comb[0]].item() - util_levels[vars == comb[1]].item())
+                current_lambda = (np.log10(cost_levels[vars == comb[0]].item() + 1) - np.log10(cost_levels[vars == comb[1]].item() + 1))/(util_levels[vars == comb[0]].item() - util_levels[vars == comb[1]].item())
 
                 if (cost_levels[vars == comb[0]].item() <= cost_levels[vars == comb[1]].item()) and (util_levels[vars == comb[0]].item() > util_levels[vars == comb[1]].item()):
                     logging.info(f"{comb[0]} must be preferred over {comb[1]} ! Thus new price for {comb[1]} must be cheaper than price for {comb[0]}")
@@ -71,8 +75,8 @@ def elicit_lambda(patient_chars, net, logging):
                     unpreferred = comb[1]
 
                     if current_lambda < lambda_list[-1]:
-                        logging.info(f"Furthermore, for consistency, the new cost of {comb[1]} must be smaller than {np.power(10, np.log10(cost_levels[vars == comb[0]].item()) - lambda_list[-1] * (util_levels[vars == comb[0]].item() - util_levels[vars == comb[1]].item())):.2f} €")
-                        logging.info(f"Keep in mind this is just for guidance and the new cost may not be that close to this value")
+                        logging.info(f"Furthermore, for consistency, the new cost of {comb[1]} must be smaller than {np.power(10, np.log10(cost_levels[vars == comb[0]].item()+ 1 ) - lambda_list[-1] * (util_levels[vars == comb[0]].item() - util_levels[vars == comb[1]].item())) - 1:.2f} €")
+                        logging.info(f"Keep in mind this is just for guidance and the new cost may not be necessarily that close to this value")
 
 
                 elif (cost_levels[vars == comb[0]].item() >= cost_levels[vars == comb[1]].item()) and (util_levels[vars == comb[0]].item() < util_levels[vars == comb[1]].item()):
@@ -81,8 +85,8 @@ def elicit_lambda(patient_chars, net, logging):
                     unpreferred = comb[0]
 
                     if current_lambda < lambda_list[-1]:
-                        logging.info(f"Furthermore, for consistency, the new cost of {comb[0]} must be smaller than {np.power(10, np.log10(- cost_levels[vars == comb[1]].item()) + lambda_list[-1] * (util_levels[vars == comb[0]].item() - util_levels[vars == comb[1]].item())):.2f} €")
-                        logging.info(f"Keep in mind this is just for guidance and the new cost may not be that close to this value")
+                        logging.info(f"Furthermore, for consistency, the new cost of {comb[0]} must be smaller than {np.power(10, np.log10(cost_levels[vars == comb[1]].item() + 1) + lambda_list[-1] * (util_levels[vars == comb[0]].item() - util_levels[vars == comb[1]].item()) ) - 1:.2f} €")
+                        logging.info(f"Keep in mind this is just for guidance and the new cost may not be necessarily that close to this value")
 
 
                 else:
@@ -112,12 +116,13 @@ def elicit_lambda(patient_chars, net, logging):
                         logging.info(f"To be consistent with the previous answers the user must prefer {option_greater}")
                         preference = option_greater
 
-                        max_new_cost = np.power(10, np.log10(cost_opt_greater) - lambda_min * (info_opt_greater - info_opt_lower))
+                        max_new_cost = np.power(10, np.log10(cost_opt_greater + 1) - lambda_min * (info_opt_greater - info_opt_lower))
                         logging.info(f"Furthermore, the new cost of {option_lower} must be smaller than {max_new_cost:.2f} €")
 
                     else: 
                         logging.info(f"No consistency issues so far")
                         preference = input(f"---> Which one do you prefer? Choose between {comb[0]} and {comb[1]}: ")
+
 
                     logging.info(f"Preference of the user is: {preference}")
                     unpreferred = comb[0] if preference == comb[1] else comb[1]
@@ -127,14 +132,16 @@ def elicit_lambda(patient_chars, net, logging):
                 logging.info(f"New cost for {unpreferred}: {new_cost}")
 
                 if preference == comb[0]:
-                    lambda_k = (np.log10(cost_levels[vars == comb[0]].item()) - np.log10(new_cost))/(util_levels[vars == comb[0]].item() - util_levels[vars == comb[1]].item())
+                    lambda_k = (np.log10(cost_levels[vars == comb[0]].item() + 1) - np.log10(new_cost + 1))/(util_levels[vars == comb[0]].item() - util_levels[vars == comb[1]].item())
                     logging.info(f"Lambda {i}: {lambda_k}")
                 elif preference == comb[1]:
-                    lambda_k = (np.log10(cost_levels[vars == comb[1]].item()) - np.log10(new_cost))/(util_levels[vars == comb[1]].item() - util_levels[vars == comb[0]].item())
+                    lambda_k = (np.log10(cost_levels[vars == comb[1]].item() + 1) - np.log10(new_cost + 1))/(util_levels[vars == comb[1]].item() - util_levels[vars == comb[0]].item())
                     logging.info(f"Lambda {i}: {lambda_k}")
 
                 lambda_k_list.append(lambda_k)
                 logging.info("-------------------------------------------------")
+
+            
 
         if i == 1:
             var = "Colonoscopy"
@@ -146,7 +153,7 @@ def elicit_lambda(patient_chars, net, logging):
             synthetic_indiff_cost = float(input("---> Cost? Please insert a number: "))
             logging.info(f"User cost for synthetic option: {synthetic_indiff_cost}")
 
-            lambda_k = (np.log10(cost_levels[vars == sel_vars[0]].item()) - np.log10(synthetic_indiff_cost))/(util_levels[vars == sel_vars[0]].item() - synthetic_info)
+            lambda_k = (np.log10(cost_levels[vars == sel_vars[0]][0] + 1) - np.log10(synthetic_indiff_cost + 1))/(util_levels[vars == sel_vars[0]][0] - synthetic_info)
             logging.info(f"Lambda {i}: {lambda_k}")
             lambda_k_list.append(lambda_k)
 
@@ -155,12 +162,18 @@ def elicit_lambda(patient_chars, net, logging):
             lambda_k_list = np.ceil(lambda_list[-1])   # Take smallest integer greater than lambda_approx
         
 
-
         lambda_approx = np.median(lambda_k_list)
         logging.info(f"Average lambda for comfort level {i}: {np.mean(lambda_k_list)}")
         logging.info(f"Median lambda for comfort level {i}: {np.median(lambda_k_list)}")
 
         lambda_list.append(lambda_approx)
+
+        try:
+            if lambda_list[i-1] > lambda_list[i]:
+                logging.warning(f"Lambda values are not in increasing order! Model assumptions for comfort levels are not met!")
+                exit()
+        except:
+            pass
 
 
     logging.info(f"Elicitation is done! The elicited lambda values are: {lambda_list}")
@@ -180,5 +193,7 @@ def elicit_lambda(patient_chars, net, logging):
         net.update_beliefs()
     except:
         pass
+
+    lambdas = lambdas / H_y
 
     return lambdas

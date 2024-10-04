@@ -25,10 +25,10 @@ def parameter_elicitation_utilities_tanh(PE_info, PE_cost, rho_comfort):
     v_PE = ((8131.71 - PE_cost) / 8131.71) * w_PE
 
     print("Searching for a solution of the system of equations...")
-    num_points = 100
+    num_points = 1000
 
     # Generate a list of tuples with random initial points
-    init_list = [tuple(np.random.uniform(-10, 10, 3)) for _ in range(num_points)]
+    init_list = [tuple(np.random.uniform(1, 1, 3)) for _ in range(num_points)]
 
     params = None
     for init in init_list:
@@ -48,8 +48,8 @@ def parameter_elicitation_utilities_linear(net, PE_info, PE_cost, rho_comfort, l
     net.update_beliefs()
 
     # pdb.set_trace()
-    best_info = max(net.get_node_definition("INFO")) # 1 # 0.601
-    worst_info = min(net.get_node_definition("INFO"))   # 0   # 0.042 
+    best_info = max(net.get_node_value("INFO")) # 1 # 0.601
+    worst_info = min(net.get_node_value("INFO"))   # 0   # 0.042 
 
     print("Best info: ", best_info)
     print("Worst info: ", worst_info)
@@ -62,13 +62,17 @@ def parameter_elicitation_utilities_linear(net, PE_info, PE_cost, rho_comfort, l
     v_worst =  rho_comfort * worst_info - np.log10(worst_cost+1)
     v_PE =  rho_comfort * PE_info - np.log10(PE_cost+1)
 
+    print("v_best: ", v_best)
+    print("v_worst: ", v_worst)
+    print("v_PE: ", v_PE)
+
     if logging is not None:
         logging.info("Searching for a solution of the system of equations...")
 
     num_points = 500
 
     # Generate a list of tuples with random initial points
-    init_list = [tuple(np.random.uniform(worst_info, best_info, 3)) for _ in range(num_points)]
+    init_list = [tuple(np.random.uniform(-0.01, 0.01, 3)) for _ in range(num_points)]
 
     params = None
     for init in init_list:
