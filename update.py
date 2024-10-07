@@ -58,7 +58,6 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
 
         logger.info("Calculating information values...")
 
-        value_function = "rel_pcmi"
         df_value = save_info_values(net, value_function = value_function, output_dir=output_dir)
         # pdb.set_trace()
 
@@ -88,7 +87,7 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
 
         if elicit == True:
 
-            lambdas = elicit_lambda(patient_chars = ref_patient_chars,
+            lambdas = elicit_lambda(patient_chars = ref_patient_chars, value_function = value_function,
                                     net = net2, logging = logger)
             
             net.set_node_definition("Value_of_comfort", lambdas)
@@ -161,9 +160,9 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
     logger.info("Calculating final utilities...")
 
     if model_type == "tanh":
-        params = parameter_elicitation_utilities_tanh(PE_info = cfg["PE_info"], PE_cost = cfg["PE_cost"], rho_comfort = lambdas[2])
+        params = parameter_elicitation_utilities_tanh(PE_info = cfg[value_function]["PE_info"], PE_cost = cfg[value_function]["PE_cost"], rho_comfort = lambdas[2])
     elif model_type == "linear":
-        params = parameter_elicitation_utilities_linear(net, PE_info = cfg["PE_info"], PE_cost = cfg["PE_cost"], rho_comfort = lambdas[2], logging = logger)
+        params = parameter_elicitation_utilities_linear(net, PE_info = cfg[value_function]["PE_info"], PE_cost = cfg[value_function]["PE_cost"], rho_comfort = lambdas[2], value_function = value_function, logging = logger)
 
     if params is None:
         logger.warning("Please try another initial value for the system of equations...")

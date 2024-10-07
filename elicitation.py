@@ -44,7 +44,7 @@ def parameter_elicitation_utilities_tanh(PE_info, PE_cost, rho_comfort):
     return params
 
 
-def parameter_elicitation_utilities_linear(net, PE_info, PE_cost, rho_comfort, logging = None):
+def parameter_elicitation_utilities_linear(net, PE_info, PE_cost, rho_comfort, value_function, logging = None):
     net.update_beliefs()
 
     # pdb.set_trace()
@@ -56,7 +56,7 @@ def parameter_elicitation_utilities_linear(net, PE_info, PE_cost, rho_comfort, l
     print("PE info: ", PE_info)
 
     best_cost = 0    # 0    #12.14
-    worst_cost = 8131.71 #  8131.71    #1000
+    worst_cost = 8131.71    #8131.71  
 
     v_best = rho_comfort * best_info - np.log10(best_cost+1)
     v_worst =  rho_comfort * worst_info - np.log10(worst_cost+1)
@@ -72,13 +72,15 @@ def parameter_elicitation_utilities_linear(net, PE_info, PE_cost, rho_comfort, l
     num_points = 500
 
     # Generate a list of tuples with random initial points
-    init_list = [tuple(np.random.uniform(-0.01, 0.01, 3)) for _ in range(num_points)]
+    if value_function == "point_cond_mut_info":
+        init_list = [tuple(np.random.uniform(-0.01, 0.01, 3)) for _ in range(num_points)]
+    elif value_function == "rel_point_cond_mut_info":
+        init_list = [tuple(np.random.uniform(-1, 1, 3)) for _ in range(num_points)]
 
     params = None
     for init in init_list:
         try:
-            # pdb.set_trace()
-            params = system_of_eq(y = v_PE, p = cfg["PE_prob"] , init = init, min_value = v_worst, max_value = v_best)
+            params = system_of_eq(y = v_PE, p = cfg[value_function]["PE_prob"] , init = init, min_value = v_worst, max_value = v_best)
             break
         except:
             continue

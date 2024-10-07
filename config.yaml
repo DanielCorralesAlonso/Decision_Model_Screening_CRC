@@ -2,8 +2,8 @@ project: decision_for_screening
 
 # -- Initiation characteristics of the model
 model_type: "linear"
-value_function: "rel_pcmi"
-elicit: False
+value_function: "rel_point_cond_mut_info"
+elicit: True
 
 patient_chars: {"Age": "age_4_adult", 
                         "Sex": "M",
@@ -17,13 +17,11 @@ patient_chars: {"Age": "age_4_adult",
                         }
 
 # -- Flag for calculating values
-calculate_info_values: False
+calculate_info_values: True
 
 
 # -- Flag for assigning a new test
 new_test: False 
-
-
 
 # --------- If new_test = True, the following parameters must be defined
 cost_new_test: 3
@@ -33,9 +31,16 @@ specificity_new_test: 0.94
 
 
 # -- For the elicitation step
-PE_cost: 200     # Probability equivalent cost
-PE_info: 0.01     # Probability equivalent info
-PE_prob: 0.7     # Probability of equivalence
+point_cond_mut_info:
+  PE_cost: 200     # Probability equivalent cost
+  PE_info: 0.01     # Probability equivalent info
+  PE_prob: 0.7     # Probability of equivalence
+
+rel_point_cond_mut_info:
+  PE_cost: 200     # Probability equivalent cost
+  PE_info: 3     # Probability equivalent info
+  PE_prob: 0.7     # Probability of equivalence
+  
 # -------------------------------------------------------------------------
 
 # -- Lower bound of estimation of performance metrics

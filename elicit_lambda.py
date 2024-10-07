@@ -25,7 +25,7 @@ import pdb
 # Get all combinations of screening methods with the same level of comfort
 # Use itertools
 
-def elicit_lambda(patient_chars, net, logging):
+def elicit_lambda(patient_chars, value_function,  net, logging):
     net.clear_all_evidence()
 
     for key, value in patient_chars.items():
@@ -41,13 +41,15 @@ def elicit_lambda(patient_chars, net, logging):
 
     vars = np.array(["No scr", "Colonoscopy", "gFOBT", "Colonoscopy", "FIT", "Colonoscopy", "Blood_test", "Colonoscopy", "sDNA", "Colonoscopy", "CTC", "Colonoscopy", "CC", "Colonoscopy"])
     comf_levels = np.array([4,1,3,1,3,1,3,1,3,1,2,1,2,1])
-    # util_levels = np.array(net.get_node_value("Value_of_CRC_detection_by_screening") + net.get_node_value("Value_of_CRC_detection_by_colonoscopy"))
     
-    p_CRC_false, p_CRC_true = net.get_node_value("CRC")
-    p_y = np.array([p_CRC_false, p_CRC_true])
-    H_y = np.sum(p_y * np.log(1 / p_y) )
+    if value_function == "point_cond_mut_info":
+        p_CRC_false, p_CRC_true = net.get_node_value("CRC")
+        p_y = np.array([p_CRC_false, p_CRC_true])
+        H_y = np.sum(p_y * np.log(1 / p_y) )
 
-    util_levels = np.array(net.get_node_value("INFO")) / H_y
+        util_levels = np.array(net.get_node_value("INFO")) / H_y
+    else: 
+        util_levels = np.array(net.get_node_value("INFO"))
 
     cost_levels = np.array(net.get_node_value("Cost_of_Screening"))
     # cost_levels = np.concatenate((cost_levels[::2], [0, cost_levels[1]]), axis = 0)
@@ -194,6 +196,7 @@ def elicit_lambda(patient_chars, net, logging):
     except:
         pass
 
-    lambdas = lambdas / H_y
+    if value_function == "point_cond_mut_info":
+        lambdas = lambdas / H_y
 
     return lambdas

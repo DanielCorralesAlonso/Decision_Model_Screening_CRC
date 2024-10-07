@@ -8,7 +8,7 @@ import pdb
 
 from get_info_values import mutual_info_measures
 
-def save_info_values(net, value_function = "rel_pcmi", new_test = False, normalize = False, weighted = False, output_dir=""):
+def save_info_values(net, value_function = "point_cond_mut_info", new_test = False, normalize = False, weighted = False, output_dir=""):
 
     # Get all combinations of possible parent states
     parents = net.get_parent_ids("CRC")
@@ -30,22 +30,22 @@ def save_info_values(net, value_function = "rel_pcmi", new_test = False, normali
         dict, dict_scr, dict_col = mutual_info_measures(net, normalize = normalize, weighted = weighted)
         #pdb.set_trace()
 
-        if value_function == "pcmi":
+        if value_function == "point_cond_mut_info":
             value_scr = dict_scr["point_cond_mut_info"]
             value_col = dict_col["point_cond_mut_info"]  
 
-        elif value_function == "rel_pcmi":
+        elif value_function == "rel_point_cond_mut_info":
             value_scr = dict_scr["rel_point_cond_mut_info"]
             value_col = dict_col["rel_point_cond_mut_info"]
 
-        elif value_function == "cmi":
+        elif value_function == "cond_mut_info":
             value_scr = dict_scr["cond_mut_info"]
             value_col = dict_col["cond_mut_info"]
 
         value_scr_array = np.concatenate((value_scr_array, value_scr.flatten()), axis = 0)
         value_col_array = np.concatenate((value_col_array, value_col.flatten()), axis = 0)
 
-        value_array = np.concatenate((value_array, dict["point_cond_mut_info"].flatten()), axis = 0)
+        value_array = np.concatenate((value_array, dict[value_function].flatten()), axis = 0)
 
 
     # Create a dataframe with the values of the conditional mutual information for colonoscopy
@@ -58,8 +58,8 @@ def save_info_values(net, value_function = "rel_pcmi", new_test = False, normali
 
     df_value = pd.DataFrame(value_array.reshape(1,-1), index=["Value"], columns=index)
     if new_test:
-        df_value.to_csv(f"{output_dir}/output_data/rel_point_cond_mut_info_col_new_test.csv")
+        df_value.to_csv(f"{output_dir}/output_data/{value_function}_new_test.csv")
     else:
-        df_value.to_csv(f"{output_dir}/output_data/rel_point_cond_mut_info_col.csv")
+        df_value.to_csv(f"{output_dir}/output_data/{value_function}.csv")
 
     return df_value
