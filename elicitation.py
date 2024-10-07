@@ -44,16 +44,12 @@ def parameter_elicitation_utilities_tanh(PE_info, PE_cost, rho_comfort):
     return params
 
 
-def parameter_elicitation_utilities_linear(net, PE_info, PE_cost, rho_comfort, value_function, logging = None):
+def parameter_elicitation_utilities_linear(net, PE, PE_info, PE_cost, rho_comfort, value_function, logging = None):
     net.update_beliefs()
 
     # pdb.set_trace()
     best_info = max(net.get_node_value("INFO")) # 1 # 0.601
     worst_info = min(net.get_node_value("INFO"))   # 0   # 0.042 
-
-    print("Best info: ", best_info)
-    print("Worst info: ", worst_info)
-    print("PE info: ", PE_info)
 
     best_cost = 0    # 0    #12.14
     worst_cost = 8131.71    #8131.71  
@@ -67,6 +63,14 @@ def parameter_elicitation_utilities_linear(net, PE_info, PE_cost, rho_comfort, v
     print("v_PE: ", v_PE)
 
     if logging is not None:
+        print("Best info: ", best_info)
+        print("Worst info: ", worst_info)
+        print("PE info: ", PE_info)
+
+        print("v_best: ", v_best)
+        print("v_worst: ", v_worst)
+        print("v_PE: ", v_PE)
+
         logging.info("Searching for a solution of the system of equations...")
 
     num_points = 500
@@ -80,7 +84,7 @@ def parameter_elicitation_utilities_linear(net, PE_info, PE_cost, rho_comfort, v
     params = None
     for init in init_list:
         try:
-            params = system_of_eq(y = v_PE, p = cfg[value_function]["PE_prob"] , init = init, min_value = v_worst, max_value = v_best)
+            params = system_of_eq(y = v_PE, p = PE , init = init, min_value = v_worst, max_value = v_best)
             break
         except:
             continue

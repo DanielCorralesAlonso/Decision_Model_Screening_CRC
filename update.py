@@ -162,7 +162,7 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
     if model_type == "tanh":
         params = parameter_elicitation_utilities_tanh(PE_info = cfg[value_function]["PE_info"], PE_cost = cfg[value_function]["PE_cost"], rho_comfort = lambdas[2])
     elif model_type == "linear":
-        params = parameter_elicitation_utilities_linear(net, PE_info = cfg[value_function]["PE_info"], PE_cost = cfg[value_function]["PE_cost"], rho_comfort = lambdas[2], value_function = value_function, logging = logger)
+        params = parameter_elicitation_utilities_linear(net, PE = cfg[value_function]["PE_prob"], PE_info = cfg[value_function]["PE_info"], PE_cost = cfg[value_function]["PE_cost"], rho_comfort = lambdas[2], value_function = value_function, logging = logger)
 
     if params is None:
         logger.warning("Please try another initial value for the system of equations...")
