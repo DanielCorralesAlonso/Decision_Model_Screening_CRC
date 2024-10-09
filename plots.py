@@ -330,3 +330,57 @@ def plot_relative_cond_mut_info(net1, net2 = None, subtitle = '', zoom=(0.001, 0
 
 
     return
+
+
+def plot_estimations_w_error_bars(mean_report, std_report, SE_report, label = ""):
+    # Flatten the dataframes to get 1D arrays for mean and std
+    mean_flat = mean_report.values.flatten()
+    std_flat = std_report.values.flatten()
+    SE_flat = SE_report.values.flatten()
+
+    # Get corresponding row and column index for each point
+    rows, cols = np.indices(mean_report.shape)
+
+    # Flatten the row and column indices
+    rows_flat = rows.flatten()
+    cols_flat = cols.flatten()
+
+    # Plot the mean values with error bars for the std
+    fig, ax = plt.subplots()
+
+    # Scatter plot with error bars
+    ax.errorbar(cols_flat, rows_flat, yerr=std_flat, fmt='o', color='b', ecolor='r', capsize=5)
+
+    for i, (mean, se) in enumerate(zip(mean_flat, std_flat)):
+        annotation_text = f"{mean:.2f} ± {se:.2f}"
+        ax.text(cols_flat[i], rows_flat[i], annotation_text, ha='left', va='bottom', fontsize=9, color='black')
+
+
+    # Set ticks and labels
+    ax.set_xticks(range(mean_report.shape[1]))
+    ax.set_xticklabels(mean_report.columns)
+    ax.set_yticks(range(mean_report.shape[0]))
+    ax.set_yticklabels(mean_report.index)
+
+    # Set labels
+    plt.xlabel('Columns')
+    plt.ylabel('Rows')
+
+    plt.title('Mean (+/- std) at Each Cell')
+    plt.grid(True)
+
+    plt.savefig(f"outputs/{label}_mean_SE_plot.png")
+
+    plt.close()
+
+
+
+def plot_screening_counts(counts, possible_outcomes):
+    print(counts)
+    plt.plot(counts)
+    plt.xticks(range(len(possible_outcomes)), possible_outcomes, rotation = 45)
+    plt.xlabel("Screening outcome")
+    plt.savefig("outputs/screening_counts.png")
+    plt.close()
+
+    return

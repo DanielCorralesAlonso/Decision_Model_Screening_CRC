@@ -37,8 +37,8 @@ point_cond_mut_info:
   PE_prob: 0.7     # Probability of equivalence
 
 rel_point_cond_mut_info:
-  PE_cost: 150     # Probability equivalent cost
-  PE_info: 4     # Probability equivalent info
+  PE_cost: 100     # Probability equivalent cost
+  PE_info: 5     # Probability equivalent info
   PE_prob: 0.7    # Probability of equivalence
   
 # -------------------------------------------------------------------------

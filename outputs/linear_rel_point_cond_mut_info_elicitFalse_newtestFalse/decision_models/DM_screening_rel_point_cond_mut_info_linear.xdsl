@@ -155,7 +155,7 @@
 		</maux>
 		<maux id="U">
 			<parents>V</parents>
-			<expression>Max(0,Min(1.01262-0.863924*Exp(-0.0406133*V),1))</expression>
+			<expression>Max(0,Min(1.03479-0.91516*Exp(-0.0314192*V),1))</expression>
 		</maux>
 	</nodes>
 	<extensions>
