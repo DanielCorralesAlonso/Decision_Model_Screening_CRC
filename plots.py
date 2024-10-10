@@ -376,6 +376,7 @@ def plot_estimations_w_error_bars(mean_report, std_report, SE_report, label = ""
 
 
 def plot_screening_counts(counts, possible_outcomes):
+    print("Number of tests performed")
     print(counts)
     plt.plot(counts)
     plt.xticks(range(len(possible_outcomes)), possible_outcomes, rotation = 45)

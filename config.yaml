@@ -3,7 +3,7 @@ project: decision_for_screening
 # -- Initiation characteristics of the model
 model_type: "linear"
 value_function: "rel_point_cond_mut_info"
-elicit: False
+elicit: True
 
 patient_chars: {"Age": "age_4_adult", 
                         "Sex": "M",
