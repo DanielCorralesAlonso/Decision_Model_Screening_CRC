@@ -375,12 +375,28 @@ def plot_estimations_w_error_bars(mean_report, std_report, SE_report, label = ""
 
 
 
-def plot_screening_counts(counts, possible_outcomes):
-    print("Number of tests performed")
-    print(counts)
-    plt.plot(counts)
+def plot_screening_counts(counts, possible_outcomes, operational_limit):
+    '''print("Number of tests performed")
+    print(counts)'''
+
+    bars1 = plt.bar(possible_outcomes, counts, color = 'blue', label = 'Number of tests recommended')
+    bars2 = plt.bar(possible_outcomes, operational_limit, color = 'red', label = 'Operational limit', alpha = 0.25)
+
+    for bar in bars1:
+        plt.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 5000, str(bar.get_height()), ha='center', color='black', fontsize=10)
+
+    for bar in bars2:
+        plt.text(bar.get_x() + bar.get_width()/2, bar.get_height() - 10000, str(bar.get_height()), ha='center', color='red', fontsize=10)
+
+    plt.legend()
+
+
     plt.xticks(range(len(possible_outcomes)), possible_outcomes, rotation = 45)
     plt.xlabel("Screening outcome")
+    plt.ylabel("Number of tests")
+    plt.title("Recommended Tests vs. Operational Limit")
+
+    plt.tight_layout()
     plt.savefig("outputs/screening_counts.png")
     plt.close()
 

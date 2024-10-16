@@ -51,53 +51,57 @@ def simulate_test_results(sensitivity_scr, specificity_scr, y_crc):
 
 
 
-def plot_classification_results(y_true, y_pred, label = ""):
+def plot_classification_results(y_true=None, y_pred=None, report_df = None, conf_matrix = None, label = "", plot = True):
 
-    # Create a classification report
-    report = classification_report(y_true, y_pred, output_dict=True)
+    if report_df is None:
 
-    # Convert the classification report into a DataFrame for easier visualization
-    report_df = pd.DataFrame(report).transpose()
+        # Create a classification report
+        report = classification_report(y_true, y_pred, output_dict=True)
 
-    # Generate a confusion matrix
-    conf_matrix = confusion_matrix(y_true, y_pred)
+        # Convert the classification report into a DataFrame for easier visualization
+        report_df = pd.DataFrame(report).transpose()
 
-    # Calculate sensitivity (recall) and specificity manually
-    tn, fp, fn, tp = conf_matrix.ravel()
+        # Generate a confusion matrix
+        conf_matrix = confusion_matrix(y_true, y_pred)
 
-    # Sensitivity (Recall) is already included in classification report
-    sensitivity = report['True']['recall']  # For class 1 (positive class)
+        # Calculate sensitivity (recall) and specificity manually
+        tn, fp, fn, tp = conf_matrix.ravel()
 
-    # Specificity calculation
-    specificity = tn / (tn + fp)
+        # Sensitivity (Recall) is already included in classification report
+        sensitivity = report['True']['recall']  # For class 1 (positive class)
 
-    # Add Sensitivity and Specificity to the DataFrame
-    report_df.loc['sensitivity'] = [sensitivity, np.nan, np.nan, np.nan]
-    report_df.loc['specificity'] = [specificity, np.nan, np.nan, np.nan]
+        # Specificity calculation
+        specificity = tn / (tn + fp)
 
-    # Plot the confusion matrix using Seaborn for a heatmap
-    plt.figure(figsize=(12, 5))
+        # Add Sensitivity and Specificity to the DataFrame
+        report_df.loc['sensitivity'] = [sensitivity, np.nan, np.nan, np.nan]
+        report_df.loc['specificity'] = [specificity, np.nan, np.nan, np.nan]
 
-    # First subplot: Confusion matrix
-    plt.subplot(1, 2, 1)
-    sns.heatmap(conf_matrix, annot=True, fmt='d', cmap='Blues', cbar=False)
-    plt.title('Confusion Matrix')
-    plt.ylabel('True label')
-    plt.xlabel('Predicted label')
 
-    # Second subplot: Classification report as a heatmap
-    plt.subplot(1, 2, 2)
-    sns.heatmap(report_df.iloc[:, :-1], annot=True, cmap='Blues', cbar=False, fmt='.2f')
-    plt.title('Classification Metrics')
-    plt.ylabel('Metrics')
-    plt.xlabel('Classes')
-    plt.tight_layout()
+    if plot:
+        # Plot the confusion matrix using Seaborn for a heatmap
+        plt.figure(figsize=(12, 5))
 
-    plt.savefig(f"outputs/{label}_classification_results.png")
-    # plt.show()
-    plt.close()
+        # First subplot: Confusion matrix
+        plt.subplot(1, 2, 1)
+        sns.heatmap(conf_matrix, annot=True, fmt='.1f', cmap='Blues', cbar=False, annot_kws={"size": 14})
+        plt.title('Confusion Matrix')
+        plt.ylabel('True label')
+        plt.xlabel('Predicted label')
 
-    return report_df
+        # Second subplot: Classification report as a heatmap
+        plt.subplot(1, 2, 2)
+        sns.heatmap(report_df.iloc[:, :-1], annot=True, cmap='Blues', cbar=False, fmt='.2f')
+        plt.title('Classification Metrics')
+        plt.ylabel('Metrics')
+        plt.xlabel('Classes')
+        plt.tight_layout()
+
+        plt.savefig(f"outputs/{label}_classification_results.png")
+        # plt.show()
+        plt.close()
+
+    return report_df, conf_matrix
 
 
 

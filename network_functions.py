@@ -7,36 +7,14 @@ import pandas as pd
 from simulations import simulate_test_results
 import time
 
+import pdb
+
 from preprocessing import preprocessing
 
 np.seterr(divide='ignore', invalid = 'ignore')
 
 
 def calculate_network_utilities(net, df_test, full_calculation = False):
-
-    # if not full_calculation:
-
-    #     df_utilities_2016 = pd.read_csv("outputs/utilities_2016_fulldataset.csv")
-
-    #     possible_outcomes = net.get_outcome_ids("Screening")
-    #     possible_outcomes.insert(0, "No_scr_no_col")
-    #     possible_outcomes[1] = "No_scr_col"
-
-    #     counts = np.zeros(len(possible_outcomes))
-    #     all_values = []
-    #     best_options = []
-
-    #     for i in range(df_utilities_2016.shape[0]):
-    #         max_index = np.argmax(df_utilities_2016.iloc[i].values[:-1])
-    #         best_options.append(possible_outcomes[max_index])
-
-    #         counts[max_index] += 1
-
-    #     best_options_df = pd.DataFrame(best_options, columns = ["Best_option"])
-
-    # else:
-
-    print("Full calculation of utilities...")
 
     net = pysmile.Network()
     net.read_file(f"outputs/linear_rel_point_cond_mut_info_elicitFalse_newtestFalse/decision_models/DM_screening_rel_point_cond_mut_info_linear.xdsl")
@@ -75,13 +53,19 @@ def calculate_network_utilities(net, df_test, full_calculation = False):
 
         return np.array(utilities)
     
+    def max_utility(row):
+        x = row["utilities"]
+        return np.max(x)
+    
     def argmax_utility(row):
         x = row["utilities"]
         return possible_outcomes[np.argmax(x)]
-
+    
+    
 
     # 3. Apply the function to the unique rows and store the result in a new column
     unique_rows['utilities'] = unique_rows.apply(calculate_utility, axis=1)
+    unique_rows['max_value'] = unique_rows.apply(max_utility, axis = 1)
     unique_rows['best_option'] = unique_rows.apply(argmax_utility, axis = 1)
 
     # 4. Map these calculated values back to the original DataFrame
@@ -96,6 +80,7 @@ def calculate_network_utilities(net, df_test, full_calculation = False):
     # 2. Flatten into a DataFrame with a MultiIndex for rows and columns
     # Assuming each sublist has a shape (m, n), we can concatenate them along axis=0
     df_utilities_2016 = pd.DataFrame(np.vstack(utilities_2d_list), columns = possible_outcomes)
+    df_utilities_2016["max_value"] = df_with_calculated["max_value"]
     df_utilities_2016["best_option"] = df_with_calculated["best_option"]
 
     # best_options = df_utilities_2016.apply(lambda x: possible_outcomes[np.argmax(x)], axis=1)
@@ -110,15 +95,93 @@ def calculate_network_utilities(net, df_test, full_calculation = False):
 
 
 
-def new_screening_strategy(df_test, net, possible_outcomes):
+def reorder_df_with_limits(df, limits): 
+    # Keep track of rows that have been processed
+    sorted_rows = pd.DataFrame()
+    processed_rows = pd.Series([False] * len(df))
+    new_limits = limits.copy()
+
+    selection_count = {col: 0 for col in df.columns}
+
+    while True:
+        
+
+        # Identify valid columns that have not reached their selection limit
+        valid_columns = [col for col in df.columns if selection_count[col] < limits[col]]
+        if not valid_columns:
+            break  # Stop if no valid columns are left
+
+        temp_df = df[~processed_rows].copy()
+
+        # Calculate max value for each row, considering only valid columns
+        temp_df['max_value_w_lim'] = temp_df[valid_columns].max(axis=1)
+        temp_df['best_option_w_lim'] = temp_df[valid_columns].idxmax(axis=1)
+
+        lims_valid_columns = [new_limits[col] for col in valid_columns]
+        batch_size = min( max(min(lims_valid_columns), 1), len(temp_df))
+
+        # Sort rows by the max value, excluding already processed rows
+        df_sorted = temp_df.sort_values(by='max_value_w_lim', ascending=False).head(batch_size)
+
+        # Update selection count for each location in the batch
+        for loc in df_sorted['best_option_w_lim']:
+            selection_count[loc] += 1
+
+        # Mark processed rows as True
+        processed_rows[df_sorted.index] = True
+
+        # Add the sorted rows to the result DataFrame
+        sorted_rows = pd.concat([sorted_rows, df_sorted])
+
+        # Print the selected rows and locations for this iteration (optional)
+        # print(f"Selected locations in this iteration:\n{df_sorted[['max_location']]}")
+        # print(df_sorted.drop(columns=['max_value', 'max_location']))
+        
+        new_limits = {key: (limits[key] - selection_count[key]) if new_limits[key] > 0 else new_limits[key] for key in valid_columns }  
+
+        # Check if any location has reached its limit and stop considering it
+        '''for loc in df_sorted['max_location_w_lim']:
+            if selection_count[loc] >= new_limits[loc]:
+                print(f"Location {loc} has reached its limit.")'''
+
+        # Stop if all rows are processed or no valid columns are left
+        if df_sorted.shape[0] == 0 or all(selection_count[col] >= limits[col] for col in selection_count):
+            break
+
+        # # Drop the temporary columns used for sorting
+        # sorted_rows = sorted_rows.drop(columns=['max_value', 'max_location'])
+
+    return sorted_rows
+
+
+
+def new_screening_strategy(df_test, net, possible_outcomes, counts, limit, operational_limit = None, verbose = False):
     t1 = time.time()
+
+    # Setting limits to the numer of tests performed. 
+    # For now, if the number of tests recommended is higher than the available tests, the number of tests is set to the available tests,
+    # which are applied to the patients with the highest utility. The rest of the patients are not screened.
+
+
+    if limit:
+        print("Limited number of tests will be performed.")
+        df_test_ordered = reorder_df_with_limits(df_test[possible_outcomes].copy(), operational_limit)
+        
+        df_test = df_test.merge(df_test_ordered[["max_value_w_lim", "best_option_w_lim"]], left_index=True, right_index=True)
+
+    else:
+        print("No limit on the number of tests.")
+
 
     df_test["Colonoscopy"] = None
 
     for i, strategy in enumerate(possible_outcomes):
         
         if strategy == "No_scr_no_col":
-            selected_patients = df_test.loc[df_test[df_test["best_option"] == possible_outcomes[i]].index].copy()
+            if limit:
+                selected_patients = df_test.loc[df_test[df_test["best_option_w_lim"] == possible_outcomes[i]].index].copy()
+            else:
+                selected_patients = df_test.loc[df_test[df_test["best_option"] == possible_outcomes[i]].index].copy()
 
             y_selected_patients = selected_patients["CRC"]
 
@@ -127,8 +190,12 @@ def new_screening_strategy(df_test, net, possible_outcomes):
             df_test.loc[selected_patients.index, "Final_decision"] = 0
             continue
 
+
         elif strategy == "No_scr_col":
-            selected_patients = df_test.loc[df_test[df_test["best_option"] == possible_outcomes[i]].index].copy()
+            if limit: 
+                selected_patients = df_test.loc[df_test[df_test["best_option_w_lim"] == possible_outcomes[i]].index].copy()
+            else:
+                selected_patients = df_test.loc[df_test[df_test["best_option"] == possible_outcomes[i]].index].copy()
 
             y_selected_patients = selected_patients["CRC"]
 
@@ -143,9 +210,17 @@ def new_screening_strategy(df_test, net, possible_outcomes):
             df_test.loc[selected_patients.index, "Final_decision"] = df_col["TestResult"]
             continue
 
-        else:
 
-            selected_patients = df_test.loc[df_test[df_test["best_option"] == possible_outcomes[i]].index].copy()
+        else:
+            if limit:
+                selected_patients = df_test.loc[df_test[df_test["best_option_w_lim"] == possible_outcomes[i]].index].copy()
+            else:
+                selected_patients = df_test.loc[df_test[df_test["best_option"] == possible_outcomes[i]].index].copy()
+
+            if verbose:
+                print("** Testing strategy: ", strategy, "**")
+                print("--> Number of recommended tests: ", len(df_test.loc[df_test[df_test["best_option"] == possible_outcomes[i]].index]))  
+                print("--> Number of tests performed: ", len(selected_patients), "\n")
 
             y_selected_patients = selected_patients["CRC"]
 
@@ -180,11 +255,18 @@ def new_screening_strategy(df_test, net, possible_outcomes):
 
     col_costs = net.get_node_value("COST")[1]
 
-    counts = df_test["best_option"].value_counts()
+    if limit:
+        counts = df_test["best_option_w_lim"].value_counts()
+    else: 
+        counts = df_test["best_option"].value_counts()
+
     counts = counts.reindex(possible_outcomes, fill_value=0)
 
     total_cost_of_screening = np.matmul(np.array(scr_costs),counts.values)
     total_cost_of_colonoscopy = col_costs*(df_test["Colonoscopy"].value_counts()["Colonoscopy"])
+
+    if verbose:
+        print("Total number of colonoscopies performed:", df_test["Colonoscopy"].value_counts()["Colonoscopy"])
 
 
     total_cost = total_cost_of_screening + total_cost_of_colonoscopy
@@ -196,7 +278,7 @@ def new_screening_strategy(df_test, net, possible_outcomes):
 
 
 
-def old_screening_strategy(df_test, net, possible_outcomes):
+def old_screening_strategy(df_test, net, possible_outcomes, verbose = False):
 
     t1 = time.time()
 
@@ -246,6 +328,9 @@ def old_screening_strategy(df_test, net, possible_outcomes):
 
     total_cost_of_screening = np.matmul(np.array(scr_costs),counts.values)
     total_cost_of_colonoscopy = col_costs*(df_test["Colonoscopy"].value_counts()["Colonoscopy"])
+
+    if verbose:
+        print("Total number of colonoscopies performed:", df_test["Colonoscopy"].value_counts()["Colonoscopy"])
 
     total_cost = total_cost_of_screening + total_cost_of_colonoscopy
     t2 = time.time()

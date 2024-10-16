@@ -309,7 +309,7 @@
 				<interior color="e5f6f7" />
 				<outline color="000080" />
 				<font color="000000" name="Arial" size="8" />
-				<position>763 1018 875 1077</position>
+				<position>731 994 843 1053</position>
 			</node>
 			<node id="Cost_of_Screening">
 				<name>Cost of Screening</name>
