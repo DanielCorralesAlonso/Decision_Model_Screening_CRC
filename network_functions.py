@@ -164,13 +164,15 @@ def new_screening_strategy(df_test, net, possible_outcomes, counts, limit, opera
 
 
     if limit:
-        print("Limited number of tests will be performed.")
-        df_test_ordered = reorder_df_with_limits(df_test[possible_outcomes].copy(), operational_limit)
+        if verbose:
+            print("Limited number of tests will be performed.")
         
+        df_test_ordered = reorder_df_with_limits(df_test[possible_outcomes].copy(), operational_limit)
         df_test = df_test.merge(df_test_ordered[["max_value_w_lim", "best_option_w_lim"]], left_index=True, right_index=True)
 
     else:
-        print("No limit on the number of tests.")
+        if verbose:
+            print("No limit on the number of tests.")
 
 
     df_test["Colonoscopy"] = None

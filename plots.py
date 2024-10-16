@@ -369,9 +369,9 @@ def plot_estimations_w_error_bars(mean_report, std_report, SE_report, label = ""
     plt.title('Mean (+/- std) at Each Cell')
     plt.grid(True)
 
-    plt.savefig(f"outputs/{label}_mean_SE_plot.png")
+    plt.savefig(f"outputs/mean_std_{label}_plot.png")
 
-    plt.close()
+    plt.close(fig)
 
 
 

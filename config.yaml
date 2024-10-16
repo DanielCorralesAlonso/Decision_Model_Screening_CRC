@@ -131,4 +131,12 @@ colors:
   Colonoscopy: '#bcbd22'
   New_test: '#17becf'        # Possible name for new test, change if necessary.
   H(CRC): '#7f7f7f' 
+
+
+
+
+# -- Use case
+
+single_run: False
+num_runs: 10
   

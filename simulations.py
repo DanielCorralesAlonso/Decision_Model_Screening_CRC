@@ -3,6 +3,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import classification_report, confusion_matrix
+import pdb
+from matplotlib.patches import FancyBboxPatch
 
 def simulate_test_results(sensitivity_scr, specificity_scr, y_crc):
     """
@@ -51,7 +53,7 @@ def simulate_test_results(sensitivity_scr, specificity_scr, y_crc):
 
 
 
-def plot_classification_results(y_true=None, y_pred=None, report_df = None, conf_matrix = None, label = "", plot = True):
+def plot_classification_results(y_true=None, y_pred=None, report_df = None, conf_matrix = None, total_cost= None, label = "", plot = True):
 
     if report_df is None:
 
@@ -80,26 +82,33 @@ def plot_classification_results(y_true=None, y_pred=None, report_df = None, conf
 
     if plot:
         # Plot the confusion matrix using Seaborn for a heatmap
-        plt.figure(figsize=(12, 5))
+        fig, ax = plt.subplots(1,2, figsize=(12, 5))
 
         # First subplot: Confusion matrix
-        plt.subplot(1, 2, 1)
-        sns.heatmap(conf_matrix, annot=True, fmt='.1f', cmap='Blues', cbar=False, annot_kws={"size": 14})
-        plt.title('Confusion Matrix')
-        plt.ylabel('True label')
-        plt.xlabel('Predicted label')
+        sns.heatmap(conf_matrix, annot=True, fmt='.1f', cmap='Blues', cbar=False, annot_kws={"size": 14}, ax=ax[0])
+        ax[0].set_title('Confusion Matrix')
+        ax[0].set_ylabel('True label')
+        ax[0].set_xlabel('Predicted label')
 
         # Second subplot: Classification report as a heatmap
-        plt.subplot(1, 2, 2)
-        sns.heatmap(report_df.iloc[:, :-1], annot=True, cmap='Blues', cbar=False, fmt='.2f')
-        plt.title('Classification Metrics')
-        plt.ylabel('Metrics')
-        plt.xlabel('Classes')
-        plt.tight_layout()
+        sns.heatmap(report_df.iloc[:, :-1], annot=True, cmap='Blues', cbar=False, fmt='.2f', ax=ax[1])
+        ax[1].xaxis.tick_top()
+        ax[1].xaxis.set_label_position('top')
+        ax[1].set_title('Classification Metrics')
+        ax[1].set_ylabel('Metrics')
+        # ax[1].set_xlabel('Classes')
 
-        plt.savefig(f"outputs/{label}_classification_results.png")
-        # plt.show()
-        plt.close()
+        ax[1].text(0.39, 0.15, r"Total cost of the strategy: $\bf{" + f"{total_cost:,.2f}" + "€}$", color='black', fontsize=9,
+            ha='left', va='center', transform=ax[1].transAxes)
+        ax[1].text(0.39, 0.10, r"Mean cost per patient:  $\bf{" + f"{total_cost/(conf_matrix.sum()):,.2f}" + "€}$", color='black', fontsize=9,
+            ha='left', va='center', transform=ax[1].transAxes)
+        box = FancyBboxPatch((0.47, 0.12), 0.42, 0.03, boxstyle="round,pad=0.1", 
+                     linewidth=2, edgecolor='black', facecolor='none', transform=ax[1].transAxes)
+        ax[1].add_patch(box)
+
+        plt.tight_layout()
+        plt.savefig(f"outputs/{label}_classification_results.png", dpi=200)
+        plt.close(fig)
 
     return report_df, conf_matrix
 
