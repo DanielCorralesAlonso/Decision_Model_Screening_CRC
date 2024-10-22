@@ -269,7 +269,7 @@
 				<interior color="ebccfd" />
 				<outline color="000080" />
 				<font color="000000" name="Arial" size="8" />
-				<position>1036 700 1108 748</position>
+				<position>1035 697 1107 745</position>
 				<barchart active="true" width="128" height="64" />
 			</node>
 			<node id="Screening">

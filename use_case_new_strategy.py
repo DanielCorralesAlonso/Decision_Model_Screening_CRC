@@ -15,6 +15,7 @@ with open('config.yaml', 'r') as file:
     cfg = yaml.safe_load(file)
 
 import argparse
+import pdb
 
 np.seterr(divide='ignore', invalid = 'ignore')
 
@@ -71,7 +72,7 @@ if single_run:
 
     print("----------------------")
     print("New screening strategy without operational limits")
-    df_test, total_cost, time_taken = new_screening_strategy(df_test, net, possible_outcomes,  counts, limit = False, verbose = True)
+    df_test, total_cost, time_taken, positive_predictions_counts = new_screening_strategy(df_test, net, possible_outcomes,  counts, limit = False, verbose = True)
 
     print(f"---> Total cost of the strategy: {total_cost:.2f} €")
     print(f"---> Mean cost per patient: {total_cost/df_test.shape[0]:.2f} €")
@@ -79,13 +80,17 @@ if single_run:
 
     y_true_new = df_test["CRC"]
     y_pred_new = df_test["Final_decision"]
+
+    counts_new = df_test.groupby(["best_option", "Prediction_screening", "Prediction_colonoscopy"])[["CRC"]].sum()
+    print(f"---> Distribution of positive predictions: \n {counts_new}")
+    
     report, conf_matrix = plot_classification_results(y_true_new, y_pred_new, total_cost = total_cost, label = "new_strategy")
     print(report)
 
 
     print("----------------------")
     print("New screening strategy with operational limits")
-    df_test_for_new_str_w_lim, total_cost, time_taken = new_screening_strategy(df_test_for_new_str_w_lim, net, possible_outcomes, counts, limit = True, operational_limit = operational_limit, verbose = True)
+    df_test_for_new_str_w_lim, total_cost, time_taken, positive_prediction_counts = new_screening_strategy(df_test_for_new_str_w_lim, net, possible_outcomes, counts, limit = True, operational_limit = operational_limit, verbose = True)
 
     print(f"---> Total cost of the strategy: {total_cost:.2f} €")
     print(f"---> Mean cost per patient: {total_cost/df_test_for_new_str_w_lim.shape[0]:.2f} €")
@@ -93,6 +98,10 @@ if single_run:
 
     y_true_new = df_test_for_new_str_w_lim["CRC"]
     y_pred_new = df_test_for_new_str_w_lim["Final_decision"]
+
+    counts_new_str_w_lim = df_test_for_new_str_w_lim.groupby(["best_option", "Prediction_screening", "Prediction_colonoscopy"])[["CRC"]].sum()
+    print(f"---> Distribution of positive predictions: \n {counts_new_str_w_lim}")
+
     report, conf_matrix = plot_classification_results(y_true_new, y_pred_new, total_cost = total_cost,  label = "new_strategy_with_limits")
     print(report)
 
@@ -107,6 +116,10 @@ if single_run:
 
     y_true_old = df_test_for_old_str["CRC"]
     y_pred_old = df_test_for_old_str["Final_decision"]
+
+    counts_old = df_test_for_old_str.groupby(["best_option", "Prediction_screening", "Prediction_colonoscopy"])[["CRC"]].sum()
+    print(f"---> Distribution of positive predictions: \n {counts_old}")
+
     report, conf_matrix = plot_classification_results(y_true_old, y_pred_old, total_cost = total_cost, label = "old_strategy")
     print(report)
 

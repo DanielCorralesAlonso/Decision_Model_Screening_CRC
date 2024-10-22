@@ -90,6 +90,8 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
             lambdas = elicit_lambda(patient_chars = ref_patient_chars, value_function = value_function,
                                     net = net2, logging = logger)
             
+            
+            
             net.set_node_definition("Value_of_comfort", lambdas)
             net.set_mau_expressions(node_id = "V", expressions = [f"Value_of_comfort*INFO - Log10(COST+1)"])
 
