@@ -21,7 +21,7 @@ calculate_info_values: True
 
 
 # -- Flag for assigning a new test
-new_test: True 
+new_test: False 
 
 # --------- If new_test = True, the following parameters must be defined
 cost_new_test: 3
@@ -137,6 +137,8 @@ colors:
 
 # -- Use case
 
-single_run: True
-num_runs: 10
+single_run: False
+num_runs: 50
   
+all_variables: True
+use_case_new_test: False

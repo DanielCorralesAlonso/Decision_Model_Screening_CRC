@@ -14,10 +14,11 @@ from preprocessing import preprocessing
 np.seterr(divide='ignore', invalid = 'ignore')
 
 
-def calculate_network_utilities(net, df_test, full_calculation = False):
+def calculate_network_utilities(net, df_test, logger=None, full_calculation = False):
+    # pdb.set_trace()
 
-    net = pysmile.Network()
-    net.read_file(f"outputs/linear_rel_point_cond_mut_info_elicitFalse_newtestFalse/decision_models/DM_screening_rel_point_cond_mut_info_linear.xdsl")
+    #net = pysmile.Network()
+    # net.read_file(f"outputs/linear_rel_point_cond_mut_info_elicitFalse_newtestFalse/decision_models/DM_screening_rel_point_cond_mut_info_linear.xdsl")
 
     y = np.array(list(df_test["CRC"]*1))
 
@@ -134,15 +135,15 @@ def reorder_df_with_limits(df, limits):
         sorted_rows = pd.concat([sorted_rows, df_sorted])
 
         # Print the selected rows and locations for this iteration (optional)
-        # print(f"Selected locations in this iteration:\n{df_sorted[['max_location']]}")
-        # print(df_sorted.drop(columns=['max_value', 'max_location']))
+        # logger.info(f"Selected locations in this iteration:\n{df_sorted[['max_location']]}")
+        # logger.info(df_sorted.drop(columns=['max_value', 'max_location']))
         
         new_limits = {key: (limits[key] - selection_count[key]) if new_limits[key] > 0 else new_limits[key] for key in valid_columns }  
 
         # Check if any location has reached its limit and stop considering it
         '''for loc in df_sorted['max_location_w_lim']:
             if selection_count[loc] >= new_limits[loc]:
-                print(f"Location {loc} has reached its limit.")'''
+                logger.info(f"Location {loc} has reached its limit.")'''
 
         # Stop if all rows are processed or no valid columns are left
         if df_sorted.shape[0] == 0 or all(selection_count[col] >= limits[col] for col in selection_count):
@@ -155,8 +156,10 @@ def reorder_df_with_limits(df, limits):
 
 
 
-def new_screening_strategy(df_test, net, possible_outcomes, counts, limit, operational_limit = None, verbose = False):
+def new_screening_strategy(df_test, net, possible_outcomes, counts, limit, operational_limit = None, logger=None, verbose = False):
     t1 = time.time()
+
+    n_screening_tests = len(possible_outcomes) - 1
 
     # Setting limits to the numer of tests performed. 
     # For now, if the number of tests recommended is higher than the available tests, the number of tests is set to the available tests,
@@ -165,14 +168,14 @@ def new_screening_strategy(df_test, net, possible_outcomes, counts, limit, opera
 
     if limit:
         if verbose:
-            print("Limited number of tests will be performed.")
+            logger.info("Limited number of tests will be performed.")
         
         df_test_ordered = reorder_df_with_limits(df_test[possible_outcomes].copy(), operational_limit)
         df_test = df_test.merge(df_test_ordered[["max_value_w_lim", "best_option_w_lim"]], left_index=True, right_index=True)
 
     else:
         if verbose:
-            print("No limit on the number of tests.")
+            logger.info("No limit on the number of tests.")
 
 
     df_test["Colonoscopy"] = None
@@ -226,14 +229,16 @@ def new_screening_strategy(df_test, net, possible_outcomes, counts, limit, opera
                 selected_patients = df_test.loc[df_test[df_test["best_option"] == possible_outcomes[i]].index].copy()
 
             if verbose:
-                print("** Testing strategy: ", strategy, "**")
-                print("--> Number of recommended tests: ", len(df_test.loc[df_test[df_test["best_option"] == possible_outcomes[i]].index]))  
-                print("--> Number of tests performed: ", len(selected_patients), "\n")
+                logger.info(f"** Testing strategy: {strategy} **")
+                n_recommended_tests = len(df_test.loc[df_test[df_test["best_option"] == possible_outcomes[i]].index])
+                n_tests_performed = len(selected_patients)
+                logger.info(f"--> Number of recommended tests: {n_recommended_tests}")  
+                logger.info(f"--> Number of tests performed: {n_tests_performed} \n")
 
             y_selected_patients = selected_patients["CRC"]
 
-            spec_strategy = np.array(net.get_node_definition("Results_of_Screening")).reshape(2,7,3)[0, i-1, 1]
-            sens_strategy = np.array(net.get_node_definition("Results_of_Screening")).reshape(2,7,3)[1, i-1, 2]
+            spec_strategy = np.array(net.get_node_definition("Results_of_Screening")).reshape(2,n_screening_tests,3)[0, i-1, 1]
+            sens_strategy = np.array(net.get_node_definition("Results_of_Screening")).reshape(2,n_screening_tests,3)[1, i-1, 2]
 
             df_scr = simulate_test_results(sens_strategy, spec_strategy, y_selected_patients) 
 
@@ -274,10 +279,16 @@ def new_screening_strategy(df_test, net, possible_outcomes, counts, limit, opera
     counts = counts.reindex(possible_outcomes, fill_value=0)
 
     total_cost_of_screening = np.matmul(np.array(scr_costs),counts.values)
-    total_cost_of_colonoscopy = col_costs*(df_test["Colonoscopy"].value_counts()["Colonoscopy"])
+
+    try:
+        num_colonoscopies = df_test["Colonoscopy"].value_counts()["Colonoscopy"]
+    except:
+        num_colonoscopies = 0.0
+
+    total_cost_of_colonoscopy = col_costs * num_colonoscopies
 
     if verbose:
-        print("Total number of colonoscopies performed:", df_test["Colonoscopy"].value_counts()["Colonoscopy"])
+        logger.info(f"Total number of colonoscopies performed: {num_colonoscopies}")
 
 
     total_cost = total_cost_of_screening + total_cost_of_colonoscopy
@@ -289,23 +300,26 @@ def new_screening_strategy(df_test, net, possible_outcomes, counts, limit, opera
 
 
 
-def old_screening_strategy(df_test, net, possible_outcomes, verbose = False):
+def old_screening_strategy(df_test, net, possible_outcomes, logger = None, verbose = False):
 
-    # pdb.set_trace()
+    n_screening_tests = len(possible_outcomes) - 1
 
     t1 = time.time()
 
     df_test["best_option"] = "No_scr_no_col"
+    df_test["Prediction_screening"] = 0
+    df_test["Colonoscopy"] = None
+    df_test["Prediction_colonoscopy"] = 0
     df_test["Final_decision"] = 0
     df_test.loc[df_test["Age"] == "age_5_old_adult","best_option"] = "FIT"
-    df_test["Colonoscopy"] = None
+    
 
     selected_patients = df_test[df_test["Age"] == "age_5_old_adult"].copy()
     y_selected_patients = selected_patients["CRC"]
 
     # Do FIT to all patients over 50
-    spec_strategy = np.array(net.get_node_definition("Results_of_Screening")).reshape(2,7,3)[0, 2, 1]
-    sens_strategy = np.array(net.get_node_definition("Results_of_Screening")).reshape(2,7,3)[1, 2, 2]
+    spec_strategy = np.array(net.get_node_definition("Results_of_Screening")).reshape(2,n_screening_tests,3)[0, 2, 1]
+    sens_strategy = np.array(net.get_node_definition("Results_of_Screening")).reshape(2,n_screening_tests,3)[1, 2, 2]
 
     df_scr = simulate_test_results(sens_strategy, spec_strategy, y_selected_patients) 
 
@@ -343,14 +357,52 @@ def old_screening_strategy(df_test, net, possible_outcomes, verbose = False):
     total_cost_of_colonoscopy = col_costs*(df_test["Colonoscopy"].value_counts()["Colonoscopy"])
 
     if verbose:
-        print("Total number of colonoscopies performed:", df_test["Colonoscopy"].value_counts()["Colonoscopy"])
+        n_colonoscopies = df_test["Colonoscopy"].value_counts()["Colonoscopy"]
+        logger.info(f"Total number of colonoscopies performed: {n_colonoscopies}")
 
     total_cost = total_cost_of_screening + total_cost_of_colonoscopy
     t2 = time.time()
     time_taken = t2 - t1
 
-
     return df_test, total_cost, time_taken
+
+
+
+def compare_strategies(df_selected, net, possible_outcomes, operational_limit = None, logger=None, verbose = False):
+    # A naive comparison would be to order the patients in terms of utility and perform recommended test + colonoscopy if needed 
+    # in order until money runs out.
+    logger.info("Naively comparing strategies with a max cost of ", operational_limit)
+
+    t1 = time.time()
+
+    df_temp = df_selected.sort_values(by="max_value", ascending=False).copy()
+    df_temp["best_option_w_lim"] = "No_scr_no_col"
+    df_temp["colonoscopy_w_lim"] = None
+    cost = 0.0
+
+    scr_costs = net.get_node_value("COST")[::2]
+    scr_costs.insert(1, 0.0)
+    col_costs = net.get_node_value("COST")[1]
+
+    for i in df_temp.index:
+        if cost > operational_limit:
+            logger.info("Cost limit reached at patient number ", len(df_temp.loc[:i])) 
+            break
+        else:
+
+            df_temp.loc[i, "best_option_w_lim"] = df_temp.loc[i, "best_option"]
+            cost += scr_costs[possible_outcomes.index(df_temp.loc[i, "best_option"])]
+
+            if df_temp.loc[i, "Prediction_screening"] == 1:
+                df_temp.loc[i, "colonoscopy_w_lim"] = "Colonoscopy"
+                cost += col_costs
+
+    return df_temp, cost
+            
+
+            
+
+
 
 
 # def simulate_test_results(sensitivity_scr, specificity_scr,
@@ -450,11 +502,11 @@ def old_screening_strategy(df_test, net, possible_outcomes, verbose = False):
 #     patient_data = df_scr["Condition"]
 
 #     if verbose:
-#         print("Number of patients considered: ", patient_data.shape[0])
-#         print(f"Cost of screening: {cost_scr*(patient_data.shape[0])} €")
-#         print("Number of FIT positives: ", FIT_positives.shape[0])
-#         print("Number of colonoscopies to be done: ", FIT_positives.shape[0])
-#         print(f"Cost of colonoscopy program: {cost_col*FIT_positives.shape[0]} €")
+#         logger.info("Number of patients considered: ", patient_data.shape[0])
+#         logger.info(f"Cost of screening: {cost_scr*(patient_data.shape[0])} €")
+#         logger.info("Number of FIT positives: ", FIT_positives.shape[0])
+#         logger.info("Number of colonoscopies to be done: ", FIT_positives.shape[0])
+#         logger.info(f"Cost of colonoscopy program: {cost_col*FIT_positives.shape[0]} €")
 
     
 #     # Add columns to indicate true positives, false positives, etc.
@@ -478,11 +530,11 @@ def old_screening_strategy(df_test, net, possible_outcomes, verbose = False):
 #     total_cost = cost_scr*df_scr["Condition"].shape[0] + cost_col*FIT_positives.shape[0]
 
 #     if verbose:
-#         print("Number of CRC true positive cases detected by colonoscopy: ", TP_scr)
-#         print("Number of false positives by colonoscopy: ", FP_scr)
-#         print(f"Total cost of screening and colonoscopy: {total_cost} €")
-#         print("Proportion of total CRC cases in the whole population detected by the method: ", TP_scr / df_test["CRC"].sum())
-#         print("Proportion of cases in the high-risk target population detected by the method: ", TP_scr / y.sum())
+#         logger.info("Number of CRC true positive cases detected by colonoscopy: ", TP_scr)
+#         logger.info("Number of false positives by colonoscopy: ", FP_scr)
+#         logger.info(f"Total cost of screening and colonoscopy: {total_cost} €")
+#         logger.info("Proportion of total CRC cases in the whole population detected by the method: ", TP_scr / df_test["CRC"].sum())
+#         logger.info("Proportion of cases in the high-risk target population detected by the method: ", TP_scr / y.sum())
 
 #     combined_confusion_matrix = pd.DataFrame({
 #         'Predicted Negative': [TN_scr + TN_col, FN_scr + FN_col],

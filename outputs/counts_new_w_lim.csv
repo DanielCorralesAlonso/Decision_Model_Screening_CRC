@@ -1,0 +1,5 @@
+best_option_w_lim,Prediction_screening,Prediction_colonoscopy,Final_decision,CRC
+FIT,0.0,0.0,0.0,23
+FIT,1.0,0.0,0.0,2
+FIT,1.0,1.0,1.0,83
+No_scr_no_col,0.0,0.0,0.0,110

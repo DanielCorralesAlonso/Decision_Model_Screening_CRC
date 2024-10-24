@@ -53,7 +53,7 @@ def simulate_test_results(sensitivity_scr, specificity_scr, y_crc):
 
 
 
-def plot_classification_results(y_true=None, y_pred=None, report_df = None, conf_matrix = None, total_cost= None, label = "", plot = True):
+def plot_classification_results(y_true=None, y_pred=None, report_df = None, conf_matrix = None, std_conf_matrix = None, total_cost= None, label = "", plot = True, log_dir = None):
 
     if report_df is None:
 
@@ -84,8 +84,16 @@ def plot_classification_results(y_true=None, y_pred=None, report_df = None, conf
         # Plot the confusion matrix using Seaborn for a heatmap
         fig, ax = plt.subplots(1,2, figsize=(12, 5))
 
+        if std_conf_matrix is not None:
+            annotations = np.array([f"{mean:.2f}±{std:.2f}" for mean, std in zip(conf_matrix.flatten(), std_conf_matrix.flatten())])
+            annotations = annotations.reshape(conf_matrix.shape)
+            fmt = ''
+        else:
+            annotations = True
+            fmt = '.1f'
+
         # First subplot: Confusion matrix
-        sns.heatmap(conf_matrix, annot=True, fmt='.1f', cmap='Blues', cbar=False, annot_kws={"size": 14}, ax=ax[0])
+        sns.heatmap(conf_matrix, annot=annotations, fmt=fmt, cmap='Blues', cbar=False, annot_kws={"size": 14}, ax=ax[0])
         ax[0].set_title('Confusion Matrix')
         ax[0].set_ylabel('True label')
         ax[0].set_xlabel('Predicted label')
@@ -107,7 +115,7 @@ def plot_classification_results(y_true=None, y_pred=None, report_df = None, conf
         ax[1].add_patch(box)
 
         plt.tight_layout()
-        plt.savefig(f"outputs/{label}_classification_results.png", dpi=200)
+        plt.savefig(f"{log_dir}/{label}_classification_results.png", dpi=200)
         plt.close(fig)
 
     return report_df, conf_matrix

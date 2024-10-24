@@ -332,11 +332,11 @@ def plot_relative_cond_mut_info(net1, net2 = None, subtitle = '', zoom=(0.001, 0
     return
 
 
-def plot_estimations_w_error_bars(mean_report, std_report, SE_report, label = ""):
+def plot_estimations_w_error_bars(mean_report, std_report, SE_report = None, label = "", log_dir = None):
     # Flatten the dataframes to get 1D arrays for mean and std
     mean_flat = mean_report.values.flatten()
     std_flat = std_report.values.flatten()
-    SE_flat = SE_report.values.flatten()
+    # SE_flat = SE_report.values.flatten()
 
     # Get corresponding row and column index for each point
     rows, cols = np.indices(mean_report.shape)
@@ -369,13 +369,13 @@ def plot_estimations_w_error_bars(mean_report, std_report, SE_report, label = ""
     plt.title('Mean (+/- std) at Each Cell')
     plt.grid(True)
 
-    plt.savefig(f"outputs/mean_std_{label}_plot.png")
+    plt.savefig(f"{log_dir}/mean_std_{label}_plot.png")
 
     plt.close(fig)
 
 
 
-def plot_screening_counts(counts, possible_outcomes, operational_limit):
+def plot_screening_counts(counts, possible_outcomes, operational_limit, log_dir = None):
     '''print("Number of tests performed")
     print(counts)'''
 
@@ -397,7 +397,7 @@ def plot_screening_counts(counts, possible_outcomes, operational_limit):
     plt.title("Recommended Tests vs. Operational Limit")
 
     plt.tight_layout()
-    plt.savefig("outputs/screening_counts.png")
+    plt.savefig(f"{log_dir}/screening_counts.png")
     plt.close()
 
     return

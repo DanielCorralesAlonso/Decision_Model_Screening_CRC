@@ -166,6 +166,7 @@ cython_debug/
 /old
 /private
 /genie_models
+/logs
 pysmile_license.py
 tests.ipynb
 use_cases.ipynb

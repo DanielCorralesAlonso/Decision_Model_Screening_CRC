@@ -121,7 +121,7 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
         net.add_outcome("Screening", "New_test")
         logger.info("Adding new test values...")
         net2 = values_for_new_test(net2, config = cfg)
-        df_value = save_info_values(net, value_function = value_function, new_test=True, output_dir = output_dir)
+        df_value = save_info_values(net2, value_function = value_function, new_test=True, output_dir = output_dir)
         net2 = info_value_to_net(df_value, net2)
 
 
