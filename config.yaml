@@ -142,3 +142,26 @@ num_runs: 50
   
 all_variables: True
 use_case_new_test: False
+
+operational_limit : {
+        "No_scr_no_col": "inf",
+        "No_scr_col": 3000,
+        "gFOBT": 30000,
+        "FIT": 40000,
+        "Blood_based": 7000,
+        "Stool_DNA": 5000,
+        "CTC": 2000,
+        "Colon_capsule": 2000,
+    }
+
+
+operational_limit_comp : {
+        "No_scr_no_col": "inf",
+        "No_scr_col": 0,
+        "gFOBT": 0,
+        "FIT": 49074,
+        "Blood_based": 0,
+        "Stool_DNA": 0,
+        "CTC": 0,
+        "Colon_capsule": 0,
+        }

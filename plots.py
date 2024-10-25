@@ -378,26 +378,27 @@ def plot_estimations_w_error_bars(mean_report, std_report, SE_report = None, lab
 def plot_screening_counts(counts, possible_outcomes, operational_limit, log_dir = None):
     '''print("Number of tests performed")
     print(counts)'''
+    fig, ax = plt.subplots()
 
-    bars1 = plt.bar(possible_outcomes, counts, color = 'blue', label = 'Number of tests recommended')
-    bars2 = plt.bar(possible_outcomes, operational_limit, color = 'red', label = 'Operational limit', alpha = 0.25)
+    bars1 = ax.bar(possible_outcomes, counts, color = 'blue', label = 'Number of tests recommended')
+    bars2 = ax.bar(possible_outcomes, operational_limit, color = 'red', label = 'Operational limit', alpha = 0.25)
 
     for bar in bars1:
-        plt.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 5000, str(bar.get_height()), ha='center', color='black', fontsize=10)
+        ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 5000, str(bar.get_height()), ha='center', color='black', fontsize=10)
 
     for bar in bars2:
-        plt.text(bar.get_x() + bar.get_width()/2, bar.get_height() - 10000, str(bar.get_height()), ha='center', color='red', fontsize=10)
+        ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() - 10000, str(bar.get_height()), ha='center', color='red', fontsize=10)
 
-    plt.legend()
+    ax.legend()
 
 
-    plt.xticks(range(len(possible_outcomes)), possible_outcomes, rotation = 45)
-    plt.xlabel("Screening outcome")
-    plt.ylabel("Number of tests")
-    plt.title("Recommended Tests vs. Operational Limit")
+    ax.set_xticks(range(len(possible_outcomes)), possible_outcomes, rotation = 45)
+    ax.set_xlabel("Screening outcome")
+    ax.set_ylabel("Number of tests")
+    ax.set_title("Recommended Tests vs. Operational Limit")
 
     plt.tight_layout()
     plt.savefig(f"{log_dir}/screening_counts.png")
-    plt.close()
+    plt.close(fig)
 
     return

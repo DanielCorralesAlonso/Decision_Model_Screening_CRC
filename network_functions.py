@@ -9,6 +9,11 @@ import time
 
 import pdb
 
+import logging
+import datetime 
+import os
+
+
 from preprocessing import preprocessing
 
 np.seterr(divide='ignore', invalid = 'ignore')
@@ -558,3 +563,47 @@ def compare_strategies(df_selected, net, possible_outcomes, operational_limit = 
     
 
 
+def create_folders_logger(single_run, label):
+    current_dir = os.getcwd()
+    log_dir = os.path.join(current_dir, 'logs')
+    # Create the logs directory if it doesn't exist
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+
+    date_str = datetime.datetime.now().strftime("%Y-%m-%d")
+    log_dir = os.path.join(log_dir, date_str)
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+
+    time_str = datetime.datetime.now().strftime("%H-%M-%S")
+    log_dir = os.path.join(log_dir, label + time_str)
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+
+    timestamp = datetime.datetime.now().strftime("%H-%M-%S")
+    log_filename = os.path.join(log_dir, f"{label}{timestamp}_singlerun_{single_run}.log")
+
+    # Create a custom logger
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)  # Set the minimum logging level
+
+    # Create handlers for file and console
+    file_handler = logging.FileHandler(log_filename)  # Logs to file
+    console_handler = logging.StreamHandler()  # Logs to console
+
+    # Set the logging level for both handlers
+    file_handler.setLevel(logging.INFO)
+    console_handler.setLevel(logging.INFO)
+
+    # Define the formatter for logs
+    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+
+    # Add the formatter to the handlers
+    file_handler.setFormatter(formatter)
+    console_handler.setFormatter(formatter)
+
+    # Add handlers to the logger
+    logger.addHandler(file_handler)
+    logger.addHandler(console_handler)
+
+    return logger, log_dir
