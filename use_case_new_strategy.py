@@ -122,7 +122,7 @@ def use_case_new_strategy(net,
         counts_new.to_csv(f"{log_dir}/counts_new.csv")
         logger.info(f"---> Distribution of positive predictions: \n {counts_new}")
         
-        report, conf_matrix = plot_classification_results(y_true_new, y_pred_new, total_cost = total_cost, label = "new_strategy", log_dir = log_dir)
+        report, conf_matrix = plot_classification_results(y_true_new, y_pred_new, total_cost = total_cost, label = f"new_strategy_{run_label}", log_dir = log_dir)
         logger.info(report)
 
 
@@ -145,7 +145,7 @@ def use_case_new_strategy(net,
         counts_new_str_w_lim.to_csv(f"{log_dir}/counts_new_w_lim.csv")
         logger.info(f"---> Distribution of positive predictions: \n {counts_new_str_w_lim}")
 
-        report, conf_matrix = plot_classification_results(y_true_new, y_pred_new, total_cost = total_cost_w_lim,  label = "new_strategy_with_limits", log_dir = log_dir)
+        report, conf_matrix = plot_classification_results(y_true_new, y_pred_new, total_cost = total_cost_w_lim,  label = f"new_strategy_with_limits_{run_label}", log_dir = log_dir)
         logger.info(report)
 
 
@@ -168,7 +168,7 @@ def use_case_new_strategy(net,
         counts_old.to_csv(f"{log_dir}/counts_old.csv")
         logger.info(f"---> Distribution of positive predictions: \n {counts_old}")
 
-        report, conf_matrix = plot_classification_results(y_true_old, y_pred_old, total_cost = total_cost_old, label = "old_strategy", log_dir= log_dir)
+        report, conf_matrix = plot_classification_results(y_true_old, y_pred_old, total_cost = total_cost_old, label = f"old_strategy_{run_label}", log_dir= log_dir)
         logger.info(report)
 
 
@@ -194,7 +194,7 @@ def use_case_new_strategy(net,
         counts_new_str_w_lim.to_csv(f"{log_dir}/counts_new_w_lim.csv")
         logger.info(f"---> Distribution of positive predictions: \n {counts_new_str_w_lim}")
 
-        report, conf_matrix = plot_classification_results(y_true_new, y_pred_new, total_cost = total_cost_w_lim,  label = "new_strategy_with_limits", log_dir = log_dir)
+        report, conf_matrix = plot_classification_results(y_true_new, y_pred_new, total_cost = total_cost_w_lim,  label = f"new_strategy_with_limits_{run_label}", log_dir = log_dir)
         logger.info(report)
 
 
@@ -271,7 +271,7 @@ def use_case_new_strategy(net,
             
             y_true_new = df_test_comp_util["CRC"]
             y_pred_new = df_test_comp_util["Final_decision"]
-            report_comp, conf_matrix_comp = plot_classification_results(y_true_new, y_pred_new, total_cost = total_cost_comp,  label = "new_strategy_with_limits", log_dir = log_dir)
+            report_comp, conf_matrix_comp = plot_classification_results(y_true_new, y_pred_new, total_cost = total_cost_comp,  label = "new_strategy_with_limits", log_dir = log_dir, plot = False)
             
             report_df_comp.append(report_comp)
             conf_matrix_comp_list.append(conf_matrix_comp)
@@ -293,7 +293,7 @@ def use_case_new_strategy(net,
         std_cost_new = np.array(total_cost_list_new).std()
 
         plot_estimations_w_error_bars(mean_report_new, std_report_new, label="new_strategy", log_dir = log_dir)
-        plot_classification_results(report_df = mean_report_new, conf_matrix = mean_conf_matrix_new, std_conf_matrix = std_conf_matrix_new, total_cost=mean_cost_new, label = "mean_new_strategy", plot= True, log_dir = log_dir)
+        plot_classification_results(report_df = mean_report_new, conf_matrix = mean_conf_matrix_new, std_conf_matrix = std_conf_matrix_new, total_cost=mean_cost_new, label = f"mean_new_strategy_{run_label}", plot= True, log_dir = log_dir)
 
         
         
@@ -311,7 +311,7 @@ def use_case_new_strategy(net,
 
 
         plot_estimations_w_error_bars(mean_report_new_w_lim, std_report_new_w_lim, label="new_strategy_with_limits", log_dir=log_dir)
-        plot_classification_results(report_df = mean_report_new_w_lim, conf_matrix=mean_conf_matrix_new_w_lim, std_conf_matrix=std_conf_matrix_new_w_lim, total_cost=mean_cost_new_w_lim, label = "mean_new_strategy_with_limits", plot= True, log_dir = log_dir)
+        plot_classification_results(report_df = mean_report_new_w_lim, conf_matrix=mean_conf_matrix_new_w_lim, std_conf_matrix=std_conf_matrix_new_w_lim, total_cost=mean_cost_new_w_lim, label = f"mean_new_strategy_with_limits_{run_label}", plot= True, log_dir = log_dir)
 
         
 
@@ -328,7 +328,7 @@ def use_case_new_strategy(net,
         std_cost_old = np.array(total_cost_list_old).std()
 
         plot_estimations_w_error_bars(mean_report_old, std_report_old, label="old_strategy", log_dir = log_dir)
-        plot_classification_results(report_df = mean_report_old, total_cost = mean_cost_old, conf_matrix= mean_conf_matrix_old, std_conf_matrix= std_conf_matrix_old, label = "mean_old_strategy", plot= True, log_dir = log_dir)
+        plot_classification_results(report_df = mean_report_old, total_cost = mean_cost_old, conf_matrix= mean_conf_matrix_old, std_conf_matrix= std_conf_matrix_old, label = f"mean_old_strategy_{run_label}", plot= True, log_dir = log_dir)
 
         
 
@@ -344,7 +344,7 @@ def use_case_new_strategy(net,
         std_cost_comp = np.array(total_cost_list_comp).std()
 
         plot_estimations_w_error_bars(mean_report_comp, std_report_comp, label="new_strategy_comparison", log_dir=log_dir)
-        plot_classification_results(report_df = mean_report_comp, conf_matrix=mean_conf_matrix_comp, std_conf_matrix=std_conf_matrix_comp, total_cost=mean_cost_comp, label = "mean_new_strategy_comparison", plot= True, log_dir = log_dir)
+        plot_classification_results(report_df = mean_report_comp, conf_matrix=mean_conf_matrix_comp, std_conf_matrix=std_conf_matrix_comp, total_cost=mean_cost_comp, label = f"mean_new_strategy_comparison_{run_label}", plot= True, log_dir = log_dir)
 
     
 
