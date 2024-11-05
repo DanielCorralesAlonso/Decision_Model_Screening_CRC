@@ -24,13 +24,14 @@ import os
 np.seterr(divide='ignore', invalid = 'ignore')
 
 
-def use_case_new_strategy(net,
+def use_case_new_strategy(net = None,
         operational_limit = cfg["operational_limit"],
         operational_limit_comp = cfg["operational_limit_comp"], 
         single_run = cfg["single_run"],
         num_runs = cfg["num_runs"],
         use_case_new_test = cfg["use_case_new_test"],
         all_variables = cfg["all_variables"],
+        from_elicitation = cfg["from_elicitation"],  
         logger = None,
         log_dir = None,
         run_label = ''
@@ -61,6 +62,8 @@ def use_case_new_strategy(net,
         net = pysmile.Network()
         if use_case_new_test == True:
             file_location = "outputs/linear_rel_point_cond_mut_info_elicitFalse_newtestTrue/decision_models/DM_screening_rel_point_cond_mut_info_linear_new_test.xdsl"
+        if from_elicitation == True:
+            file_location = "outputs/linear_rel_point_cond_mut_info_elicitTrue_newtestFalse/decision_models/DM_screening_rel_point_cond_mut_info_linear.xdsl"
         else:
             file_location = "outputs/linear_rel_point_cond_mut_info_elicitFalse_newtestFalse/decision_models/DM_screening_rel_point_cond_mut_info_linear.xdsl"
         net.read_file(file_location)

@@ -3,7 +3,9 @@ project: decision_for_screening
 # -- Initiation characteristics of the model
 model_type: "linear"
 value_function: "rel_point_cond_mut_info"
-elicit: False
+elicit: False  # It can be True, False 
+noise: True # (for sensitivity analysis purposes)
+lambda_list: [4.5, 4.7, 5.5, 6]
 
 patient_chars: {"Age": "age_4_adult", 
                         "Sex": "M",
@@ -37,7 +39,7 @@ point_cond_mut_info:
   PE_prob: 0.7     # Probability of equivalence
 
 rel_point_cond_mut_info:
-  PE_cost: 200     # Probability equivalent cost
+  PE_cost: 250     # Probability equivalent cost
   PE_info: 4.5     # Probability equivalent info
   PE_prob: 0.7    # Probability of equivalence
   
@@ -137,11 +139,12 @@ colors:
 
 # -- Use case
 
-single_run: False
-num_runs: 50
+single_run: True
+num_runs: 100
   
 all_variables: True
 use_case_new_test: False
+from_elicitation: False
 
 operational_limit : {
         "No_scr_no_col": "inf",

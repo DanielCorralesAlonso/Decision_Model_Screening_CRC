@@ -171,9 +171,10 @@ def elicit_lambda(patient_chars, value_function,  net, logging):
         lambda_list.append(lambda_approx)
 
         try:
-            if lambda_list[i-1] > lambda_list[i]:
+            if lambda_list[i-2] > lambda_list[i-1]:
                 logging.warning(f"Lambda values are not in increasing order! Model assumptions for comfort levels are not met!")
                 exit()
+                return
         except:
             pass
 

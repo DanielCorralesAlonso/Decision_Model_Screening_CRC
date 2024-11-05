@@ -27,7 +27,7 @@ with open('config.yaml', 'r') as file:
 
 
 
-def update_influence_diagram(model_type = None, value_function = None, elicit = None, calculate_info_values = None , ref_patient_chars = None, new_test = None, sens_analysis_metrics = None, logger = None, output_dir = None):
+def update_influence_diagram(model_type = None, value_function = None, elicit = None, noise=None, calculate_info_values = None , ref_patient_chars = None, new_test = None, sens_analysis_metrics = None, logger = None, output_dir = None):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
         os.makedirs(f"{output_dir}/decision_models")
@@ -98,9 +98,25 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
         else:
             try:
                 lambdas = net2.get_node_value("Value_of_comfort")
-
                 logger.info("No elicitation of lambda values, taking default values...")
-            
+                
+                if noise == True:
+                    logger.info("Adding noise to the lambda values...")
+                    try:
+                        lambda_list = cfg["lambda_list"]
+                    except:
+                        lambda_list = [lambdas[1], lambdas[-2], lambdas[2]]
+                        lambda_list = np.random.normal(lambda_list, 0.5)
+                    
+                    lambdas = np.array([np.ceil(lambda_list[2]), lambda_list[0], lambda_list[2], lambda_list[0], 
+                        lambda_list[2], lambda_list[0], lambda_list[2], lambda_list[0], 
+                        lambda_list[2], lambda_list[0], lambda_list[1], lambda_list[0], lambda_list[1], lambda_list[0],])
+
+                    net2.set_node_definition("Value_of_comfort", lambdas)
+                    net2.set_mau_expressions(node_id = "V", expressions = [f"Value_of_comfort*INFO - Log10(COST+1)"])
+                
+                logger.info(f"Lambda values: {lambdas}")
+
             except:
                 logger.info("No default values found, setting custom values...")
                 rho_4 = 8
