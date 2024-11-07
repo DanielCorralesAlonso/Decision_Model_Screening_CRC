@@ -104,6 +104,7 @@ def plot_classification_results(y_true=None, y_pred=None, report_df = None, conf
         ax[1].xaxis.set_label_position('top')
         ax[1].set_title('Classification Metrics')
         ax[1].set_ylabel('Metrics')
+        
         # ax[1].set_xlabel('Classes')
 
         ax[1].text(0.39, 0.15, r"Total cost of the strategy: $\bf{" + f"{total_cost:,.2f}" + "€}$", color='black', fontsize=9,

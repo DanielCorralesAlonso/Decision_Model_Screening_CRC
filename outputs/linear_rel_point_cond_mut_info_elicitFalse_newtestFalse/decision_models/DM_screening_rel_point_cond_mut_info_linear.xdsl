@@ -143,7 +143,7 @@
 		</utility>
 		<utility id="Value_of_comfort">
 			<parents>Screening Colonoscopy</parents>
-			<utilities>6 4.5 5.5 4.5 5.5 4.5 5.5 4.5 5.5 4.5 4.7 4.5 4.7 4.5</utilities>
+			<utilities>7 4.8 6.801984517973132 4.8 6.801984517973132 4.8 6.801984517973132 4.8 6.801984517973132 4.8 5 4.8 5 4.8</utilities>
 		</utility>
 		<mau id="COST">
 			<parents>Cost_of_complications Cost_of_Screening</parents>
@@ -155,7 +155,7 @@
 		</maux>
 		<maux id="U">
 			<parents>V</parents>
-			<expression>Max(0,Min(1.0211-0.859521*Exp(-0.0440539*V),1))</expression>
+			<expression>Max(0,Min(1.02085-0.886684*Exp(-0.0360346*V),1))</expression>
 		</maux>
 	</nodes>
 	<extensions>

@@ -7,6 +7,8 @@ from df_plot import plot_df
 from info_value_to_net import info_value_to_net
 from get_info_values import mutual_info_measures
 
+import datetime
+
 np.seterr(divide='ignore', invalid = 'ignore')
 
 import yaml
@@ -375,7 +377,7 @@ def plot_estimations_w_error_bars(mean_report, std_report, SE_report = None, lab
 
 
 
-def plot_screening_counts(counts, possible_outcomes, operational_limit, log_dir = None):
+def plot_screening_counts(counts, possible_outcomes, operational_limit, log_dir = None, lambda_list = None):
     '''print("Number of tests performed")
     print(counts)'''
     fig, ax = plt.subplots()
@@ -391,14 +393,25 @@ def plot_screening_counts(counts, possible_outcomes, operational_limit, log_dir 
 
     ax.legend()
 
-
+    ax.set_ylim(0, 350000)
     ax.set_xticks(range(len(possible_outcomes)), possible_outcomes, rotation = 45)
     ax.set_xlabel("Screening outcome")
     ax.set_ylabel("Number of tests")
     ax.set_title("Recommended Tests vs. Operational Limit")
 
+    if lambda_list is not None:
+        ax.text(0.7, 0.8, r"$\lambda_1 =" + f"{lambda_list[0]:,.2f}" + "$", color='black', fontsize=9,
+            ha='left', va='center', transform=ax.transAxes)
+        ax.text(0.7, 0.75, r"$\lambda_2 =" + f"{lambda_list[1]:,.2f}" + "$", color='black', fontsize=9,
+            ha='left', va='center', transform=ax.transAxes)
+        ax.text(0.7, 0.7, r"$\lambda_3 =" + f"{lambda_list[2]:,.2f}" + "$", color='black', fontsize=9,
+            ha='left', va='center', transform=ax.transAxes)
+        ax.text(0.7, 0.65, r"$\lambda_4 =" + f"{lambda_list[3]:,.2f}" + "$", color='black', fontsize=9,
+            ha='left', va='center', transform=ax.transAxes)
+
     plt.tight_layout()
-    plt.savefig(f"{log_dir}/screening_counts.png")
+    timestamp = datetime.datetime.now().strftime("%H-%M-%S")
+    plt.savefig(f"{log_dir}/screening_counts_{timestamp}.png")
     plt.close(fig)
 
     return

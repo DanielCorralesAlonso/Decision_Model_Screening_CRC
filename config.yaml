@@ -5,7 +5,13 @@ model_type: "linear"
 value_function: "rel_point_cond_mut_info"
 elicit: False  # It can be True, False 
 noise: True # (for sensitivity analysis purposes)
-lambda_list: [4.5, 4.7, 5.5, 6]
+noise_std: 0.3
+lambda_list_from_config: True
+lambda_list: [4.011942483017116, 4.168480067521723, 6.801984517973132, 7.0]
+
+# original = [4.011942483017116, 4.168480067521723, 6.801984517973132, 7.0]
+# first change = [4.011942483017116, 4.168480067521723, 5.5 , 7.0]
+# second change = [4.8, 5, 6.801984517973132, 7.0]
 
 patient_chars: {"Age": "age_4_adult", 
                         "Sex": "M",
@@ -23,7 +29,7 @@ calculate_info_values: True
 
 
 # -- Flag for assigning a new test
-new_test: False 
+new_test: True 
 
 # --------- If new_test = True, the following parameters must be defined
 cost_new_test: 3
@@ -143,7 +149,7 @@ single_run: True
 num_runs: 100
   
 all_variables: True
-use_case_new_test: False
+use_case_new_test: True
 from_elicitation: False
 
 operational_limit : {

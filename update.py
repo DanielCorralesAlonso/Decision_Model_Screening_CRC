@@ -102,11 +102,15 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
                 
                 if noise == True:
                     logger.info("Adding noise to the lambda values...")
-                    try:
+                    if cfg["lambda_list_from_config"] == True:
                         lambda_list = cfg["lambda_list"]
-                    except:
+                    else:
                         lambda_list = [lambdas[1], lambdas[-2], lambdas[2]]
-                        lambda_list = np.random.normal(lambda_list, 0.5)
+                        lambda_list_mod = np.random.normal(lambda_list, cfg['noise_std'])
+                        while not np.array_equal(np.sort(lambda_list_mod), lambda_list_mod):
+                            lambda_list_mod = np.random.normal(lambda_list, cfg['noise_std'])
+
+                        lambda_list = lambda_list_mod
                     
                     lambdas = np.array([np.ceil(lambda_list[2]), lambda_list[0], lambda_list[2], lambda_list[0], 
                         lambda_list[2], lambda_list[0], lambda_list[2], lambda_list[0], 
@@ -119,11 +123,11 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
 
             except:
                 logger.info("No default values found, setting custom values...")
-                rho_4 = 8
-                rho_3 = 6.5
-                rho_2 = 6.25
-                rho_1 = 6 
-                arr_comft = np.array([rho_4, rho_1, rho_3, rho_1, rho_3, rho_1, rho_3, rho_1, rho_3, rho_1, rho_2, rho_1, rho_2, rho_1,])
+                lambda_list = cfg["lambda_list"]
+                lambdas = np.array([np.ceil(lambda_list[2]), lambda_list[0], lambda_list[2], lambda_list[0], 
+                        lambda_list[2], lambda_list[0], lambda_list[2], lambda_list[0], 
+                        lambda_list[2], lambda_list[0], lambda_list[1], lambda_list[0], lambda_list[1], lambda_list[0],])
+
                 net2.set_node_definition("Value_of_comfort", arr_comft)
 
                 net2.set_mau_expressions(node_id = "V", expressions = [f"Value_of_comfort*INFO - Log10(COST+1)"])
