@@ -8,6 +8,8 @@ from simulations import plot_classification_results
 from plots import plot_estimations_w_error_bars, plot_screening_counts
 
 from preprocessing import preprocessing
+from concurrent.futures import ProcessPoolExecutor, as_completed
+from tqdm import tqdm
 import matplotlib.pyplot as plt
 
 import yaml
@@ -16,6 +18,8 @@ with open('config.yaml', 'r') as file:
 
 import argparse
 import pdb
+import matplotlib
+matplotlib.use('Agg')
 
 import logging
 import datetime 
@@ -62,7 +66,7 @@ def use_case_new_strategy(net = None,
         net = pysmile.Network()
         if use_case_new_test == True:
             file_location = "outputs/linear_rel_point_cond_mut_info_elicitFalse_newtestTrue/decision_models/DM_screening_rel_point_cond_mut_info_linear_new_test.xdsl"
-        if from_elicitation == True:
+        elif from_elicitation == True:
             file_location = "outputs/linear_rel_point_cond_mut_info_elicitTrue_newtestFalse/decision_models/DM_screening_rel_point_cond_mut_info_linear.xdsl"
         else:
             file_location = "outputs/linear_rel_point_cond_mut_info_elicitFalse_newtestFalse/decision_models/DM_screening_rel_point_cond_mut_info_linear.xdsl"
@@ -223,67 +227,21 @@ def use_case_new_strategy(net = None,
 
         df_test, counts, possible_outcomes = calculate_network_utilities(net, df_test)
         plot_screening_counts(counts, possible_outcomes, operational_limit.values(), log_dir=log_dir)
-
-        for i in range(num_runs):
-            df_test_new = df_test.copy()
-            df_test_new_w_lim = df_test.copy()
-            df_test_old = df_test.copy()
-            df_test_comp = df_test.copy()
-            
-
-            df_test_new, total_cost_new, time_taken, positive_predictions_count = new_screening_strategy(df_test_new, net, possible_outcomes, counts = counts, limit=False, operational_limit = dict(zip(operational_limit.keys(), counts)))
-
-            y_true_new = df_test_new["CRC"]
-            y_pred_new = df_test_new["Final_decision"]
-            report_new, conf_matrix_new = plot_classification_results(y_true_new, y_pred_new, total_cost = total_cost_new, label = "new_strategy", plot = False, log_dir = log_dir)
-
-            report_df_new.append(report_new)
-            conf_matrix_new_list.append(conf_matrix_new)
-            total_cost_list_new.append(total_cost_new)
-
-
-            df_test_new_w_lim, total_cost_new_w_lim, time_taken, positive_predictions_count = new_screening_strategy(df_test_new_w_lim, net, possible_outcomes, counts=counts, limit=True, operational_limit = operational_limit)
-
-            y_true_new_w_lim = df_test_new_w_lim["CRC"]
-            y_pred_new_w_lim = df_test_new_w_lim["Final_decision"]
-            report_new_w_lim, conf_matrix_new_w_lim = plot_classification_results(y_true_new_w_lim, y_pred_new_w_lim, total_cost=total_cost_new_w_lim, label = "new_strategy_with_limits", plot = False)
-
-            report_df_new_w_lim.append(report_new_w_lim)
-            conf_matrix_new_w_lim_list.append(conf_matrix_new_w_lim)
-            total_cost_list_new_w_lim.append(total_cost_new_w_lim)
-
-
-            df_test_old, total_cost_old, time_taken = old_screening_strategy(df_test_old, net, possible_outcomes)
-
-            y_true_old = df_test_old["CRC"]
-            y_pred_old = df_test_old["Final_decision"]
-            report_old, conf_matrix_old = plot_classification_results(y_true_old, y_pred_old, total_cost = total_cost_old, label = "old_strategy", plot = False, log_dir = log_dir)
-
-            report_df_old.append(report_old)
-            conf_matrix_old_list.append(conf_matrix_old)
-            total_cost_list_old.append(total_cost_old)
-
-            # logger.info("Comparison of the strategies")
-            operational_limit_comp = { "No_scr_no_col": np.inf, "No_scr_col": 0, "gFOBT": 0,"FIT": 49074, 
-                                "Blood_based": 0,"Stool_DNA": 0, "CTC": 0, "Colon_capsule": 0,
-            }
-            if use_case_new_test == True:
-                operational_limit_comp["New_test"] = 0
-
-            df_test_comp_util, total_cost_comp, time_taken_w_lim, positive_prediction_counts = new_screening_strategy(df_test_comp, net, possible_outcomes, counts, limit = True, operational_limit = operational_limit_comp)
-            
-            y_true_new = df_test_comp_util["CRC"]
-            y_pred_new = df_test_comp_util["Final_decision"]
-            report_comp, conf_matrix_comp = plot_classification_results(y_true_new, y_pred_new, total_cost = total_cost_comp,  label = "new_strategy_with_limits", log_dir = log_dir, plot = False)
-            
-            report_df_comp.append(report_comp)
-            conf_matrix_comp_list.append(conf_matrix_comp)
-            total_cost_list_comp.append(total_cost_comp)
-
-            
-            logger.info(f"Run {i} completed!")
-
         
+        with ProcessPoolExecutor(max_workers=cfg['max_workers']) as executor:
+            futures = [executor.submit(run_experiment, i, df_test, file_location, possible_outcomes, counts, operational_limit, use_case_new_test, log_dir) for i in range(num_runs)]
+            all_results = []
+            for future in tqdm(as_completed(futures), total=num_runs, desc="Processing iterations"):
+                all_results.append(future.result())
+
+
+
+
+        report_df_new = [result["report_df_new"] for result in all_results]
+        conf_matrix_new_list = [result["conf_matrix_new"] for result in all_results]
+        total_cost_list_new = [result["total_cost_new"] for result in all_results]
+        
+        pdb.set_trace()
         report_df_new = pd.concat(report_df_new, axis = 0, keys=range(len(report_df_new)))
         
         mean_conf_matrix_new = np.stack(conf_matrix_new_list, axis = 0).mean(axis = 0)
@@ -299,6 +257,9 @@ def use_case_new_strategy(net = None,
         plot_classification_results(report_df = mean_report_new, conf_matrix = mean_conf_matrix_new, std_conf_matrix = std_conf_matrix_new, total_cost=mean_cost_new, label = f"mean_new_strategy_{run_label}", plot= True, log_dir = log_dir)
 
         
+        report_df_new_w_lim = [result["report_df_new_w_lim"] for result in all_results]
+        conf_matrix_new_w_lim_list = [result["conf_matrix_new_w_lim"] for result in all_results]
+        total_cost_list_new_w_lim = [result["total_cost_new_w_lim"] for result in all_results]
         
 
         report_df_new_w_lim = pd.concat(report_df_new_w_lim, axis = 0, keys=range(len(report_df_new_w_lim)))
@@ -317,7 +278,9 @@ def use_case_new_strategy(net = None,
         plot_classification_results(report_df = mean_report_new_w_lim, conf_matrix=mean_conf_matrix_new_w_lim, std_conf_matrix=std_conf_matrix_new_w_lim, total_cost=mean_cost_new_w_lim, label = f"mean_new_strategy_with_limits_{run_label}", plot= True, log_dir = log_dir)
 
         
-
+        report_df_old = [result["report_df_old"] for result in all_results]
+        conf_matrix_old_list = [result["conf_matrix_old"] for result in all_results]
+        total_cost_list_old = [result["total_cost_old"] for result in all_results]
 
         report_df_old = pd.concat(report_df_old, axis = 0, keys=range(len(report_df_old)))
         
@@ -333,7 +296,9 @@ def use_case_new_strategy(net = None,
         plot_estimations_w_error_bars(mean_report_old, std_report_old, label="old_strategy", log_dir = log_dir)
         plot_classification_results(report_df = mean_report_old, total_cost = mean_cost_old, conf_matrix= mean_conf_matrix_old, std_conf_matrix= std_conf_matrix_old, label = f"mean_old_strategy_{run_label}", plot= True, log_dir = log_dir)
 
-        
+        report_df_comp = [result["report_df_comp"] for result in all_results]
+        conf_matrix_comp_list = [result["conf_matrix_comp"] for result in all_results]
+        total_cost_list_comp = [result["total_cost_comp"] for result in all_results]
 
         report_df_comp = pd.concat(report_df_comp, axis = 0, keys=range(len(report_df_comp)))
 
@@ -354,6 +319,84 @@ def use_case_new_strategy(net = None,
 
 
 
+
+def run_experiment(i, df_test, file_location, possible_outcomes, counts, operational_limit, use_case_new_test, log_dir):
+
+    results = {
+        "report_df_new": None,
+        "conf_matrix_new": None,
+        "total_cost_new": None,
+        "report_df_new_w_lim": None,
+        "conf_matrix_new_w_lim": None,
+        "total_cost_new_w_lim": None,
+        "report_df_old": None,
+        "conf_matrix_old": None,
+        "total_cost_old": None,
+        "report_df_comp": None,
+        "conf_matrix_comp": None,
+        "total_cost_comp": None
+    }
+
+    net = pysmile.Network()
+    net.read_file(file_location)
+
+    df_test_new = df_test.copy()
+    df_test_new_w_lim = df_test.copy()
+    df_test_old = df_test.copy()
+    df_test_comp = df_test.copy()
+    
+
+    df_test_new, total_cost_new, time_taken, positive_predictions_count = new_screening_strategy(df_test_new, net, possible_outcomes, counts = counts, limit=False, operational_limit = dict(zip(operational_limit.keys(), counts)))
+
+    y_true_new = df_test_new["CRC"]
+    y_pred_new = df_test_new["Final_decision"]
+    report_new, conf_matrix_new = plot_classification_results(y_true_new, y_pred_new, total_cost = total_cost_new, label = "new_strategy", plot = False, log_dir = log_dir)
+
+    results["report_df_new"] = report_new
+    results["conf_matrix_new"] = conf_matrix_new
+    results["total_cost_new"] = total_cost_new
+
+
+    df_test_new_w_lim, total_cost_new_w_lim, time_taken, positive_predictions_count = new_screening_strategy(df_test_new_w_lim, net, possible_outcomes, counts=counts, limit=True, operational_limit = operational_limit)
+
+    y_true_new_w_lim = df_test_new_w_lim["CRC"]
+    y_pred_new_w_lim = df_test_new_w_lim["Final_decision"]
+    report_new_w_lim, conf_matrix_new_w_lim = plot_classification_results(y_true_new_w_lim, y_pred_new_w_lim, total_cost=total_cost_new_w_lim, label = "new_strategy_with_limits", plot = False)
+
+    results["report_df_new_w_lim"] = report_new_w_lim
+    results["conf_matrix_new_w_lim"] = conf_matrix_new_w_lim
+    results["total_cost_new_w_lim"] = total_cost_new_w_lim
+
+
+    df_test_old, total_cost_old, time_taken = old_screening_strategy(df_test_old, net, possible_outcomes)
+
+    y_true_old = df_test_old["CRC"]
+    y_pred_old = df_test_old["Final_decision"]
+    report_old, conf_matrix_old = plot_classification_results(y_true_old, y_pred_old, total_cost = total_cost_old, label = "old_strategy", plot = False, log_dir = log_dir)
+
+    results["report_df_old"] = report_old
+    results["conf_matrix_old"] = conf_matrix_old
+    results["total_cost_old"] = total_cost_old
+
+    # logger.info("Comparison of the strategies")
+    operational_limit_comp = { "No_scr_no_col": np.inf, "No_scr_col": 0, "gFOBT": 0,"FIT": 49074, 
+                        "Blood_based": 0,"Stool_DNA": 0, "CTC": 0, "Colon_capsule": 0,
+    }
+    if use_case_new_test == True:
+        operational_limit_comp["New_test"] = 0
+
+    df_test_comp_util, total_cost_comp, time_taken_w_lim, positive_prediction_counts = new_screening_strategy(df_test_comp, net, possible_outcomes, counts, limit = True, operational_limit = operational_limit_comp)
+    
+    y_true_new = df_test_comp_util["CRC"]
+    y_pred_new = df_test_comp_util["Final_decision"]
+    report_comp, conf_matrix_comp = plot_classification_results(y_true_new, y_pred_new, total_cost = total_cost_comp,  label = "new_strategy_with_limits", log_dir = log_dir, plot = False)
+    
+    results["report_df_comp"] = report_comp
+    results["conf_matrix_comp"] = conf_matrix_comp
+    results["total_cost_comp"] = total_cost_comp
+
+    
+    return results
 
 
 

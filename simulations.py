@@ -5,6 +5,8 @@ import seaborn as sns
 from sklearn.metrics import classification_report, confusion_matrix
 import pdb
 from matplotlib.patches import FancyBboxPatch
+import matplotlib
+matplotlib.use('Agg')
 
 def simulate_test_results(sensitivity_scr, specificity_scr, y_crc):
     """
