@@ -29,6 +29,7 @@ np.seterr(divide='ignore', invalid = 'ignore')
 
 
 def use_case_new_strategy(net = None,
+        file_location = None,
         operational_limit = cfg["operational_limit"],
         operational_limit_comp = cfg["operational_limit_comp"], 
         single_run = cfg["single_run"],
@@ -56,6 +57,8 @@ def use_case_new_strategy(net = None,
     
     logger.info("Configuration variables of interest:")
     logger.info(f"Single run: {single_run}")
+    if single_run == False:
+        logger.info(f"Number of runs: {num_runs}")
     logger.info(f"Use all variables: {all_variables}")
     logger.info(f"Use case with new test: {use_case_new_test}")
     logger.info(f"PE method: {cfg['rel_point_cond_mut_info']}")
@@ -241,7 +244,6 @@ def use_case_new_strategy(net = None,
         conf_matrix_new_list = [result["conf_matrix_new"] for result in all_results]
         total_cost_list_new = [result["total_cost_new"] for result in all_results]
         
-        pdb.set_trace()
         report_df_new = pd.concat(report_df_new, axis = 0, keys=range(len(report_df_new)))
         
         mean_conf_matrix_new = np.stack(conf_matrix_new_list, axis = 0).mean(axis = 0)
