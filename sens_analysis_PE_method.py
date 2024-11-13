@@ -127,7 +127,7 @@ def sens_analysis_PE_method(net, df_test, PE_info_array, PE_cost_array):
 
                 axes[i,j].legend()
 
-                axes[i,j].set_ylim(0, 320000)
+                axes[i,j].set_ylim(0, 350000)
                 axes[i,j].set_xticks(range(len(possible_outcomes)), possible_outcomes, rotation = 45)
                 axes[i,j].set_xlabel("Screening outcome")
                 axes[i,j].set_ylabel("Number of tests")

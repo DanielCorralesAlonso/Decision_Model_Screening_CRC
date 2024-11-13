@@ -39,7 +39,8 @@ def use_case_new_strategy(net = None,
         from_elicitation = cfg["from_elicitation"],  
         logger = None,
         log_dir = None,
-        run_label = ''
+        run_label = '',
+        best_f1_score = {}
     ):
 
     # check if an element in operational limit is inf
@@ -108,7 +109,7 @@ def use_case_new_strategy(net = None,
         df_test, counts, possible_outcomes = calculate_network_utilities(net, df_test, logger=logger, full_calculation = True)
         df_test_for_new_str_w_lim = df_test.copy()
         df_test_for_old_str = df_test.copy()
-        plot_screening_counts(counts, possible_outcomes, operational_limit.values(), log_dir=log_dir)
+        plot_screening_counts(counts, possible_outcomes, operational_limit, log_dir=log_dir)
         logger.info("Calculation finished!")
 
 
@@ -229,7 +230,7 @@ def use_case_new_strategy(net = None,
 
 
         df_test, counts, possible_outcomes = calculate_network_utilities(net, df_test)
-        plot_screening_counts(counts, possible_outcomes, operational_limit.values(), log_dir=log_dir)
+        plot_screening_counts(counts, possible_outcomes, operational_limit, log_dir=log_dir)
         
         with ProcessPoolExecutor(max_workers=cfg['max_workers']) as executor:
             futures = [executor.submit(run_experiment, i, df_test, file_location, possible_outcomes, counts, operational_limit, use_case_new_test, log_dir) for i in range(num_runs)]
@@ -296,7 +297,7 @@ def use_case_new_strategy(net = None,
         std_cost_old = np.array(total_cost_list_old).std()
 
         plot_estimations_w_error_bars(mean_report_old, std_report_old, label="old_strategy", log_dir = log_dir)
-        plot_classification_results(report_df = mean_report_old, total_cost = mean_cost_old, conf_matrix= mean_conf_matrix_old, std_conf_matrix= std_conf_matrix_old, label = f"mean_old_strategy_{run_label}", plot= True, log_dir = log_dir)
+        report_df_old, conf_matrix_old = plot_classification_results(report_df = mean_report_old, total_cost = mean_cost_old, conf_matrix= mean_conf_matrix_old, std_conf_matrix= std_conf_matrix_old, label = f"mean_old_strategy_{run_label}", plot= True, log_dir = log_dir)
 
         report_df_comp = [result["report_df_comp"] for result in all_results]
         conf_matrix_comp_list = [result["conf_matrix_comp"] for result in all_results]
@@ -314,7 +315,14 @@ def use_case_new_strategy(net = None,
         std_cost_comp = np.array(total_cost_list_comp).std()
 
         plot_estimations_w_error_bars(mean_report_comp, std_report_comp, label="new_strategy_comparison", log_dir=log_dir)
-        plot_classification_results(report_df = mean_report_comp, conf_matrix=mean_conf_matrix_comp, std_conf_matrix=std_conf_matrix_comp, total_cost=mean_cost_comp, label = f"mean_new_strategy_comparison_{run_label}", plot= True, log_dir = log_dir)
+        report_df_comp, conf_matrix_comp = plot_classification_results(report_df = mean_report_comp, conf_matrix=mean_conf_matrix_comp, std_conf_matrix=std_conf_matrix_comp, total_cost=mean_cost_comp, label = f"mean_new_strategy_comparison_{run_label}", plot= True, log_dir = log_dir)
+
+        # save f1 score for the positive class 
+        pdb.set_trace()
+        best_f1_score[run_label]["old"] = report_df_old.loc["Positive"]["f1-score"]
+        best_f1_score[run_label]["comparison"] = report_df_comp.loc["Positive"]["f1-score"]
+
+        return best_f1_score
 
     
 

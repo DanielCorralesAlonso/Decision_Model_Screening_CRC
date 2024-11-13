@@ -60,7 +60,7 @@ def plot_classification_results(y_true=None, y_pred=None, report_df = None, conf
     if report_df is None:
 
         # Create a classification report
-        report = classification_report(y_true, y_pred, output_dict=True)
+        report = classification_report(y_true, y_pred, output_dict=True, target_names=['Negative', 'Positive'])
 
         # Convert the classification report into a DataFrame for easier visualization
         report_df = pd.DataFrame(report).transpose()
@@ -72,7 +72,7 @@ def plot_classification_results(y_true=None, y_pred=None, report_df = None, conf
         tn, fp, fn, tp = conf_matrix.ravel()
 
         # Sensitivity (Recall) is already included in classification report
-        sensitivity = report['True']['recall']  # For class 1 (positive class)
+        sensitivity = report['Positive']['recall']  # For class 1 (positive class)
 
         # Specificity calculation
         specificity = tn / (tn + fp)
@@ -95,7 +95,7 @@ def plot_classification_results(y_true=None, y_pred=None, report_df = None, conf
             fmt = '.1f'
 
         # First subplot: Confusion matrix
-        sns.heatmap(conf_matrix, annot=annotations, fmt=fmt, cmap='Blues', cbar=False, annot_kws={"size": 14}, ax=ax[0])
+        sns.heatmap(conf_matrix, annot=annotations, fmt=fmt, cmap='Blues', cbar=False, annot_kws={"size": 14}, ax=ax[0], xticklabels=['Negative', 'Positive'], yticklabels=['Negative', 'Positive'])
         ax[0].set_title('Confusion Matrix')
         ax[0].set_ylabel('True label')
         ax[0].set_xlabel('Predicted label')

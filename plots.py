@@ -16,6 +16,7 @@ with open('config.yaml', 'r') as file:
     cfg = yaml.safe_load(file)
 
 import matplotlib.pyplot as plt
+import pdb
 
 # Make an array and iterate over possible values of probabilities
 def plot_cond_mut_info(net1, net2 = None, subtitle = '', plot = True, zoom = (0.1, 0.1), step = 0.001, output_dir = None):
@@ -378,22 +379,36 @@ def plot_estimations_w_error_bars(mean_report, std_report, SE_report = None, lab
 
 
 def plot_screening_counts(counts, possible_outcomes, operational_limit, log_dir = None, lambda_list = None):
-    '''print("Number of tests performed")
-    print(counts)'''
     fig, ax = plt.subplots()
 
-    bars1 = ax.bar(possible_outcomes, counts, color = 'blue', label = 'Number of tests recommended')
-    bars2 = ax.bar(possible_outcomes, operational_limit, color = 'red', label = 'Operational limit', alpha = 0.25)
+    # Loop through each bar to add the text annotations and apply conditional styling
+    for i, outcome in enumerate(possible_outcomes):
+        count = counts.iloc[i]
+        limit = operational_limit[outcome]
 
-    for bar in bars1:
-        ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 5000, str(bar.get_height()), ha='center', color='black', fontsize=10)
+        # Check if count exceeds the operational limit and apply conditional styling
+        if count > limit:
+            # Create a dashed bar for counts exceeding the limit
+            bar1 = ax.bar(outcome, count, color='none', edgecolor='steelblue', linestyle='--', linewidth=2, hatch='//', align = 'center')
+            # Add a colored bar for the operational limit
+            bar2 = ax.bar(outcome, limit, color='red', alpha=1, align = 'center')
+        else:
+            # Create a colored bar for counts under the limit
+            bar1 = ax.bar(outcome, count, color='steelblue', align = 'center')
+            # Add a light colored bar for the operational limit
+            bar2 = ax.bar(outcome, limit, color='red', alpha=0.15,   align = 'center')
 
-    for bar in bars2:
-        ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() - 10000, str(bar.get_height()), ha='center', color='red', fontsize=10)
+        ax.text(bar1[0].get_x() + bar1[0].get_width()/2, count + 5000, str(int(count)), ha='center', color='black', fontsize=10)
+
+        try:
+            ax.text(bar2[0].get_x() + bar2[0].get_width()/2, -11000, str(int(limit)), ha='center', color='red', fontsize=10)
+        except:
+            pass
+
 
     ax.legend()
 
-    ax.set_ylim(0, 350000)
+    ax.set_ylim(0, 355000)
     ax.set_xticks(range(len(possible_outcomes)), possible_outcomes, rotation = 45)
     ax.set_xlabel("Screening outcome")
     ax.set_ylabel("Number of tests")
@@ -409,9 +424,8 @@ def plot_screening_counts(counts, possible_outcomes, operational_limit, log_dir 
         ax.text(0.7, 0.65, r"$\lambda_4 =" + f"{lambda_list[3]:,.2f}" + "$", color='black', fontsize=9,
             ha='left', va='center', transform=ax.transAxes)
 
-    plt.tight_layout()
     timestamp = datetime.datetime.now().strftime("%H-%M-%S")
-    plt.savefig(f"{log_dir}/screening_counts_{timestamp}.png")
+    plt.savefig(f"{log_dir}/screening_counts_{timestamp}.png", bbox_inches='tight')
     plt.close(fig)
 
     return

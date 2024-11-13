@@ -21,7 +21,7 @@ with open('config.yaml', 'r') as file:
     cfg = yaml.safe_load(file)
 
 
-def full_example():
+def full_example(only_counts = False):
     if cfg["use_case_new_test"] == True:
         file_location = "outputs/linear_rel_point_cond_mut_info_elicitFalse_newtestTrue/decision_models/DM_screening_rel_point_cond_mut_info_linear_new_test.xdsl"
     else:
@@ -38,11 +38,12 @@ def full_example():
     net.update_beliefs()
     rho_comfort = net.get_node_value("Value_of_comfort")[2]
 
-    PE_info_array = np.array([4, 4.2 , 4.4, 4.5,])
-    PE_cost_array = np.array([ 5, 10, 50, 100, 500])
+    PE_info_array = np.array([3.7, 4, 4.2 , 4.4, 4.5,])
+    PE_cost_array = np.array([ 3, 5, 10, 50, 100])
 
 
     single_run = False
+    best_f1_score = {}
 
     logger, log_dir = create_folders_logger(single_run = single_run, label="use_case_sens_analysis_")
     logger.info("Starting full sensitivity analysis with classification...")
@@ -68,7 +69,7 @@ def full_example():
 
             axes[i,j].legend()
 
-            axes[i,j].set_ylim(0, 320000)
+            axes[i,j].set_ylim(0, 350000)
             axes[i,j].set_xticks(range(len(possible_outcomes)), possible_outcomes, rotation = 45)
             axes[i,j].set_xlabel("Screening outcome")
             axes[i,j].set_ylabel("Number of tests")
@@ -84,20 +85,25 @@ def full_example():
             else:
                 plt.savefig(f"{log_dir}/sens_analysis_screening_counts.png")
 
-
-            run_label = f"PE_info_{i}_PE_cost_{j}"
-            use_case_new_strategy(
-                net = net,
-                file_location = file_location,
-                single_run = single_run,
-                use_case_new_test= False,
-                all_variables= True,
-                logger = logger,
-                log_dir = log_dir,
-                run_label = run_label
-                )
+            if not only_counts:
+                run_label = f"PE_info_{i}_PE_cost_{j}"
+                best_f1_score = use_case_new_strategy(
+                    net = net,
+                    file_location = file_location,
+                    single_run = single_run,
+                    use_case_new_test= False,
+                    all_variables= True,
+                    logger = logger,
+                    log_dir = log_dir,
+                    run_label = run_label,
+                    best_f1_score= best_f1_score
+                    )
             
-
+    pdb.set_trace()
+    if not only_counts:
+        best_f1_score = pd.DataFrame(best_f1_score)
+        best_params = best_f1_score.idxmax(axis=1)
+        logger.info(f"Best model: {best_params}")
 
     plt.close(fig)
 
