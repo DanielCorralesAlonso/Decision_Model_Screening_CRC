@@ -8,7 +8,7 @@ from matplotlib.patches import FancyBboxPatch
 import matplotlib
 matplotlib.use('Agg')
 
-def simulate_test_results(sensitivity_scr, specificity_scr, y_crc):
+def simulate_test_results(sensitivity_scr, specificity_scr, y_crc, seed = None):
     """
     Simulate test results based on sensitivity, specificity, and actual number of patients
     with and without the disease.
@@ -32,8 +32,13 @@ def simulate_test_results(sensitivity_scr, specificity_scr, y_crc):
     # Step 2: Simulate test results
     scr_results = []
     col_results = []
-    
-    for y in y_crc:
+
+    pdb.set_trace()
+    for i, y in enumerate(y_crc):
+        seed_pat = seed + (i,)
+        seed_final = hash(seed_pat) % (2**32 - 1)
+        np.random.seed(seed_final)
+
         if y == 1:
             # Patient has the disease, test is positive with probability = sensitivity
             scr_result = np.random.choice([1, 0], p=[sensitivity_scr, 1 - sensitivity_scr])
