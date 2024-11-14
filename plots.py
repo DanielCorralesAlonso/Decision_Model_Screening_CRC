@@ -21,6 +21,7 @@ import pdb
 # Make an array and iterate over possible values of probabilities
 def plot_cond_mut_info(net1, net2 = None, subtitle = '', plot = True, zoom = (0.1, 0.1), step = 0.001, output_dir = None):
 
+    pdb.set_trace()
     net_array = [net1]
     num_scr = len(net1.get_outcome_ids("Screening"))
     if net2 is not None:
@@ -39,7 +40,7 @@ def plot_cond_mut_info(net1, net2 = None, subtitle = '', plot = True, zoom = (0.
             p_y = np.array([p_CRC_false, p_CRC_true])
             H_y = np.sum(p_y * np.log(1 / p_y) )
 
-            dict_scr, dict_col = mutual_info_measures(net, p_CRC_false, p_CRC_true)
+            dict, dict_scr, dict_col = mutual_info_measures(net,plot = True,  p_CRC_false = p_CRC_false, p_CRC_true = p_CRC_true )
 
             cond_mut_info_scr = dict_scr["cond_mut_info"]
             cond_mut_info_col = dict_col["cond_mut_info"]
@@ -93,7 +94,8 @@ def plot_cond_mut_info(net1, net2 = None, subtitle = '', plot = True, zoom = (0.
 
         ax.plot(np.arange(0,1+step,step), h_y_arr, label = "H(CRC)", color = color_dict["H(CRC)"])
 
-    leg = plt.legend(loc='upper right', bbox_to_anchor=(1.35, 1), shadow=True)
+    ordered_functions = ['Colonoscopy', 'Colon_capsule', 'sDNA', 'FIT', 'CTC', 'Blood_based', 'gFOBT', 'No_screening']
+    leg = plt.legend(ordered_functions,loc='upper right', bbox_to_anchor=(1.35, 1), shadow=True)
 
     title = "Conditional Mutual Information "
     plt.title(title)
@@ -128,7 +130,9 @@ def plot_cond_mut_info(net1, net2 = None, subtitle = '', plot = True, zoom = (0.
 
         ax.plot(np.arange(0,1+step,step), h_y_arr, label = "H(CRC)", color = color_dict["H(CRC)"]) 
 
-    leg = plt.legend(loc='upper right', bbox_to_anchor=(1.35, 1), shadow=True)
+    ordered_functions = ['Colonoscopy', 'Colon_capsule', 'sDNA', 'FIT', 'CTC', 'Blood_based', 'gFOBT', 'No_screening']
+    leg = plt.legend(ordered_functions,loc='upper right', bbox_to_anchor=(1.35, 1), shadow=True)
+
     title = "Conditional Mutual Information"
     plt.title(title)
      
@@ -136,9 +140,9 @@ def plot_cond_mut_info(net1, net2 = None, subtitle = '', plot = True, zoom = (0.
     ax.set_ylim(-5*step,zoom[1])
 
     if net2 is not None:
-        plt.savefig(f"{output_dir}/output_images/cond_mut_info_{subtitle}_bounds.png", bbox_inches='tight')     
+        plt.savefig(f"{output_dir}/output_images/cond_mut_info_{subtitle}_bounds_leftzoom.png", bbox_inches='tight')     
     else:
-        plt.savefig(f"{output_dir}/output_images/cond_mut_info_{subtitle}.png", bbox_inches='tight')
+        plt.savefig(f"{output_dir}/output_images/cond_mut_info_{subtitle}_leftzoom.png", bbox_inches='tight')
     plt.close()
 
 
@@ -164,7 +168,8 @@ def plot_cond_mut_info(net1, net2 = None, subtitle = '', plot = True, zoom = (0.
 
         ax.plot(np.arange(0,1+step,step), h_y_arr, label = "H(CRC)", color = color_dict["H(CRC)"])    
 
-    leg = plt.legend(loc='upper right', bbox_to_anchor=(1.35, 1), shadow=True)
+    ordered_functions = ['Colonoscopy', 'Colon_capsule', 'sDNA', 'FIT', 'CTC', 'Blood_based', 'gFOBT', 'No_screening']
+    leg = plt.legend(ordered_functions,loc='upper right', bbox_to_anchor=(1.35, 1), shadow=True)
     title = "Conditional Mutual Information"
     plt.title(title)
      
@@ -172,9 +177,9 @@ def plot_cond_mut_info(net1, net2 = None, subtitle = '', plot = True, zoom = (0.
     ax.set_ylim(-5*step,zoom[1])
 
     if net2 is not None:
-        plt.savefig(f"{output_dir}/output_images/cond_mut_info_{subtitle}_bounds.png", bbox_inches='tight')     
+        plt.savefig(f"{output_dir}/output_images/cond_mut_info_{subtitle}_bounds_rightzoom.png", bbox_inches='tight')     
     else:
-        plt.savefig(f"{output_dir}/output_images/cond_mut_info_{subtitle}.png", bbox_inches='tight')
+        plt.savefig(f"{output_dir}/output_images/cond_mut_info_{subtitle}_rightzoom.png", bbox_inches='tight')
     plt.close()
 
 
@@ -203,7 +208,7 @@ def plot_relative_cond_mut_info(net1, net2 = None, subtitle = '', zoom=(0.001, 0
             p_y = np.array([p_CRC_false, p_CRC_true])
             H_y = np.sum(p_y * np.log(1 / p_y) )
 
-            dict_scr, dict_col = mutual_info_measures(net, p_CRC_false, p_CRC_true)
+            dict, dict_scr, dict_col = mutual_info_measures(net,plot = True,  p_CRC_false = p_CRC_false, p_CRC_true = p_CRC_true )
 
             rel_cond_mut_info_scr = dict_scr["rel_cond_mut_info"]
             rel_cond_mut_info_col = dict_col["rel_cond_mut_info"]
@@ -255,12 +260,13 @@ def plot_relative_cond_mut_info(net1, net2 = None, subtitle = '', zoom=(0.001, 0
             ax.plot(np.arange(0,1+step,step), arr[screening], label = f"{labels[screening]}", color = color_dict[labels[screening]])    
 
 
-    leg = plt.legend(loc='upper right', bbox_to_anchor=(1.35, 1), shadow=True)
+    ordered_functions = ['Colonoscopy', 'Colon_capsule', 'sDNA', 'FIT', 'CTC', 'Blood_based', 'gFOBT', 'No_screening']
+    leg = plt.legend(ordered_functions,loc='upper right', bbox_to_anchor=(1.35, 1), shadow=True)
 
     title = "Relative Reduction of Uncertainty with respect to CRC"
     plt.title(title)
     ax.set_xlabel("p(CRC)")
-    ax.set_ylabel("RCMI")
+    ax.set_ylabel("RMI")
   
     if net2 is not None:
         plt.savefig(f"{output_dir}/output_images/rel_cond_mut_info_{subtitle}_bounds.png", bbox_inches='tight')     

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- This file was created by ACADEMIC version of SMILE -->
+<!-- This network was created in GeNIe Academic, which can be used for academic teaching and research purposes only -->
 <smile version="1.0" id="unknown" numsamples="10000" discsamples="10000">
 	<nodes>
 		<cpt id="Sex">
@@ -155,239 +155,215 @@
 		</maux>
 		<maux id="U">
 			<parents>V</parents>
-			<expression>Max(0,Min(1.02085-0.886684*Exp(-0.0360346*V),1))</expression>
+			<expression>1-0.275092*Exp(-0.330069*V)</expression>
 		</maux>
 	</nodes>
 	<extensions>
-		<genie version="1.0" app="SMILE_ACADEMIC 2.2.5@b1d1d6931678" name="unknown">
+		<genie version="1.0" app="GeNIe 4.1.3724.0 ACADEMIC" name="unknown">
 			<node id="Sex">
 				<name>Sex</name>
 				<interior color="ccffcc" />
 				<outline color="000080" />
-				<font color="000000" name="MS Sans Serif" size="8" />
+				<font color="000000" name="Arial" size="8" />
 				<position>1174 49 1246 97</position>
-				<barchart active="true" width="128" height="64">
-				</barchart>
+				<barchart active="true" width="128" height="64" />
 			</node>
 			<node id="Age">
 				<name>Age</name>
 				<interior color="ccffcc" />
 				<outline color="000080" />
-				<font color="000000" name="MS Sans Serif" size="8" />
+				<font color="000000" name="Arial" size="8" />
 				<position>682 45 754 93</position>
-				<barchart active="true" width="128" height="90">
-				</barchart>
+				<barchart active="true" width="128" height="90" />
 			</node>
 			<node id="SD">
 				<name>SD</name>
 				<interior color="eea89b" />
 				<outline color="000080" />
-				<font color="000000" name="MS Sans Serif" size="8" />
+				<font color="000000" name="Arial" size="8" />
 				<position>972 208 1044 256</position>
-				<barchart active="true" width="128" height="72">
-				</barchart>
+				<barchart active="true" width="128" height="72" />
 			</node>
 			<node id="SES">
 				<name>SES</name>
 				<interior color="ccffcc" />
 				<outline color="000080" />
-				<font color="000000" name="MS Sans Serif" size="8" />
+				<font color="000000" name="Arial" size="8" />
 				<position>916 96 988 144</position>
-				<barchart active="true" width="128" height="72">
-				</barchart>
+				<barchart active="true" width="128" height="72" />
 			</node>
 			<node id="Depression">
 				<name>Depression</name>
 				<interior color="eea89b" />
 				<outline color="000080" />
-				<font color="000000" name="MS Sans Serif" size="8" />
+				<font color="000000" name="Arial" size="8" />
 				<position>1257 227 1329 275</position>
-				<barchart active="true" width="128" height="64">
-				</barchart>
+				<barchart active="true" width="128" height="64" />
 			</node>
 			<node id="PA">
 				<name>PA</name>
 				<interior color="eea89b" />
 				<outline color="000080" />
-				<font color="000000" name="MS Sans Serif" size="8" />
+				<font color="000000" name="Arial" size="8" />
 				<position>628 245 700 293</position>
-				<barchart active="true" width="128" height="64">
-				</barchart>
+				<barchart active="true" width="128" height="64" />
 			</node>
 			<node id="Smoking">
 				<name>Smoking</name>
 				<interior color="eea89b" />
 				<outline color="000080" />
-				<font color="000000" name="MS Sans Serif" size="8" />
+				<font color="000000" name="Arial" size="8" />
 				<position>961 301 1033 349</position>
-				<barchart active="true" width="128" height="72">
-				</barchart>
+				<barchart active="true" width="128" height="72" />
 			</node>
 			<node id="Anxiety">
 				<name>Anxiety</name>
 				<interior color="eea89b" />
 				<outline color="000080" />
-				<font color="000000" name="MS Sans Serif" size="8" />
+				<font color="000000" name="Arial" size="8" />
 				<position>1161 326 1233 374</position>
-				<barchart active="true" width="128" height="64">
-				</barchart>
+				<barchart active="true" width="128" height="64" />
 			</node>
 			<node id="Alcohol">
 				<name>Alcohol</name>
 				<interior color="eea89b" />
 				<outline color="000080" />
-				<font color="000000" name="MS Sans Serif" size="8" />
+				<font color="000000" name="Arial" size="8" />
 				<position>1248 428 1320 476</position>
-				<barchart active="true" width="128" height="64">
-				</barchart>
+				<barchart active="true" width="128" height="64" />
 			</node>
 			<node id="BMI">
 				<name>BMI</name>
 				<interior color="eea89b" />
 				<outline color="000080" />
-				<font color="000000" name="MS Sans Serif" size="8" />
+				<font color="000000" name="Arial" size="8" />
 				<position>771 403 843 451</position>
-				<barchart active="true" width="128" height="90">
-				</barchart>
+				<barchart active="true" width="128" height="90" />
 			</node>
 			<node id="Hyperchol_">
 				<name>Hyperchol.</name>
 				<interior color="99ccff" />
 				<outline color="000080" />
-				<font color="000000" name="MS Sans Serif" size="8" />
+				<font color="000000" name="Arial" size="8" />
 				<position>1029 524 1101 572</position>
-				<barchart active="true" width="128" height="64">
-				</barchart>
+				<barchart active="true" width="128" height="64" />
 			</node>
 			<node id="Diabetes">
 				<name>Diabetes</name>
 				<interior color="99ccff" />
 				<outline color="000080" />
-				<font color="000000" name="MS Sans Serif" size="8" />
+				<font color="000000" name="Arial" size="8" />
 				<position>499 470 571 518</position>
-				<barchart active="true" width="128" height="64">
-				</barchart>
+				<barchart active="true" width="128" height="64" />
 			</node>
 			<node id="Hypertension">
 				<name>Hypertension</name>
 				<interior color="99ccff" />
 				<outline color="000080" />
-				<font color="000000" name="MS Sans Serif" size="8" />
+				<font color="000000" name="Arial" size="8" />
 				<position>660 598 747 651</position>
-				<barchart active="true" width="128" height="64">
-				</barchart>
+				<barchart active="true" width="128" height="64" />
 			</node>
 			<node id="CRC">
 				<name>CRC</name>
 				<interior color="ebccfd" />
 				<outline color="000080" />
-				<font color="000000" name="MS Sans Serif" size="8" />
+				<font color="000000" name="Arial" size="8" />
 				<position>1035 697 1107 745</position>
-				<barchart active="true" width="128" height="64">
-				</barchart>
+				<barchart active="true" width="128" height="64" />
 			</node>
 			<node id="Screening">
 				<name>Screening</name>
 				<interior color="e5f6f7" />
 				<outline color="000080" />
-				<font color="000000" name="MS Sans Serif" size="8" />
+				<font color="000000" name="Arial" size="8" />
 				<position>265 418 331 468</position>
-				<barchart active="true" width="180" height="144">
-				</barchart>
+				<barchart active="true" width="180" height="144" />
 			</node>
 			<node id="Results_of_Screening">
 				<name>Results of Screening</name>
 				<interior color="e5f6f7" />
 				<outline color="000080" />
-				<font color="000000" name="MS Sans Serif" size="8" />
+				<font color="000000" name="Arial" size="8" />
 				<position>770 711 854 763</position>
-				<barchart active="true" width="138" height="72">
-				</barchart>
+				<barchart active="true" width="138" height="72" />
 			</node>
 			<node id="Colonoscopy">
 				<name>Colonoscopy</name>
 				<interior color="e5f6f7" />
 				<outline color="000080" />
-				<font color="000000" name="MS Sans Serif" size="8" />
+				<font color="000000" name="Arial" size="8" />
 				<position>457 686 542 721</position>
-				<barchart active="true" width="128" height="64">
-				</barchart>
+				<barchart active="true" width="128" height="64" />
 			</node>
 			<node id="Results_of_Colonoscopy">
 				<name>Results of Colonoscopy</name>
 				<interior color="e5f6f7" />
 				<outline color="000080" />
-				<font color="000000" name="MS Sans Serif" size="8" />
+				<font color="000000" name="Arial" size="8" />
 				<position>642 807 729 861</position>
-				<barchart active="true" width="163" height="72">
-				</barchart>
+				<barchart active="true" width="163" height="72" />
 			</node>
 			<node id="INFO">
 				<name>INFO</name>
 				<interior color="e5f6f7" />
 				<outline color="000080" />
-				<font color="000000" name="MS Sans Serif" size="8" />
+				<font color="000000" name="Arial" size="8" />
 				<position>763 1018 875 1077</position>
 			</node>
 			<node id="Cost_of_Screening">
 				<name>Cost of Screening</name>
 				<interior color="e5f6f7" />
 				<outline color="000080" />
-				<font color="000000" name="MS Sans Serif" size="8" />
+				<font color="000000" name="Arial" size="8" />
 				<position>394 861 501 893</position>
-				<barchart active="true" width="128" height="64">
-				</barchart>
+				<barchart active="true" width="128" height="64" />
 			</node>
 			<node id="Complications">
 				<name>Complications</name>
 				<interior color="e5f6f7" />
 				<outline color="000080" />
-				<font color="000000" name="MS Sans Serif" size="8" />
+				<font color="000000" name="Arial" size="8" />
 				<position>126 623 204 671</position>
-				<barchart active="true" width="128" height="90">
-				</barchart>
+				<barchart active="true" width="128" height="90" />
 			</node>
 			<node id="Cost_of_complications">
 				<name>Cost of complications</name>
 				<interior color="e5f6f7" />
 				<outline color="000080" />
-				<font color="000000" name="MS Sans Serif" size="8" />
+				<font color="000000" name="Arial" size="8" />
 				<position>52 784 171 822</position>
-				<barchart active="true" width="128" height="144">
-				</barchart>
+				<barchart active="true" width="128" height="144" />
 			</node>
 			<node id="Value_of_comfort">
 				<name>Value of comfort</name>
 				<interior color="e5f6f7" />
 				<outline color="000080" />
-				<font color="000000" name="MS Sans Serif" size="8" />
+				<font color="000000" name="Arial" size="8" />
 				<position>217 809 353 857</position>
-				<barchart active="true" width="131" height="102">
-				</barchart>
+				<barchart active="true" width="131" height="102" />
 			</node>
 			<node id="COST">
 				<name>COST</name>
 				<interior color="e5f6f7" />
 				<outline color="000080" />
-				<font color="000000" name="MS Sans Serif" size="8" />
+				<font color="000000" name="Arial" size="8" />
 				<position>233 1006 318 1056</position>
-				<barchart active="true" width="128" height="144">
-				</barchart>
+				<barchart active="true" width="128" height="144" />
 			</node>
 			<node id="V">
 				<name>V</name>
 				<interior color="e5f6f7" />
 				<outline color="000080" />
-				<font color="000000" name="MS Sans Serif" size="8" />
+				<font color="000000" name="Arial" size="8" />
 				<position>410 1112 499 1155</position>
-				<barchart active="true" width="128" height="64">
-				</barchart>
+				<barchart active="true" width="128" height="64" />
 			</node>
 			<node id="U">
 				<name>U</name>
 				<interior color="e5f6f7" />
 				<outline color="000080" />
-				<font color="000000" name="MS Sans Serif" size="8" />
+				<font color="000000" name="Arial" size="8" />
 				<position>386 1236 507 1268</position>
 			</node>
 		</genie>

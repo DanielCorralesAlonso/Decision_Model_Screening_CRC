@@ -162,7 +162,7 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
 
     # ----------------------------------------------------------------------
     logger.info("Plotting info functions...")
-    '''if new_test:
+    if new_test:
         plot_cond_mut_info(net2, subtitle='new_test', output_dir = output_dir)
         plot_relative_cond_mut_info(net2, subtitle = 'new_test', zoom = (0.001, 0.1), step = 0.001, output_dir = output_dir)
     if sens_analysis_metrics == "lower":
@@ -175,7 +175,6 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
         plot_cond_mut_info(net2, subtitle='', output_dir = output_dir)
         plot_relative_cond_mut_info(net2, subtitle = '', zoom = (0.001, 0.1), step = 0.001, output_dir = output_dir)
     # ----------------------------------------------------------------------
-'''
 
 
     # ----------------------------------------------------------------------
@@ -192,8 +191,9 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
 
     else:
         logger.info(f"Parameters found: {params}")
-        net2.set_mau_expressions(node_id = "U", expressions = [f"Max(0, Min({params[0]} - {params[1]}*Exp( - {params[2]} * V), 1))"])
-        
+        # net2.set_mau_expressions(node_id = "U", expressions = [f"Max(0, Min({params[0]} - {params[1]}*Exp( - {params[2]} * V), 1))"])
+        net2.set_mau_expressions(node_id = "U", expressions = [f"{params[0]} - {params[1]}*Exp( - {params[2]} * V)"])
+
         if new_test:
             net2.write_file(f"{output_dir}/decision_models/DM_screening_{value_function}_{model_type}_new_test.xdsl")
 
