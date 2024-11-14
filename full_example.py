@@ -39,7 +39,7 @@ def full_example(only_counts = False):
     rho_comfort = net.get_node_value("Value_of_comfort")[2]
 
     PE_info_array = np.array([3.7, 4, 4.2 , 4.4, 4.5,])
-    PE_cost_array = np.array([ 3, 5, 10, 50, 100])
+    PE_cost_array = np.array([3, 5, 10, 50, 100])
 
 
     single_run = False
@@ -87,6 +87,8 @@ def full_example(only_counts = False):
 
             if not only_counts:
                 run_label = f"PE_info_{i}_PE_cost_{j}"
+                best_f1_score[run_label] = {"old": 0.0, "comp": 0.0}
+
                 best_f1_score = use_case_new_strategy(
                     net = net,
                     file_location = file_location,
@@ -99,7 +101,6 @@ def full_example(only_counts = False):
                     best_f1_score= best_f1_score
                     )
             
-    pdb.set_trace()
     if not only_counts:
         best_f1_score = pd.DataFrame(best_f1_score)
         best_params = best_f1_score.idxmax(axis=1)

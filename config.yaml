@@ -146,8 +146,8 @@ colors:
 # -- Use case
 
 single_run: False
-num_runs: 128
-max_workers: 8
+num_runs: 200
+max_workers: 4
   
 all_variables: True
 use_case_new_test: False

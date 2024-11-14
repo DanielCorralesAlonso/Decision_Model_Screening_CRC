@@ -318,9 +318,9 @@ def use_case_new_strategy(net = None,
         report_df_comp, conf_matrix_comp = plot_classification_results(report_df = mean_report_comp, conf_matrix=mean_conf_matrix_comp, std_conf_matrix=std_conf_matrix_comp, total_cost=mean_cost_comp, label = f"mean_new_strategy_comparison_{run_label}", plot= True, log_dir = log_dir)
 
         # save f1 score for the positive class 
-        pdb.set_trace()
+        
         best_f1_score[run_label]["old"] = report_df_old.loc["Positive"]["f1-score"]
-        best_f1_score[run_label]["comparison"] = report_df_comp.loc["Positive"]["f1-score"]
+        best_f1_score[run_label]["comp"] = report_df_comp.loc["Positive"]["f1-score"]
 
         return best_f1_score
 
