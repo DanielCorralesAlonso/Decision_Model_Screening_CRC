@@ -42,7 +42,7 @@ def full_example(only_counts = False):
     PE_cost_array = np.array([3, 5, 10, 50, 100])
 
 
-    single_run = False
+    single_run = cfg['single_run']
     best_f1_score = {}
 
     logger, log_dir = create_folders_logger(single_run = single_run, label="use_case_sens_analysis_")
