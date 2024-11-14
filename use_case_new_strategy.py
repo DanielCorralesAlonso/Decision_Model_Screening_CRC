@@ -39,7 +39,7 @@ def use_case_new_strategy(net = None,
         from_elicitation = cfg["from_elicitation"],  
         logger = None,
         log_dir = None,
-        run_label = '',
+        run_label = 'run',
         best_f1_score = {}
     ):
 
@@ -104,18 +104,21 @@ def use_case_new_strategy(net = None,
 
 
     if single_run:
+        seed = (0,)
+
         logger.info("A single simulation of the tests will be performed...")
 
         df_test, counts, possible_outcomes = calculate_network_utilities(net, df_test, logger=logger, full_calculation = True)
         df_test_for_new_str_w_lim = df_test.copy()
         df_test_for_old_str = df_test.copy()
+        df_test_comp = df_test.copy()
         plot_screening_counts(counts, possible_outcomes, operational_limit, log_dir=log_dir)
         logger.info("Calculation finished!")
 
 
         logger.info("----------------------")
         logger.info("New screening strategy without operational limits")
-        df_test, total_cost, time_taken, positive_predictions_counts = new_screening_strategy(df_test, net, possible_outcomes,  counts, limit = False,  logger=logger, verbose = True)
+        df_test, total_cost, time_taken, positive_predictions_counts = new_screening_strategy(df_test, net, possible_outcomes,  counts, limit = False,  logger=logger, seed=seed, verbose = True)
         counts_best_opt = df_test["best_option"].value_counts()
         counts_best_opt = counts_best_opt.reindex(possible_outcomes, fill_value = 0)
 
@@ -129,6 +132,7 @@ def use_case_new_strategy(net = None,
         y_true_new = df_test["CRC"]
         y_pred_new = df_test["Final_decision"]
 
+        df_test.to_csv(f"{log_dir}/df_test.csv")
         counts_new = df_test.groupby(["best_option", "Prediction_screening", "Prediction_colonoscopy", "Final_decision","CRC"])[["CRC"]].count()
         counts_new.to_csv(f"{log_dir}/counts_new.csv")
         logger.info(f"---> Distribution of positive predictions: \n {counts_new}")
@@ -139,7 +143,7 @@ def use_case_new_strategy(net = None,
 
         logger.info("----------------------")
         logger.info("New screening strategy with operational limits")
-        df_test_for_new_str_w_lim_util, total_cost_w_lim, time_taken_w_lim, positive_prediction_counts = new_screening_strategy(df_test_for_new_str_w_lim, net, possible_outcomes, counts, limit = True, operational_limit = operational_limit,  logger=logger, verbose = True)
+        df_test_for_new_str_w_lim_util, total_cost_w_lim, time_taken_w_lim, positive_prediction_counts = new_screening_strategy(df_test_for_new_str_w_lim, net, possible_outcomes, counts, limit = True, operational_limit = operational_limit, seed=seed,  logger=logger, verbose = True)
         counts_best_opt_w_lim = df_test_for_new_str_w_lim_util["best_option_w_lim"].value_counts()
         counts_best_opt_w_lim = counts_best_opt_w_lim.reindex(possible_outcomes, fill_value = 0)
         num_participants_new_lim = df_test_for_new_str_w_lim_util.shape[0] - counts_best_opt_w_lim["No_scr_no_col"]
@@ -152,6 +156,7 @@ def use_case_new_strategy(net = None,
         y_true_new = df_test_for_new_str_w_lim_util["CRC"]
         y_pred_new = df_test_for_new_str_w_lim_util["Final_decision"]
 
+        df_test_for_new_str_w_lim_util.to_csv(f"{log_dir}/df_test_new_w_lim.csv")
         counts_new_str_w_lim = df_test_for_new_str_w_lim_util.groupby(["best_option_w_lim", "Prediction_screening", "Prediction_colonoscopy", "Final_decision", "CRC"])[["CRC"]].count()
         counts_new_str_w_lim.to_csv(f"{log_dir}/counts_new_w_lim.csv")
         logger.info(f"---> Distribution of positive predictions: \n {counts_new_str_w_lim}")
@@ -162,7 +167,7 @@ def use_case_new_strategy(net = None,
 
         logger.info("----------------------")
         logger.info("Old screening strategy")
-        df_test_for_old_str, total_cost_old, time_taken_old = old_screening_strategy(df_test_for_old_str, net, possible_outcomes, logger=logger, verbose = True)
+        df_test_for_old_str, total_cost_old, time_taken_old = old_screening_strategy(df_test_for_old_str, net, possible_outcomes, logger=logger, seed=seed ,  verbose = True)
         counts_best_opt_old = df_test_for_old_str["best_option"].value_counts()
         counts_best_opt_old = counts_best_opt_old.reindex(possible_outcomes, fill_value = 0)
         num_participants_old = df_test_for_old_str.shape[0] - counts_best_opt_old["No_scr_no_col"]
@@ -175,6 +180,7 @@ def use_case_new_strategy(net = None,
         y_true_old = df_test_for_old_str["CRC"]
         y_pred_old = df_test_for_old_str["Final_decision"]
 
+        df_test_for_old_str.to_csv(f"{log_dir}/df_test_old.csv")
         counts_old = df_test_for_old_str.groupby(["best_option", "Prediction_screening", "Prediction_colonoscopy", "Final_decision", "CRC"])[["CRC"]].count()
         counts_old.to_csv(f"{log_dir}/counts_old.csv")
         logger.info(f"---> Distribution of positive predictions: \n {counts_old}")
@@ -188,24 +194,25 @@ def use_case_new_strategy(net = None,
         if use_case_new_test == True:
             operational_limit_comp["New_test"] = 0
 
-        df_test_for_new_str_w_lim_util, total_cost_w_lim, time_taken_w_lim, positive_prediction_counts = new_screening_strategy(df_test_for_new_str_w_lim, net, possible_outcomes, counts, limit = True, operational_limit = operational_limit_comp,  logger=logger, verbose = True)
-        counts_best_opt_w_lim = df_test_for_new_str_w_lim_util["best_option_w_lim"].value_counts()
-        counts_best_opt_w_lim = counts_best_opt_w_lim.reindex(possible_outcomes, fill_value = 0)
-        num_participants_new_lim = df_test_for_new_str_w_lim_util.shape[0] - counts_best_opt_w_lim["No_scr_no_col"]
+        df_test_comp, total_cost_comp, time_taken_comp, positive_prediction_counts = new_screening_strategy(df_test_comp, net, possible_outcomes, counts, limit = True, operational_limit = operational_limit_comp, seed=seed ,  logger=logger, verbose = True)
+        counts_best_opt_comp = df_test_comp["best_option_w_lim"].value_counts()
+        counts_best_opt_comp= counts_best_opt_comp.reindex(possible_outcomes, fill_value = 0)
+        num_participants_comp = df_test_comp.shape[0] - counts_best_opt_comp["No_scr_no_col"]
 
-        logger.info(f"---> Total cost of the strategy: {total_cost_w_lim:.2f} €")
-        logger.info(f"---> Mean cost per screened participant: {total_cost_w_lim/num_participants_new_lim:.2f} €")
-        logger.info(f"---> Mean cost per individual in the total population: {total_cost_w_lim/df_test.shape[0]:.2f} €")
-        logger.info(f"---> Total time for the simulation: {time_taken_w_lim:.2f} seconds")
+        logger.info(f"---> Total cost of the strategy: {total_cost_comp:.2f} €")
+        logger.info(f"---> Mean cost per screened participant: {total_cost_w_lim/num_participants_comp:.2f} €")
+        logger.info(f"---> Mean cost per individual in the total population: {total_cost_comp/df_test.shape[0]:.2f} €")
+        logger.info(f"---> Total time for the simulation: {time_taken_comp:.2f} seconds")
 
-        y_true_new = df_test_for_new_str_w_lim_util["CRC"]
-        y_pred_new = df_test_for_new_str_w_lim_util["Final_decision"]
+        y_true_new = df_test_comp["CRC"]
+        y_pred_new = df_test_comp["Final_decision"]
 
-        counts_new_str_w_lim = df_test_for_new_str_w_lim_util.groupby(["best_option_w_lim", "Prediction_screening", "Prediction_colonoscopy", "Final_decision", "CRC"])[["CRC"]].count()
-        counts_new_str_w_lim.to_csv(f"{log_dir}/counts_new_w_lim.csv")
-        logger.info(f"---> Distribution of positive predictions: \n {counts_new_str_w_lim}")
+        df_test_comp.to_csv(f"{log_dir}/df_test_comp.csv")
+        counts_new_str_comp = df_test_comp.groupby(["best_option_w_lim", "Prediction_screening", "Prediction_colonoscopy", "Final_decision", "CRC"])[["CRC"]].count()
+        counts_new_str_comp.to_csv(f"{log_dir}/counts_new_w_lim_comp.csv")
+        logger.info(f"---> Distribution of positive predictions: \n {counts_new_str_comp}")
 
-        report, conf_matrix = plot_classification_results(y_true_new, y_pred_new, total_cost = total_cost_w_lim,  label = f"new_strategy_with_limits_{run_label}", log_dir = log_dir)
+        report, conf_matrix = plot_classification_results(y_true_new, y_pred_new, total_cost = total_cost_comp,  label = f"new_strategy_with_limits_{run_label}", log_dir = log_dir)
         logger.info(report)
 
 

@@ -21,7 +21,6 @@ import pdb
 # Make an array and iterate over possible values of probabilities
 def plot_cond_mut_info(net1, net2 = None, subtitle = '', plot = True, zoom = (0.1, 0.1), step = 0.001, output_dir = None):
 
-    pdb.set_trace()
     net_array = [net1]
     num_scr = len(net1.get_outcome_ids("Screening"))
     if net2 is not None:
@@ -94,8 +93,8 @@ def plot_cond_mut_info(net1, net2 = None, subtitle = '', plot = True, zoom = (0.
 
         ax.plot(np.arange(0,1+step,step), h_y_arr, label = "H(CRC)", color = color_dict["H(CRC)"])
 
-    ordered_functions = ['Colonoscopy', 'Colon_capsule', 'sDNA', 'FIT', 'CTC', 'Blood_based', 'gFOBT', 'No_screening']
-    leg = plt.legend(ordered_functions,loc='upper right', bbox_to_anchor=(1.35, 1), shadow=True)
+    handles, legend_labels = ax.get_legend_handles_labels()
+    ax.legend(handles[::-1], legend_labels[::-1], loc='upper right', bbox_to_anchor=(1.35, 1), shadow=True)
 
     title = "Conditional Mutual Information "
     plt.title(title)
@@ -130,8 +129,8 @@ def plot_cond_mut_info(net1, net2 = None, subtitle = '', plot = True, zoom = (0.
 
         ax.plot(np.arange(0,1+step,step), h_y_arr, label = "H(CRC)", color = color_dict["H(CRC)"]) 
 
-    ordered_functions = ['Colonoscopy', 'Colon_capsule', 'sDNA', 'FIT', 'CTC', 'Blood_based', 'gFOBT', 'No_screening']
-    leg = plt.legend(ordered_functions,loc='upper right', bbox_to_anchor=(1.35, 1), shadow=True)
+    handles, legend_labels = ax.get_legend_handles_labels()
+    ax.legend(handles[::-1], legend_labels[::-1], loc='upper right', bbox_to_anchor=(1.35, 1), shadow=True)
 
     title = "Conditional Mutual Information"
     plt.title(title)
@@ -168,8 +167,8 @@ def plot_cond_mut_info(net1, net2 = None, subtitle = '', plot = True, zoom = (0.
 
         ax.plot(np.arange(0,1+step,step), h_y_arr, label = "H(CRC)", color = color_dict["H(CRC)"])    
 
-    ordered_functions = ['Colonoscopy', 'Colon_capsule', 'sDNA', 'FIT', 'CTC', 'Blood_based', 'gFOBT', 'No_screening']
-    leg = plt.legend(ordered_functions,loc='upper right', bbox_to_anchor=(1.35, 1), shadow=True)
+    handles, legend_labels = ax.get_legend_handles_labels()
+    ax.legend(handles[::-1], legend_labels[::-1], loc='upper right', bbox_to_anchor=(1.35, 1), shadow=True)
     title = "Conditional Mutual Information"
     plt.title(title)
      
@@ -259,9 +258,10 @@ def plot_relative_cond_mut_info(net1, net2 = None, subtitle = '', zoom=(0.001, 0
         for screening in range(arr.shape[0]):
             ax.plot(np.arange(0,1+step,step), arr[screening], label = f"{labels[screening]}", color = color_dict[labels[screening]])    
 
-
-    ordered_functions = ['Colonoscopy', 'Colon_capsule', 'sDNA', 'FIT', 'CTC', 'Blood_based', 'gFOBT', 'No_screening']
-    leg = plt.legend(ordered_functions,loc='upper right', bbox_to_anchor=(1.35, 1), shadow=True)
+    handles, legend_labels = ax.get_legend_handles_labels()
+    ax.legend(handles[::-1], legend_labels[::-1], loc='upper right', bbox_to_anchor=(1.35, 1), shadow=True)
+    '''ordered_functions = ['Colonoscopy', 'Colon_capsule', 'sDNA', 'FIT', 'CTC', 'Blood_based', 'gFOBT', 'No_screening']
+    leg = plt.legend(ordered_functions,)'''
 
     title = "Relative Reduction of Uncertainty with respect to CRC"
     plt.title(title)
@@ -293,7 +293,8 @@ def plot_relative_cond_mut_info(net1, net2 = None, subtitle = '', zoom=(0.001, 0
         for screening in range(arr.shape[0]):
             ax.plot(np.arange(0,1+step,step), arr[screening], label = f"{labels[screening]}", color = color_dict[labels[screening]])    
 
-    leg = plt.legend(loc='upper right', bbox_to_anchor=(1.35, 1), shadow=True)
+    handles, legend_labels = ax.get_legend_handles_labels()
+    ax.legend(handles[::-1], legend_labels[::-1], loc='upper right', bbox_to_anchor=(1.35, 1), shadow=True)
     title = "Relative Reduction of Uncertainty with respect to CRC"
     plt.title(title)
      
@@ -324,7 +325,8 @@ def plot_relative_cond_mut_info(net1, net2 = None, subtitle = '', zoom=(0.001, 0
         for screening in range(arr.shape[0]):
             ax.plot(np.arange(0,1+step,step), arr[screening], label = f"{labels[screening]}", color = color_dict[labels[screening]])    
 
-    leg = plt.legend(loc='upper right', bbox_to_anchor=(1.35, 1), shadow=True)
+    handles, legend_labels = ax.get_legend_handles_labels()
+    ax.legend(handles[::-1], legend_labels[::-1], loc='upper right', bbox_to_anchor=(1.35, 1), shadow=True)
     title = "Relative Reduction of Uncertainty with respect to CRC"
     plt.title(title)
      

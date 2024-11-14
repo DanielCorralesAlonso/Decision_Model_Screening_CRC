@@ -41,20 +41,10 @@ def mutual_info_measures(net, plot = False, p_CRC_false = None, p_CRC_true = Non
 
     # --- Colonoscopy ---------------------------------------------------------
 
-    net.update_beliefs()
-    if not plot:
-        try:
-            net.add_arc("Results_of_Screening", "Colonoscopy")
-            net.update_beliefs()
-        except:
-            pass
-
-    point_cond_mut_info_col_array = []
-    rel_point_cond_mut_info_col_array = []
-    cond_mut_info_col_array = []
-    rel_cond_mut_info_col_array = []
+    
 
     if plot:
+        net.update_beliefs()
         # For the plot of the RMI of colonoscopy, we do not consider the screening node
         
         point_cond_mut_info_col, cond_mut_info_col = calculate_values(net, p_CRC_false, p_CRC_true, "Colonoscopy", "Results_of_Colonoscopy")
@@ -77,6 +67,17 @@ def mutual_info_measures(net, plot = False, p_CRC_false = None, p_CRC_true = Non
 
 
     else:
+        net.update_beliefs()
+        try:
+            net.add_arc("Results_of_Screening", "Colonoscopy")
+            net.update_beliefs()
+        except:
+            pass
+
+        point_cond_mut_info_col_array = []
+        rel_point_cond_mut_info_col_array = []
+        cond_mut_info_col_array = []
+        rel_cond_mut_info_col_array = []
 
         net.set_evidence("Screening", "No_screening")
         net.set_evidence("Results_of_Screening", "No_pred_screening")
@@ -158,7 +159,13 @@ def mutual_info_measures(net, plot = False, p_CRC_false = None, p_CRC_true = Non
 
         dict = {"point_cond_mut_info": point_cond_mut_info, "rel_point_cond_mut_info": rel_point_cond_mut_info, "cond_mut_info": cond_mut_info, "rel_cond_mut_info": rel_cond_mut_info}
 
-
+    net.update_beliefs()
+    try:
+        net.add_arc("Results_of_Screening", "Colonoscopy")
+        net.update_beliefs()
+    except:
+        pass
+    
     return dict, dict_scr, dict_col
 
 

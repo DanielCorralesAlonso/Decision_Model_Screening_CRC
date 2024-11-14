@@ -33,8 +33,8 @@ def simulate_test_results(sensitivity_scr, specificity_scr, y_crc, seed = None):
     scr_results = []
     col_results = []
 
-    pdb.set_trace()
-    for i, y in enumerate(y_crc):
+    # pdb.set_trace()
+    for i, y in y_crc.items():
         seed_pat = seed + (i,)
         seed_final = hash(seed_pat) % (2**32 - 1)
         np.random.seed(seed_final)

@@ -159,7 +159,7 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
         net2.write_file(f"{output_dir}/decision_models/DM_screening_{value_function}_{model_type}.xdsl")
     # ----------------------------------------------------------------------
 
-
+    
     # ----------------------------------------------------------------------
     logger.info("Plotting info functions...")
     if new_test:
@@ -179,11 +179,12 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
 
     # ----------------------------------------------------------------------
     logger.info("Calculating final utilities...")
+    
 
     if model_type == "tanh":
         params = parameter_elicitation_utilities_tanh(PE_info = cfg[value_function]["PE_info"], PE_cost = cfg[value_function]["PE_cost"], rho_comfort = lambdas[2])
     elif model_type == "linear":
-        params = parameter_elicitation_utilities_linear(net, PE = cfg[value_function]["PE_prob"], PE_info = cfg[value_function]["PE_info"], PE_cost = cfg[value_function]["PE_cost"], rho_comfort = lambdas[2], value_function = value_function, logging = logger)
+        params = parameter_elicitation_utilities_linear(net2, PE = cfg[value_function]["PE_prob"], PE_info = cfg[value_function]["PE_info"], PE_cost = cfg[value_function]["PE_cost"], rho_comfort = lambdas[2], value_function = value_function, logging = logger)
 
     if params is None:
         logger.warning("Please try another initial value for the system of equations...")
