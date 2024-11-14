@@ -330,7 +330,7 @@ def use_case_new_strategy(net = None,
 
 
 
-def run_experiment(i, df_test, file_location, possible_outcomes, counts, operational_limit, use_case_new_test, log_dir):
+def run_experiment(i, df_test, file_location, possible_outcomes, counts, operational_limit, use_case_new_test, log_dir, seed = None):
 
     results = {
         "report_df_new": None,
@@ -354,9 +354,9 @@ def run_experiment(i, df_test, file_location, possible_outcomes, counts, operati
     df_test_new_w_lim = df_test.copy()
     df_test_old = df_test.copy()
     df_test_comp = df_test.copy()
-    
 
-    df_test_new, total_cost_new, time_taken, positive_predictions_count = new_screening_strategy(df_test_new, net, possible_outcomes, counts = counts, limit=False, operational_limit = dict(zip(operational_limit.keys(), counts)))
+    seed = (i,)
+    df_test_new, total_cost_new, time_taken, positive_predictions_count = new_screening_strategy(df_test_new, net, possible_outcomes, counts = counts, limit=False, seed = seed , operational_limit = dict(zip(operational_limit.keys(), counts)))
 
     y_true_new = df_test_new["CRC"]
     y_pred_new = df_test_new["Final_decision"]
@@ -367,7 +367,7 @@ def run_experiment(i, df_test, file_location, possible_outcomes, counts, operati
     results["total_cost_new"] = total_cost_new
 
 
-    df_test_new_w_lim, total_cost_new_w_lim, time_taken, positive_predictions_count = new_screening_strategy(df_test_new_w_lim, net, possible_outcomes, counts=counts, limit=True, operational_limit = operational_limit)
+    df_test_new_w_lim, total_cost_new_w_lim, time_taken, positive_predictions_count = new_screening_strategy(df_test_new_w_lim, net, possible_outcomes, counts=counts, limit=True, seed = seed , operational_limit = operational_limit)
 
     y_true_new_w_lim = df_test_new_w_lim["CRC"]
     y_pred_new_w_lim = df_test_new_w_lim["Final_decision"]
@@ -378,7 +378,7 @@ def run_experiment(i, df_test, file_location, possible_outcomes, counts, operati
     results["total_cost_new_w_lim"] = total_cost_new_w_lim
 
 
-    df_test_old, total_cost_old, time_taken = old_screening_strategy(df_test_old, net, possible_outcomes)
+    df_test_old, total_cost_old, time_taken = old_screening_strategy(df_test_old, net, possible_outcomes, seed = seed)
 
     y_true_old = df_test_old["CRC"]
     y_pred_old = df_test_old["Final_decision"]
@@ -395,7 +395,7 @@ def run_experiment(i, df_test, file_location, possible_outcomes, counts, operati
     if use_case_new_test == True:
         operational_limit_comp["New_test"] = 0
 
-    df_test_comp_util, total_cost_comp, time_taken_w_lim, positive_prediction_counts = new_screening_strategy(df_test_comp, net, possible_outcomes, counts, limit = True, operational_limit = operational_limit_comp)
+    df_test_comp_util, total_cost_comp, time_taken_w_lim, positive_prediction_counts = new_screening_strategy(df_test_comp, net, possible_outcomes, counts, limit = True, seed = seed , operational_limit = operational_limit_comp)
     
     y_true_new = df_test_comp_util["CRC"]
     y_pred_new = df_test_comp_util["Final_decision"]

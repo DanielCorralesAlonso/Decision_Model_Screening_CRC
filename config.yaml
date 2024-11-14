@@ -147,7 +147,7 @@ colors:
 
 single_run: False
 num_runs: 200
-max_workers: 4
+
   
 all_variables: True
 use_case_new_test: False

@@ -161,7 +161,7 @@ def reorder_df_with_limits(df, limits):
 
 
 
-def new_screening_strategy(df_test, net, possible_outcomes, counts, limit, operational_limit = None, logger=None, verbose = False):
+def new_screening_strategy(df_test, net, possible_outcomes, counts, limit, operational_limit = None,seed = None, logger=None, verbose = False):
     t1 = time.time()
 
     n_screening_tests = len(possible_outcomes) - 1
@@ -190,6 +190,7 @@ def new_screening_strategy(df_test, net, possible_outcomes, counts, limit, opera
 
 
     for i, strategy in enumerate(possible_outcomes):
+        seed_str = seed + (i,)
         
         if strategy == "No_scr_no_col":
             if limit:
@@ -218,7 +219,7 @@ def new_screening_strategy(df_test, net, possible_outcomes, counts, limit, opera
             spec_col = np.array(net.get_node_definition("Results_of_Colonoscopy")).reshape(2,2,3)[0, 1 ,1]
             sens_col = np.array(net.get_node_definition("Results_of_Colonoscopy")).reshape(2,2,3)[1, 1 ,2]
 
-            df_col = simulate_test_results(sens_col, spec_col, y_selected_patients)
+            df_col = simulate_test_results(sens_col, spec_col, y_selected_patients, seed = seed_str)
 
             df_test.loc[selected_patients.index, "Prediction_colonoscopy"] = df_col["TestResult"]
             df_test.loc[selected_patients.index, "Final_decision"] = df_col["TestResult"]
@@ -245,7 +246,8 @@ def new_screening_strategy(df_test, net, possible_outcomes, counts, limit, opera
             spec_strategy = np.array(net.get_node_definition("Results_of_Screening")).reshape(2,n_screening_tests,3)[0, i-1, 1]
             sens_strategy = np.array(net.get_node_definition("Results_of_Screening")).reshape(2,n_screening_tests,3)[1, i-1, 2]
 
-            df_scr = simulate_test_results(sens_strategy, spec_strategy, y_selected_patients) 
+            pdb.set_trace()
+            df_scr = simulate_test_results(sens_strategy, spec_strategy, selected_patients, seed = seed_str) 
 
             df_test.loc[selected_patients.index, "Prediction_screening"] = df_scr["TestResult"]
             df_test.loc[selected_patients.index, "Prediction_colonoscopy"] = 0
@@ -258,7 +260,7 @@ def new_screening_strategy(df_test, net, possible_outcomes, counts, limit, opera
             spec_col = np.array(net.get_node_definition("Results_of_Colonoscopy")).reshape(2,2,3)[0, 1 ,1]
             sens_col = np.array(net.get_node_definition("Results_of_Colonoscopy")).reshape(2,2,3)[1, 1 ,2]
             
-            df_col = simulate_test_results(sens_col, spec_col, y_SCR_positives)
+            df_col = simulate_test_results(sens_col, spec_col, y_SCR_positives, seed = seed)
 
             df_test.loc[SCR_positives.index, "Colonoscopy"] = "Colonoscopy"
             df_test.loc[SCR_positives.index, "Prediction_colonoscopy"] = df_col["TestResult"]
