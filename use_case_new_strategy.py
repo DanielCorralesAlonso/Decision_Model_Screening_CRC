@@ -63,8 +63,9 @@ def use_case_new_strategy(net = None,
     logger.info(f"Use all variables: {all_variables}")
     logger.info(f"Use case with new test: {use_case_new_test}")
     logger.info(f"PE method: {cfg['rel_point_cond_mut_info']}")
- 
 
+    best_f1_score[run_label] = {"old": 0.0, "comp": 0.0}
+ 
     logger.info("Reading the network file...")
     if net == None:
         net = pysmile.Network()
@@ -147,6 +148,8 @@ def use_case_new_strategy(net = None,
         counts_best_opt_w_lim = df_test_for_new_str_w_lim_util["best_option_w_lim"].value_counts()
         counts_best_opt_w_lim = counts_best_opt_w_lim.reindex(possible_outcomes, fill_value = 0)
         num_participants_new_lim = df_test_for_new_str_w_lim_util.shape[0] - counts_best_opt_w_lim["No_scr_no_col"]
+
+        plot_screening_counts(counts, possible_outcomes, operational_limit, counts_w_lim = counts_best_opt_w_lim, log_dir=log_dir, label = "w_lims")
 
         logger.info(f"---> Total cost of the strategy: {total_cost_w_lim:.2f} €")
         logger.info(f"---> Mean cost per screened participant: {total_cost_w_lim/num_participants_new_lim:.2f} €")

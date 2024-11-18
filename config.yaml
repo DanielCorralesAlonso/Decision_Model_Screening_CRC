@@ -45,9 +45,14 @@ point_cond_mut_info:
   PE_prob: 0.7     # Probability of equivalence
 
 rel_point_cond_mut_info:
-  PE_cost: 250     # Probability equivalent cost
-  PE_info: 4.5     # Probability equivalent info
+  PE_cost: 10     # Probability equivalent cost
+  PE_info: 4     # Probability equivalent info
   PE_prob: 0.7    # Probability of equivalence
+
+
+full_example:
+  PE_cost_array: [10, 50] # [3, 5, 10, 50, 100]
+  PE_info_array: [3.8, 4] # [3.7, 4, 4.2 , 4.4, 4.5]
   
 # -------------------------------------------------------------------------
 

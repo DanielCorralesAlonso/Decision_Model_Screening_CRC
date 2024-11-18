@@ -228,7 +228,7 @@ def plot_relative_cond_mut_info(net1, net2 = None, subtitle = '', zoom=(0.001, 0
         arr = arr.reshape(int(1 / step + 1),num_scr+1)
         arr = arr.transpose()
 
-        h_y_arr = np.nan_to_num(h_y_arr, 0)
+        h_y_arr = np.nan_to_num(h_y_arr, nan=0)
 
         dict_net[net] = [arr, h_y_arr]
    
@@ -386,7 +386,7 @@ def plot_estimations_w_error_bars(mean_report, std_report, SE_report = None, lab
 
 
 
-def plot_screening_counts(counts, possible_outcomes, operational_limit, log_dir = None, lambda_list = None):
+def plot_screening_counts(counts,  possible_outcomes, operational_limit, counts_w_lim = None, log_dir = None, lambda_list = None, label = '_'):
     fig, ax = plt.subplots()
 
     # Loop through each bar to add the text annotations and apply conditional styling
@@ -413,6 +413,12 @@ def plot_screening_counts(counts, possible_outcomes, operational_limit, log_dir 
         except:
             pass
 
+    if counts_w_lim is not None:
+        for i, outcome in enumerate(possible_outcomes):
+            if operational_limit[outcome] != counts_w_lim[outcome]:
+                bar1 = ax.bar(outcome, counts_w_lim[outcome], color='steelblue',  alpha=0.15,  align = 'center')
+                ax.text(bar1[0].get_x() + bar1[0].get_width()/2, counts_w_lim[outcome] + 5000, str(int(counts_w_lim[outcome])), ha='center', color='steelblue', fontsize=10)
+
 
     ax.legend()
 
@@ -433,7 +439,7 @@ def plot_screening_counts(counts, possible_outcomes, operational_limit, log_dir 
             ha='left', va='center', transform=ax.transAxes)
 
     timestamp = datetime.datetime.now().strftime("%H-%M-%S")
-    plt.savefig(f"{log_dir}/screening_counts_{timestamp}.png", bbox_inches='tight')
+    plt.savefig(f"{log_dir}/screening_counts_{label}_{timestamp}.png", bbox_inches='tight')
     plt.close(fig)
 
     return

@@ -38,8 +38,8 @@ def full_example(only_counts = False):
     net.update_beliefs()
     rho_comfort = net.get_node_value("Value_of_comfort")[2]
 
-    PE_info_array = np.array([3.7, 4, 4.2 , 4.4, 4.5,])
-    PE_cost_array = np.array([3, 5, 10, 50, 100])
+    PE_info_array = np.array( cfg["full_example"]["PE_info_array"] )
+    PE_cost_array = np.array( cfg["full_example"]["PE_cost_array"] )
 
 
     single_run = cfg['single_run']
@@ -87,7 +87,7 @@ def full_example(only_counts = False):
 
             if not only_counts:
                 run_label = f"PE_info_{i}_PE_cost_{j}"
-                best_f1_score[run_label] = {"old": 0.0, "comp": 0.0}
+                
 
                 best_f1_score = use_case_new_strategy(
                     net = net,
