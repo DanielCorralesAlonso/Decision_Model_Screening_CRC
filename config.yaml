@@ -29,7 +29,7 @@ calculate_info_values: True
 
 
 # -- Flag for assigning a new test
-new_test: True 
+new_test: False 
 
 # --------- If new_test = True, the following parameters must be defined
 cost_new_test: 3
@@ -150,12 +150,11 @@ colors:
 
 # -- Use case
 
-single_run: True
+single_run: False
 num_runs: 200
 max_workers: 32
   
 all_variables: True
-use_case_new_test: True
 from_elicitation: False
 
 operational_limit : {
@@ -164,7 +163,7 @@ operational_limit : {
         "gFOBT": 30000,
         "FIT": 40000,
         "Blood_based": 7000,
-        "Stool_DNA": 5000,
+        "Stool_DNA": 2000,
         "CTC": 2000,
         "Colon_capsule": 2000,
     }
@@ -191,5 +190,5 @@ operational_limit_new_test : {
         "Stool_DNA": 0,
         "CTC": 0,
         "Colon_capsule": 0,
-        "New_test": 20000,
+        "New_test": 25000,
         }

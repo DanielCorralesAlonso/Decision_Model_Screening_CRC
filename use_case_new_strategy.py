@@ -34,7 +34,7 @@ def use_case_new_strategy(net = None,
         operational_limit_comp = cfg["operational_limit_comp"], 
         single_run = cfg["single_run"],
         num_runs = cfg["num_runs"],
-        use_case_new_test = cfg["use_case_new_test"],
+        use_case_new_test = cfg["new_test"],
         all_variables = cfg["all_variables"],
         from_elicitation = cfg["from_elicitation"],  
         logger = None,
@@ -64,7 +64,7 @@ def use_case_new_strategy(net = None,
     logger.info(f"Use case with new test: {use_case_new_test}")
     logger.info(f"PE method: {cfg['rel_point_cond_mut_info']}")
 
-    best_f1_score[run_label] = {"old": 0.0, "comp": 0.0}
+    
  
     logger.info("Reading the network file...")
     if net == None:
@@ -94,12 +94,15 @@ def use_case_new_strategy(net = None,
         pass
 
 
-    
-
     if use_case_new_test == True:
-        operational_limit = cfg['operational_limit_new_test']
+        run_label = 'new_test'
+        operational_limit = cfg['new_test']
+        if "inf" in operational_limit.values():
+            operational_limit = {k: np.inf if v == "inf" else v for k, v in operational_limit.items()}
 
     logger.info(f"Operational limits for the screening strategies: {operational_limit}")
+
+    best_f1_score[run_label] = {"old": 0.0, "comp": 0.0}
 
 
     if single_run:
