@@ -163,7 +163,7 @@ operational_limit : {
         "gFOBT": 30000,
         "FIT": 40000,
         "Blood_based": 7000,
-        "Stool_DNA": 5000,
+        "Stool_DNA": 2000,
         "CTC": 2000,
         "Colon_capsule": 2000,
     }
@@ -190,5 +190,5 @@ operational_limit_new_test : {
         "Stool_DNA": 0,
         "CTC": 0,
         "Colon_capsule": 0,
-        "New_test": 20000,
+        "New_test": 25000,
         }

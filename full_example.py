@@ -22,7 +22,7 @@ with open('config.yaml', 'r') as file:
 
 
 def full_example(only_counts = False):
-    if cfg["use_case_new_test"] == True:
+    if cfg["new_test"] == True:
         file_location = "outputs/linear_rel_point_cond_mut_info_elicitFalse_newtestTrue/decision_models/DM_screening_rel_point_cond_mut_info_linear_new_test.xdsl"
     else:
         file_location = "outputs/linear_rel_point_cond_mut_info_elicitFalse_newtestFalse/decision_models/DM_screening_rel_point_cond_mut_info_linear.xdsl"
@@ -80,7 +80,7 @@ def full_example(only_counts = False):
             logger.info(f"PE_info: {param1}, PE_cost: {param2}, DONE!")
 
             plt.tight_layout()  
-            if cfg["use_case_new_test"] == True:
+            if cfg["new_test"] == True:
                 plt.savefig(f"{log_dir}/sens_analysis_screening_counts_new_test.png")
             else:
                 plt.savefig(f"{log_dir}/sens_analysis_screening_counts.png")
@@ -93,7 +93,7 @@ def full_example(only_counts = False):
                     net = net,
                     file_location = file_location,
                     single_run = single_run,
-                    use_case_new_test= False,
+                    use_case_new_test= cfg["new_test"],
                     all_variables= True,
                     logger = logger,
                     log_dir = log_dir,
