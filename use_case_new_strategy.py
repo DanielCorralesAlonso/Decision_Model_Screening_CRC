@@ -97,9 +97,7 @@ def use_case_new_strategy(net = None,
     
 
     if use_case_new_test == True:
-        operational_limit["New_test"] = 20000
-        operational_limit["Stool_DNA"] = 0
-        operational_limit["FIT"] = 20000
+        operational_limit = cfg['operational_limit_new_test']
 
     logger.info(f"Operational limits for the screening strategies: {operational_limit}")
 
