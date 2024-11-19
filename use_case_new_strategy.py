@@ -34,7 +34,7 @@ def use_case_new_strategy(net = None,
         operational_limit_comp = cfg["operational_limit_comp"], 
         single_run = cfg["single_run"],
         num_runs = cfg["num_runs"],
-        use_case_new_test = cfg["use_case_new_test"],
+        use_case_new_test = cfg["new_test"],
         all_variables = cfg["all_variables"],
         from_elicitation = cfg["from_elicitation"],  
         logger = None,
@@ -97,7 +97,7 @@ def use_case_new_strategy(net = None,
     
 
     if use_case_new_test == True:
-        operational_limit = cfg['operational_limit_new_test']
+        operational_limit = cfg['new_test']
 
     logger.info(f"Operational limits for the screening strategies: {operational_limit}")
 

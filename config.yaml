@@ -10,7 +10,7 @@ lambda_list_from_config: True
 lambda_list: [4.011942483017116, 4.168480067521723, 6.801984517973132, 7.0]
 
 # original = [4.011942483017116, 4.168480067521723, 6.801984517973132, 7.0]
-# first change = [4.011942483017116, 4.168480067521723, 5.5 , 7.0]
+# first change = [4.011942483017116, 4.168480067521723, 6.3 , 7.0]
 # second change = [4.8, 5, 6.801984517973132, 7.0]
 
 patient_chars: {"Age": "age_4_adult", 
@@ -29,7 +29,7 @@ calculate_info_values: True
 
 
 # -- Flag for assigning a new test
-new_test: True 
+new_test: False 
 
 # --------- If new_test = True, the following parameters must be defined
 cost_new_test: 3
@@ -150,12 +150,11 @@ colors:
 
 # -- Use case
 
-single_run: True
+single_run: False
 num_runs: 200
 max_workers: 32
   
 all_variables: True
-use_case_new_test: True
 from_elicitation: False
 
 operational_limit : {

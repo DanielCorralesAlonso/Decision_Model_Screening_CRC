@@ -111,7 +111,7 @@ def full_example(only_counts = False):
 
 
 if __name__ == "__main__":
-    full_example()
+    full_example(only_counts=False)
 
 
 
