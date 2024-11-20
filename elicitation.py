@@ -63,13 +63,13 @@ def parameter_elicitation_utilities_linear(net, PE, PE_info, PE_cost, rho_comfor
     v_PE =  rho_comfort * PE_info - np.log10(PE_cost+1)
 
     if logging is not None:
-        print("Best info: ", best_info)
-        print("Worst info: ", worst_info)
-        print("PE info: ", PE_info)
+        logging.info(f"Best info: {best_info}")
+        logging.info(f"Worst info: {worst_info}")
+        logging.info(f"PE info: {PE_info}")
 
-        print("v_best: ", v_best)
-        print("v_worst: ", v_worst)
-        print("v_PE: ", v_PE)
+        logging.info(f"v_best: {v_best}")
+        logging.info(f"v_worst: {v_worst}")
+        logging.info(f"v_PE: {v_PE}")
 
         logging.info("Searching for a solution of the system of equations...")
 

@@ -150,7 +150,7 @@ colors:
 
 # -- Use case
 
-single_run: False
+single_run: True
 num_runs: 200
 max_workers: 32
   
@@ -163,7 +163,7 @@ operational_limit : {
         "gFOBT": 30000,
         "FIT": 40000,
         "Blood_based": 7000,
-        "Stool_DNA": 2000,
+        "Stool_DNA": 5000,
         "CTC": 2000,
         "Colon_capsule": 2000,
     }

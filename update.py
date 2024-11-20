@@ -27,7 +27,10 @@ with open('config.yaml', 'r') as file:
 
 
 
-def update_influence_diagram(model_type = None, value_function = None, elicit = None, noise=None, calculate_info_values = None , ref_patient_chars = None, new_test = None, sens_analysis_metrics = None, logger = None, output_dir = None):
+def update_influence_diagram(model_type = None, value_function = None, elicit = None, noise=None, calculate_info_values = None ,
+                              ref_patient_chars = None, new_test = None, sens_analysis_metrics = None, logger = None, output_dir = None,
+                              change_risk_param = False, rho_param = None, exogenous_var_prob = None, predefined_lambdas = None):
+    
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
         os.makedirs(f"{output_dir}/decision_models")
@@ -42,6 +45,14 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
     net = pysmile.Network()
     net.read_file(f"decision_models/DM_screening_{value_function}_{model_type}.xdsl")
     # ----------------------------------------------------------------------
+
+
+    if exogenous_var_prob is not None:
+        # pdb.set_trace()
+        new_cpt = net.get_node_definition('CRC')
+        new_cpt[0] = 1 - exogenous_var_prob
+        new_cpt[1] = exogenous_var_prob
+        net.set_node_definition('CRC', new_cpt)
 
     # ----------------------------------------------------------------------
     if sens_analysis_metrics == "lower":
@@ -69,70 +80,82 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
         net2.update_beliefs()
 
     # ----------------------------------------------------------------------
-    if model_type == "tanh":
-        logger.info("Defining value of comfort...")
-        rho_4 = 0.6
-        rho_3 = 0.55
-        rho_2 = 0.50
-        rho_1 = 0.40
-        arr_comft = np.array([rho_4, rho_4, rho_4, rho_4, rho_4, rho_4, rho_4, rho_4, rho_4, rho_4, rho_4, rho_4, rho_4, rho_4,
-                            rho_4, rho_1, rho_3, rho_1, rho_3, rho_1, rho_3, rho_1, rho_3, rho_1, rho_2, rho_1, rho_2, rho_1, # Added discomfort when colonoscopy is not mandatory
-                            rho_4, rho_4, rho_3, rho_3, rho_3, rho_3, rho_3, rho_3, rho_3, rho_3, rho_2, rho_2, rho_2, rho_2,]) #No added discomfort when colonoscopy is mandatory
-        net2.set_node_definition("Value_of_comfort", arr_comft)
+    
+    if predefined_lambdas is None:
+        if model_type == "tanh":
+            logger.info("Defining value of comfort...")
+            rho_4 = 0.6
+            rho_3 = 0.55
+            rho_2 = 0.50
+            rho_1 = 0.40
+            arr_comft = np.array([rho_4, rho_4, rho_4, rho_4, rho_4, rho_4, rho_4, rho_4, rho_4, rho_4, rho_4, rho_4, rho_4, rho_4,
+                                rho_4, rho_1, rho_3, rho_1, rho_3, rho_1, rho_3, rho_1, rho_3, rho_1, rho_2, rho_1, rho_2, rho_1, # Added discomfort when colonoscopy is not mandatory
+                                rho_4, rho_4, rho_3, rho_3, rho_3, rho_3, rho_3, rho_3, rho_3, rho_3, rho_2, rho_2, rho_2, rho_2,]) #No added discomfort when colonoscopy is mandatory
+            net2.set_node_definition("Value_of_comfort", arr_comft)
 
-        net2.set_mau_expressions(node_id = "V", expressions = [f"((8131.71-COST)/8131.71)*Tanh(INFO*Value_of_comfort)"])
+            net2.set_mau_expressions(node_id = "V", expressions = [f"((8131.71-COST)/8131.71)*Tanh(INFO*Value_of_comfort)"])
 
-    elif model_type == "linear":
-        logger.info("Eliciting value of comfort...")
+        elif model_type == "linear":
+            logger.info("Eliciting value of comfort...")
 
-        if elicit == True:
+            if elicit == True:
 
-            lambdas = elicit_lambda(patient_chars = ref_patient_chars, value_function = value_function,
-                                    net = net2, logging = logger)
-            
-            
-            
-            net.set_node_definition("Value_of_comfort", lambdas)
-            net.set_mau_expressions(node_id = "V", expressions = [f"Value_of_comfort*INFO - Log10(COST+1)"])
-
-        else:
-            try:
-                lambdas = net2.get_node_value("Value_of_comfort")
-                logger.info("No elicitation of lambda values, taking default values...")
+                lambdas = elicit_lambda(patient_chars = ref_patient_chars, value_function = value_function,
+                                        net = net2, logging = logger)
                 
-                if noise == True:
-                    logger.info("Adding noise to the lambda values...")
-                    if cfg["lambda_list_from_config"] == True:
-                        lambda_list = cfg["lambda_list"]
-                    else:
-                        lambda_list = [lambdas[1], lambdas[-2], lambdas[2]]
-                        lambda_list_mod = np.random.normal(lambda_list, cfg['noise_std'])
-                        while not np.array_equal(np.sort(lambda_list_mod), lambda_list_mod):
-                            lambda_list_mod = np.random.normal(lambda_list, cfg['noise_std'])
+                
+                
+                net.set_node_definition("Value_of_comfort", lambdas)
+                net.set_mau_expressions(node_id = "V", expressions = [f"Value_of_comfort*INFO - Log10(COST+1)"])
 
-                        lambda_list = lambda_list_mod
+            else:
+                try:
+                    lambdas = net2.get_node_value("Value_of_comfort")
+                    logger.info("No elicitation of lambda values, taking default values...")
                     
+                    if noise == True:
+                        logger.info("Adding noise to the lambda values...")
+                        if cfg["lambda_list_from_config"] == True:
+                            lambda_list = cfg["lambda_list"]
+                        else:
+                            lambda_list = [lambdas[1], lambdas[-2], lambdas[2]]
+                            lambda_list_mod = np.random.normal(lambda_list, cfg['noise_std'])
+                            while not np.array_equal(np.sort(lambda_list_mod), lambda_list_mod):
+                                lambda_list_mod = np.random.normal(lambda_list, cfg['noise_std'])
+
+                            lambda_list = lambda_list_mod
+                        
+                        lambdas = np.array([np.ceil(lambda_list[2]), lambda_list[0], lambda_list[2], lambda_list[0], 
+                            lambda_list[2], lambda_list[0], lambda_list[2], lambda_list[0], 
+                            lambda_list[2], lambda_list[0], lambda_list[1], lambda_list[0], lambda_list[1], lambda_list[0],])
+
+                        net2.set_node_definition("Value_of_comfort", lambdas)
+                        net2.set_mau_expressions(node_id = "V", expressions = [f"Value_of_comfort*INFO - Log10(COST+1)"])
+                    
+                    logger.info(f"Lambda values: {lambdas}")
+
+                except:
+                    logger.info("No default values found, setting custom values...")
+                    lambda_list = cfg["lambda_list"]
                     lambdas = np.array([np.ceil(lambda_list[2]), lambda_list[0], lambda_list[2], lambda_list[0], 
-                        lambda_list[2], lambda_list[0], lambda_list[2], lambda_list[0], 
-                        lambda_list[2], lambda_list[0], lambda_list[1], lambda_list[0], lambda_list[1], lambda_list[0],])
+                            lambda_list[2], lambda_list[0], lambda_list[2], lambda_list[0], 
+                            lambda_list[2], lambda_list[0], lambda_list[1], lambda_list[0], lambda_list[1], lambda_list[0],])
 
-                    net2.set_node_definition("Value_of_comfort", lambdas)
+                    net2.set_node_definition("Value_of_comfort", arr_comft)
+
                     net2.set_mau_expressions(node_id = "V", expressions = [f"Value_of_comfort*INFO - Log10(COST+1)"])
-                
-                logger.info(f"Lambda values: {lambdas}")
 
-            except:
-                logger.info("No default values found, setting custom values...")
-                lambda_list = cfg["lambda_list"]
-                lambdas = np.array([np.ceil(lambda_list[2]), lambda_list[0], lambda_list[2], lambda_list[0], 
-                        lambda_list[2], lambda_list[0], lambda_list[2], lambda_list[0], 
-                        lambda_list[2], lambda_list[0], lambda_list[1], lambda_list[0], lambda_list[1], lambda_list[0],])
+                    lambdas = net2.get_node_value("Value_of_comfort")
 
-                net2.set_node_definition("Value_of_comfort", arr_comft)
+    else:
+        lambda_list = predefined_lambdas
+        lambdas = np.array([np.ceil(lambda_list[2]), lambda_list[0], lambda_list[2], lambda_list[0], 
+                            lambda_list[2], lambda_list[0], lambda_list[2], lambda_list[0], 
+                            lambda_list[2], lambda_list[0], lambda_list[1], lambda_list[0], lambda_list[1], lambda_list[0],])
 
-                net2.set_mau_expressions(node_id = "V", expressions = [f"Value_of_comfort*INFO - Log10(COST+1)"])
+        net.set_node_definition("Value_of_comfort", lambdas)
+        net.set_mau_expressions(node_id = "V", expressions = [f"Value_of_comfort*INFO - Log10(COST+1)"])
 
-                lambdas = net2.get_node_value("Value_of_comfort")
 
 
 
@@ -192,6 +215,11 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
 
     else:
         logger.info(f"Parameters found: {params}")
+
+        if change_risk_param:
+            params = params[:2] + [rho_param]
+
+
         # net2.set_mau_expressions(node_id = "U", expressions = [f"Max(0, Min({params[0]} - {params[1]}*Exp( - {params[2]} * V), 1))"])
         net2.set_mau_expressions(node_id = "U", expressions = [f"{params[0]} - {params[1]}*Exp( - {params[2]} * V)"])
 
@@ -243,6 +271,36 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
 
     logger.info(f"\n {df_U}")
     # ----------------------------------------------------------------------
+
+
+    # ----------------------------------------------------------------------
+    logger.info("Calculating best screening strategy for patient X...")
+
+    net.clear_all_evidence()
+
+    for key, value in ref_patient_chars.items():
+        net.set_evidence(key, value)
+
+    net.update_beliefs()
+
+
+    vars1 = net.get_outcome_ids("Screening")
+
+    arr = np.array(net2.get_node_value("Screening"))
+
+    df_scr = pd.DataFrame(arr.reshape(1,-1), index=["Screening"], columns=vars1)
+
+
+    if new_test:
+        df_scr.to_csv(f"{output_dir}/output_data/Screening_util_new_test.csv")
+    if sens_analysis_metrics == "lower":
+        df_scr.to_csv(f"{output_dir}/output_data/Screening_util_sens_analysis_lower.csv")
+    if sens_analysis_metrics == "upper":
+        df_scr.to_csv(f"{output_dir}/output_data/Screening_util_sens_analysis_upper.csv")
+    else:  
+        df_scr.to_csv(f"{output_dir}/output_data/Screening_util.csv")
+
+    logger.info(f"\n {df_scr}")
 
 
     # ----------------------------------------------------------------------

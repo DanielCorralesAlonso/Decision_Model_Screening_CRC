@@ -568,25 +568,30 @@ def compare_strategies(df_selected, net, possible_outcomes, operational_limit = 
     
 
 
-def create_folders_logger(single_run, label):
+def create_folders_logger(label, single_run = None, date = True, time = True, output_dir = 'logs'):
     current_dir = os.getcwd()
-    log_dir = os.path.join(current_dir, 'logs')
+    log_dir = os.path.join(current_dir, output_dir)
     # Create the logs directory if it doesn't exist
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
 
-    date_str = datetime.datetime.now().strftime("%Y-%m-%d")
-    log_dir = os.path.join(log_dir, date_str)
-    if not os.path.exists(log_dir):
-        os.makedirs(log_dir)
+    if date:
+        date_str = datetime.datetime.now().strftime("%Y-%m-%d")
+        log_dir = os.path.join(log_dir, date_str)
+        if not os.path.exists(log_dir):
+            os.makedirs(log_dir)
 
-    time_str = datetime.datetime.now().strftime("%H-%M-%S")
-    log_dir = os.path.join(log_dir, label + time_str)
-    if not os.path.exists(log_dir):
-        os.makedirs(log_dir)
+    if time:
+        time_str = datetime.datetime.now().strftime("%H-%M-%S")
+        log_dir = os.path.join(log_dir, label + time_str)
+        if not os.path.exists(log_dir):
+            os.makedirs(log_dir)
 
-    timestamp = datetime.datetime.now().strftime("%H-%M-%S")
-    log_filename = os.path.join(log_dir, f"{label}{timestamp}_singlerun_{single_run}.log")
+    if single_run is not None:
+        log_filename = os.path.join(log_dir, f"{label}_singlerun_{single_run}.log")
+    else:
+        log_filename = os.path.join(log_dir, f"{label}.log")
+    
 
     # Create a custom logger
     logger = logging.getLogger()

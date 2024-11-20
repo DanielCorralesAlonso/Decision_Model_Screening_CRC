@@ -40,7 +40,8 @@ def use_case_new_strategy(net = None,
         logger = None,
         log_dir = None,
         run_label = 'run',
-        best_f1_score = {}
+        best_f1_score = {},
+        output_dir = None
     ):
 
     # check if an element in operational limit is inf
@@ -50,7 +51,7 @@ def use_case_new_strategy(net = None,
         operational_limit_comp = {k: np.inf if v == "inf" else v for k, v in operational_limit_comp.items()}
 
     if logger == None:
-        logger, log_dir = create_folders_logger(single_run, label="use_case_")
+        logger, log_dir = create_folders_logger(single_run = single_run, label="use_case_", date = False, time = False, output_dir=output_dir)
     else:
         log_dir = os.path.join(log_dir, run_label)
         if not os.path.exists(log_dir):
@@ -96,7 +97,7 @@ def use_case_new_strategy(net = None,
 
     if use_case_new_test == True:
         run_label = 'new_test'
-        operational_limit = cfg['new_test']
+        operational_limit = cfg["operational_limit_new_test"]
         if "inf" in operational_limit.values():
             operational_limit = {k: np.inf if v == "inf" else v for k, v in operational_limit.items()}
 
@@ -114,7 +115,7 @@ def use_case_new_strategy(net = None,
         df_test_for_new_str_w_lim = df_test.copy()
         df_test_for_old_str = df_test.copy()
         df_test_comp = df_test.copy()
-        plot_screening_counts(counts, possible_outcomes, operational_limit, log_dir=log_dir)
+        plot_screening_counts(counts, possible_outcomes, operational_limit, log_dir=log_dir, timestamp = '_')
         logger.info("Calculation finished!")
 
 
@@ -150,7 +151,7 @@ def use_case_new_strategy(net = None,
         counts_best_opt_w_lim = counts_best_opt_w_lim.reindex(possible_outcomes, fill_value = 0)
         num_participants_new_lim = df_test_for_new_str_w_lim_util.shape[0] - counts_best_opt_w_lim["No_scr_no_col"]
 
-        plot_screening_counts(counts, possible_outcomes, operational_limit, counts_w_lim = counts_best_opt_w_lim, log_dir=log_dir, label = "w_lims")
+        plot_screening_counts(counts, possible_outcomes, operational_limit, counts_w_lim = counts_best_opt_w_lim, log_dir=log_dir, label = "w_lims", timestamp="_")
 
         logger.info(f"---> Total cost of the strategy: {total_cost_w_lim:.2f} €")
         logger.info(f"---> Mean cost per screened participant: {total_cost_w_lim/num_participants_new_lim:.2f} €")
@@ -239,9 +240,8 @@ def use_case_new_strategy(net = None,
         total_cost_list_new_w_lim = []
         total_cost_list_comp = []
 
-
         df_test, counts, possible_outcomes = calculate_network_utilities(net, df_test)
-        plot_screening_counts(counts, possible_outcomes, operational_limit, log_dir=log_dir)
+        plot_screening_counts(counts, possible_outcomes, operational_limit, log_dir=log_dir, timestamp = '_')
         
         with ProcessPoolExecutor(max_workers=cfg['max_workers']) as executor:
             futures = [executor.submit(run_experiment, i, df_test, file_location, possible_outcomes, counts, operational_limit, use_case_new_test, log_dir) for i in range(num_runs)]

@@ -170,3 +170,4 @@ cython_debug/
 pysmile_license.py
 tests.ipynb
 use_cases.ipynb
+/notebook

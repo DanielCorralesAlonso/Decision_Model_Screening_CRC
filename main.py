@@ -70,71 +70,77 @@ parser.add_argument('--sens_analysis_metrics', type=bool, default=False, help='P
 # Parse the arguments
 args = parser.parse_args()
 
+def main(args):
 
-# Normal update.
-if not args.sens_analysis_metrics:
+    # Normal update.
+    if not args.sens_analysis_metrics:
 
-    logger.info("----- Normal update of the influence diagram -----")
-    output_dir = f"outputs/{args.model_type}_{args.value_function}_elicit{args.elicit}_newtest{args.new_test}"
+        logger.info("----- Normal update of the influence diagram -----")
+        output_dir = f"outputs/{args.model_type}_{args.value_function}_elicit{args.elicit}_newtest{args.new_test}"
 
-    net = update_influence_diagram(
-        model_type = args.model_type,
-        value_function = args.value_function,
-        elicit = args.elicit,
-        noise = args.noise,
-        calculate_info_values=args.calculate_info_values,
-        ref_patient_chars = cfg["patient_chars"],
-        new_test = args.new_test,
-        logger = logger,
-        output_dir = output_dir
-    )
+        net = update_influence_diagram(
+            model_type = args.model_type,
+            value_function = args.value_function,
+            elicit = args.elicit,
+            noise = args.noise,
+            calculate_info_values=args.calculate_info_values,
+            ref_patient_chars = cfg["patient_chars"],
+            new_test = args.new_test,
+            logger = logger,
+            output_dir = output_dir
+        )
 
-    # ----------------------------------------------------------------------
-    logger.info("Done!")
-    # ----------------------------------------------------------------------
-    
+        # ----------------------------------------------------------------------
+        logger.info("Done!")
+        # ----------------------------------------------------------------------
+        
 
-# Sensitivity analysis with respect to the performance metrics of the screening methods.
-else:
+    # Sensitivity analysis with respect to the performance metrics of the screening methods.
+    else:
 
-    logger.info("----- Update the influence diagram with lower and upper bounds on the performance metrics -----")
-    output_dir = f"outputs/{args.model_type}_{args.value_function}_elicit{args.elicit}_newtest{args.new_test}_sens"
+        logger.info("----- Update the influence diagram with lower and upper bounds on the performance metrics -----")
+        output_dir = f"outputs/{args.model_type}_{args.value_function}_elicit{args.elicit}_newtest{args.new_test}_sens"
 
-    net_lower = update_influence_diagram(
-        model_type = args.model_type,
-        value_function = args.value_function,
-        elicit = args.elicit,
-        noise = args.noise,
-        ref_patient_chars = cfg["patient_chars"],
-        new_test = args.new_test,
-        sens_analysis_metrics = "lower", # Lower bound
-        logger = logger,
-        output_dir = output_dir
-    )
+        net_lower = update_influence_diagram(
+            model_type = args.model_type,
+            value_function = args.value_function,
+            elicit = args.elicit,
+            noise = args.noise,
+            ref_patient_chars = cfg["patient_chars"],
+            new_test = args.new_test,
+            sens_analysis_metrics = "lower", # Lower bound
+            logger = logger,
+            output_dir = output_dir
+        )
 
-    net_upper = update_influence_diagram(
-        model_type = args.model_type,
-        value_function = args.value_function,
-        elicit = args.elicit,
-        noise = args.noise,
-        ref_patient_chars = cfg["patient_chars"],
-        new_test = args.new_test,
-        sens_analysis_metrics = "upper", # Upper bound
-        logger = logger,
-        output_dir = output_dir
-    )
+        net_upper = update_influence_diagram(
+            model_type = args.model_type,
+            value_function = args.value_function,
+            elicit = args.elicit,
+            noise = args.noise,
+            ref_patient_chars = cfg["patient_chars"],
+            new_test = args.new_test,
+            sens_analysis_metrics = "upper", # Upper bound
+            logger = logger,
+            output_dir = output_dir
+        )
 
-    df_U_lower = pd.read_csv(f"{output_dir}/U_values_sens_analysis_lower.csv", index_col=0)
-    df_U_upper = pd.read_csv(f"{output_dir}/U_values_sens_analysis_upper.csv", index_col=0)
+        df_U_lower = pd.read_csv(f"{output_dir}/U_values_sens_analysis_lower.csv", index_col=0)
+        df_U_upper = pd.read_csv(f"{output_dir}/U_values_sens_analysis_upper.csv", index_col=0)
 
-    logger.info("Plotting the relative conditional mutual information bounds")
-    plot_relative_cond_mut_info(net_lower, net_upper)
+        logger.info("Plotting the relative conditional mutual information bounds")
+        plot_relative_cond_mut_info(net_lower, net_upper)
 
-    df_U_lower.loc["Upper bound"] = df_U_upper.loc["U"]
-    df_U_lower.rename(index={"U": "Lower bound"}, inplace=True)
+        df_U_lower.loc["Upper bound"] = df_U_upper.loc["U"]
+        df_U_lower.rename(index={"U": "Lower bound"}, inplace=True)
 
-    df_U_lower.to_csv(f"{output_dir}/U_values_sens_analysis.csv")
+        df_U_lower.to_csv(f"{output_dir}/U_values_sens_analysis.csv")
 
-    # ----------------------------------------------------------------------
-    logger.info("Done!")
-    # ----------------------------------------------------------------------
+        # ----------------------------------------------------------------------
+        logger.info("Done!")
+        # ----------------------------------------------------------------------
+
+
+
+if __name__ == "__main__":
+    main()
