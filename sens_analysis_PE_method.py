@@ -34,7 +34,7 @@ np.seterr(divide='ignore', invalid = 'ignore')
 
 
 
-def sens_analysis_PE_method(net, df_test, PE_info_array, PE_cost_array, label = '', output_dir = 'logs', logger = None, log_dir = None):
+def sens_analysis_PE_method(label = '', output_dir = 'logs', logger = None, log_dir = None):
 
     if logger == None:
         logger, log_dir = create_folders_logger(label=label, date = False, time = False, output_dir=output_dir)
@@ -85,9 +85,9 @@ def sens_analysis_PE_method(net, df_test, PE_info_array, PE_cost_array, label = 
                 _ , counts, possible_outcomes = calculate_network_utilities(net, df_test, full_calculation = True)
 
                 #code from plots.py function plot_screening_counts()
-                bars1 = axes[i,j].bar(possible_outcomes, counts, color = 'blue', label = 'Number of tests')
+                bars1 = axes[i,j].bar(possible_outcomes, counts, color = 'steelblue', alpha = 0.3, label = 'Number of tests')
                 for bar in bars1:
-                    axes[i,j].text(bar.get_x() + bar.get_width()/2, bar.get_height() + 3000, str(bar.get_height()), ha='center', color='black', fontsize=10)
+                    axes[i,j].text(bar.get_x() + bar.get_width()/2, bar.get_height() + 3000, str(bar.get_height()), ha='center', color='black', fontsize=15)
 
                 axes[i,j].legend()
 
@@ -95,7 +95,7 @@ def sens_analysis_PE_method(net, df_test, PE_info_array, PE_cost_array, label = 
                 axes[i,j].set_xticks(range(len(possible_outcomes)), possible_outcomes, rotation = 45)
                 axes[i,j].set_xlabel("Screening outcome")
                 axes[i,j].set_ylabel("Number of tests")
-                axes[i,j].set_title("PE_info = " + str(param1) + " and PE_cost = " + str(param2))
+                axes[i,j].set_title("PE_info = " + str(param1) + " and PE_cost = " + str(param2), font_size = 13)
 
 
 
