@@ -63,7 +63,7 @@ def full_example(only_counts = False):
             _ , counts, possible_outcomes = calculate_network_utilities(net, df_test, full_calculation = True)
 
             #code from plots.py function plot_screening_counts()
-            bars1 = axes[i,j].bar(possible_outcomes, counts, color = 'blue', label = 'Number of tests')
+            bars1 = axes[i,j].bar(possible_outcomes, counts, color = 'steelblue', alpha= 0.3, label = 'Number of tests')
             for bar in bars1:
                 axes[i,j].text(bar.get_x() + bar.get_width()/2, bar.get_height() + 3000, str(bar.get_height()), ha='center', color='black', fontsize=10)
 

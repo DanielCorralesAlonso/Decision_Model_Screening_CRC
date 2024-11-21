@@ -41,7 +41,7 @@ def use_case_new_strategy(net = None,
         log_dir = None,
         run_label = 'run',
         best_f1_score = {},
-        output_dir = None
+        output_dir = 'logs'
     ):
 
     # check if an element in operational limit is inf
@@ -51,7 +51,7 @@ def use_case_new_strategy(net = None,
         operational_limit_comp = {k: np.inf if v == "inf" else v for k, v in operational_limit_comp.items()}
 
     if logger == None:
-        logger, log_dir = create_folders_logger(single_run = single_run, label="use_case_", date = False, time = False, output_dir=output_dir)
+        logger, log_dir = create_folders_logger(single_run = single_run, label="use_case_", date = True, time = True, output_dir= output_dir)
     else:
         log_dir = os.path.join(log_dir, run_label)
         if not os.path.exists(log_dir):
