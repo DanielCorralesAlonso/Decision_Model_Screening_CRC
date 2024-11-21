@@ -33,8 +33,11 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
     
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
+    if not os.path.exists(f"{output_dir}/decision_models"):
         os.makedirs(f"{output_dir}/decision_models")
+    if not os.path.exists(f"{output_dir}/output_images"):
         os.makedirs(f"{output_dir}/output_images")
+    if not os.path.exists(f"{output_dir}/output_data"):
         os.makedirs(f"{output_dir}/output_data")
 
 
