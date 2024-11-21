@@ -148,7 +148,7 @@ colors:
 
 # -- Use case
 
-single_run: False
+single_run: True
 num_runs: 640
 max_workers: 64
   
