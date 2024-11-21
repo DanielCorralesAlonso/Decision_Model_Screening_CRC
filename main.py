@@ -70,7 +70,7 @@ parser.add_argument('--sens_analysis_metrics', type=bool, default=False, help='P
 # Parse the arguments
 args = parser.parse_args()
 
-def main(args):
+def main(args = args):
 
     # Normal update.
     if not args.sens_analysis_metrics:
