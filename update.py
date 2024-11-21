@@ -113,25 +113,24 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
                     lambdas = net2.get_node_value("Value_of_comfort")
                     logger.info("No elicitation of lambda values, taking default values...")
                     
-                    if noise == True:
-                        logger.info("Adding noise to the lambda values...")
-                        if cfg["lambda_list_from_config"] == True:
-                            lambda_list = cfg["lambda_list"]
-                        else:
-                            lambda_list = [lambdas[1], lambdas[-2], lambdas[2]]
-                            lambda_list_mod = np.random.normal(lambda_list, cfg['noise_std'])
-                            while not np.array_equal(np.sort(lambda_list_mod), lambda_list_mod):
-                                lambda_list_mod = np.random.normal(lambda_list, cfg['noise_std'])
-
-                            lambda_list = lambda_list_mod
                         
-                        lambdas = np.array([np.ceil(lambda_list[2]), lambda_list[0], lambda_list[2], lambda_list[0], 
-                            lambda_list[2], lambda_list[0], lambda_list[2], lambda_list[0], 
-                            lambda_list[2], lambda_list[0], lambda_list[1], lambda_list[0], lambda_list[1], lambda_list[0],])
+                    if cfg["lambda_list_from_config"] == True:
+                        lambda_list = cfg["lambda_list"]
+                    else:
+                        lambda_list = [lambdas[1], lambdas[-2], lambdas[2]]
+                        lambda_list_mod = np.random.normal(lambda_list, cfg['noise_std'])
+                        while not np.array_equal(np.sort(lambda_list_mod), lambda_list_mod):
+                            lambda_list_mod = np.random.normal(lambda_list, cfg['noise_std'])
 
-                        net2.set_node_definition("Value_of_comfort", lambdas)
-                        net2.set_mau_expressions(node_id = "V", expressions = [f"Value_of_comfort*INFO - Log10(COST+1)"])
+                        lambda_list = lambda_list_mod
                     
+                    lambdas = np.array([np.ceil(lambda_list[2]), lambda_list[0], lambda_list[2], lambda_list[0], 
+                        lambda_list[2], lambda_list[0], lambda_list[2], lambda_list[0], 
+                        lambda_list[2], lambda_list[0], lambda_list[1], lambda_list[0], lambda_list[1], lambda_list[0],])
+
+                    net2.set_node_definition("Value_of_comfort", lambdas)
+                    net2.set_mau_expressions(node_id = "V", expressions = [f"Value_of_comfort*INFO - Log10(COST+1)"])
+                
                     logger.info(f"Lambda values: {lambdas}")
 
                 except:
@@ -149,6 +148,7 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
 
     else:
         lambda_list = predefined_lambdas
+        logger.info(f"Lambdas: {lambda_list}")
         lambdas = np.array([np.ceil(lambda_list[2]), lambda_list[0], lambda_list[2], lambda_list[0], 
                             lambda_list[2], lambda_list[0], lambda_list[2], lambda_list[0], 
                             lambda_list[2], lambda_list[0], lambda_list[1], lambda_list[0], lambda_list[1], lambda_list[0],])
@@ -240,17 +240,17 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
     # ----------------------------------------------------------------------
     logger.info("Calculating utilities for patient X...")
 
-    net.clear_all_evidence()
+    net2.clear_all_evidence()
 
     for key, value in ref_patient_chars.items():
-        net.set_evidence(key, value)
+        net2.set_evidence(key, value)
 
     net.update_beliefs()
 
 
-    vars1 = net.get_outcome_ids("Screening")
-    vars2 = net.get_outcome_ids("Results_of_Screening")
-    vars3 = net.get_outcome_ids("Colonoscopy")
+    vars1 = net2.get_outcome_ids("Screening")
+    vars2 = net2.get_outcome_ids("Results_of_Screening")
+    vars3 = net2.get_outcome_ids("Colonoscopy")
 
     comb = list(itertools.product(vars1, vars2, vars3))
 
@@ -276,15 +276,15 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
     # ----------------------------------------------------------------------
     logger.info("Calculating best screening strategy for patient X...")
 
-    net.clear_all_evidence()
+    net2.clear_all_evidence()
 
     for key, value in ref_patient_chars.items():
-        net.set_evidence(key, value)
+        net2.set_evidence(key, value)
 
-    net.update_beliefs()
+    net2.update_beliefs()
 
 
-    vars1 = net.get_outcome_ids("Screening")
+    vars1 = net2.get_outcome_ids("Screening")
 
     arr = np.array(net2.get_node_value("Screening"))
 
@@ -341,7 +341,9 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
 
     logger.info("Value of screening...")'''
     
-    
+    for handler in logger.handlers:
+        handler.close()          # Close the handler
+        logger.removeHandler(handler)  # Remove the handler from the logger
 
     return net2
 

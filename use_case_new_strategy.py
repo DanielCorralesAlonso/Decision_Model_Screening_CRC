@@ -220,6 +220,10 @@ def use_case_new_strategy(net = None,
         report, conf_matrix = plot_classification_results(y_true_new, y_pred_new, total_cost = total_cost_comp,  label = f"new_strategy_with_limits_{run_label}", log_dir = log_dir)
         logger.info(report)
 
+        for handler in logger.handlers:
+            handler.close()          # Close the handler
+            logger.removeHandler(handler)  # Remove the handler from the logger
+
 
 
     else:
@@ -332,6 +336,12 @@ def use_case_new_strategy(net = None,
         
         best_f1_score[run_label]["old"] = report_df_old.loc["Positive"]["f1-score"]
         best_f1_score[run_label]["comp"] = report_df_comp.loc["Positive"]["f1-score"]
+        
+
+        for handler in logger.handlers:
+            handler.close()          # Close the handler
+            logger.removeHandler(handler)  # Remove the handler from the logger
+
 
         return best_f1_score
 
@@ -416,6 +426,7 @@ def run_experiment(i, df_test, file_location, possible_outcomes, counts, operati
     results["conf_matrix_comp"] = conf_matrix_comp
     results["total_cost_comp"] = total_cost_comp
 
+    
     
     return results
 

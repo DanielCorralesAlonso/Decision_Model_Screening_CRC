@@ -106,6 +106,10 @@ def full_example(only_counts = False):
         best_params = best_f1_score.idxmax(axis=1)
         logger.info(f"Best model: {best_params}")
 
+    for handler in logger.handlers:
+        handler.close()          # Close the handler
+        logger.removeHandler(handler)  # Remove the handler from the logger
+
     plt.close(fig)
 
 

@@ -122,6 +122,11 @@ def sens_analysis_elicitation(
 
     print("Counts:" , counts)
 
+
+    for handler in logger.handlers:
+        handler.close()          # Close the handler
+        logger.removeHandler(handler)  # Remove the handler from the logger
+
     return
 
 

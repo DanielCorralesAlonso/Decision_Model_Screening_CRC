@@ -95,7 +95,7 @@ def sens_analysis_PE_method(label = '', output_dir = 'logs', logger = None, log_
                 axes[i,j].set_xticks(range(len(possible_outcomes)), possible_outcomes, rotation = 45)
                 axes[i,j].set_xlabel("Screening outcome")
                 axes[i,j].set_ylabel("Number of tests")
-                axes[i,j].set_title("PE_info = " + str(param1) + " and PE_cost = " + str(param2), font_size = 13)
+                axes[i,j].set_title("PE_info = " + str(param1) + " and PE_cost = " + str(param2))
 
 
 
@@ -108,9 +108,11 @@ def sens_analysis_PE_method(label = '', output_dir = 'logs', logger = None, log_
                     plt.savefig(f"{log_dir}/sens_analysis_screening_counts.png")
 
 
-    
-    plt.close(fig)
+    for handler in logger.handlers:
+        handler.close()          # Close the handler
+        logger.removeHandler(handler)  # Remove the handler from the logger
 
+    plt.close(fig)
 
 
 if __name__ == "__main__":

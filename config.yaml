@@ -19,9 +19,7 @@ patient_chars: {"Age": "age_4_adult",
                         "PA": "PA_2",
                         "Smoking": "sm_1_not_smoker",
                         "BMI": "bmi_2_normal",
-                        "Alcohol": "low",
-                        #"Diabetes": True,
-                        #"Hypertension": True,
+                        "Alcohol": "low"
                         }
 
 # -- Flag for calculating values
@@ -45,7 +43,7 @@ point_cond_mut_info:
   PE_prob: 0.7     # Probability of equivalence
 
 rel_point_cond_mut_info:
-  PE_cost: 10     # Probability equivalent cost
+  PE_cost: 5     # Probability equivalent cost
   PE_info: 4     # Probability equivalent info
   PE_prob: 0.7    # Probability of equivalence
 
@@ -161,7 +159,7 @@ operational_limit : {
         "No_scr_no_col": "inf",
         "No_scr_col": 3000,
         "gFOBT": 30000,
-        "FIT": 40000,
+        "FIT": 42000,
         "Blood_based": 7000,
         "Stool_DNA": 5000,
         "CTC": 2000,
@@ -185,10 +183,10 @@ operational_limit_new_test : {
         "No_scr_no_col": "inf",
         "No_scr_col": 3000,
         "gFOBT": 30000,
-        "FIT": 40000,
+        "FIT": 42000,
         "Blood_based": 7000,
         "Stool_DNA": 5000,
         "CTC": 2000,
         "Colon_capsule": 2000,
-        "New_test": 25000,
+        "New_test": 50000,
         }
