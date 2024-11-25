@@ -28,7 +28,7 @@ platformdirs==3.1.1
 prompt-toolkit==3.0.38
 psutil==5.9.4
 pure-eval==0.2.2
-Pygments==2.14.0
+Pygments==2.15.0
 pyparsing==3.1.2
 pysmile==2.2.5
 python-dateutil==2.9.0.post0
