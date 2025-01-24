@@ -50,7 +50,7 @@ rel_point_cond_mut_info:
 
 full_example:
   PE_cost_array: [5, 10, 50] # [3, 5, 10, 50, 100]
-  PE_info_array: [3.8, 4, 4.2] # [3.7, 4, 4.2 , 4.4, 4.5]
+  PE_info_array: [4.2, 4, 3.8] # [3.7, 4, 4.2 , 4.4, 4.5]
   
 # -------------------------------------------------------------------------
 
@@ -149,8 +149,8 @@ colors:
 # -- Use case
 
 single_run: True
-num_runs: 640
-max_workers: 64
+num_runs: 300
+max_workers: 8
   
 all_variables: True
 from_elicitation: False

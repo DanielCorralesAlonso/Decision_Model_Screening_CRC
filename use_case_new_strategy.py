@@ -141,6 +141,7 @@ def use_case_new_strategy(net = None,
         logger.info(f"---> Distribution of positive predictions: \n {counts_new}")
         
         report, conf_matrix = plot_classification_results(y_true_new, y_pred_new, total_cost = total_cost, label = f"new_strategy_{run_label}", log_dir = log_dir)
+        report.to_csv(f"{output_dir}/new_str_no_lim_classification_report.csv")
         logger.info(report)
 
 
@@ -152,6 +153,9 @@ def use_case_new_strategy(net = None,
         num_participants_new_lim = df_test_for_new_str_w_lim_util.shape[0] - counts_best_opt_w_lim["No_scr_no_col"]
 
         plot_screening_counts(counts, possible_outcomes, operational_limit, counts_w_lim = counts_best_opt_w_lim, log_dir=log_dir, label = "w_lims", timestamp="_")
+        # pdb.set_trace()
+        df_tot = pd.concat([pd.DataFrame(counts).transpose(), pd.DataFrame(operational_limit, index = ["operational_limit"]), pd.DataFrame(counts_best_opt_w_lim).transpose().rename(index={"count": "best_opt_w_lim"})], axis = 0)
+        df_tot.to_csv(f"{output_dir}/counts_possible_outcomes_operational_limit.csv")
 
         logger.info(f"---> Total cost of the strategy: {total_cost_w_lim:.2f} €")
         logger.info(f"---> Mean cost per screened participant: {total_cost_w_lim/num_participants_new_lim:.2f} €")
@@ -167,6 +171,7 @@ def use_case_new_strategy(net = None,
         logger.info(f"---> Distribution of positive predictions: \n {counts_new_str_w_lim}")
 
         report, conf_matrix = plot_classification_results(y_true_new, y_pred_new, total_cost = total_cost_w_lim,  label = f"new_strategy_with_limits_{run_label}", log_dir = log_dir)
+        report.to_csv(f"{output_dir}/new_str_w_lim_classification_report.csv")
         logger.info(report)
 
 
@@ -191,6 +196,7 @@ def use_case_new_strategy(net = None,
         logger.info(f"---> Distribution of positive predictions: \n {counts_old}")
 
         report, conf_matrix = plot_classification_results(y_true_old, y_pred_old, total_cost = total_cost_old, label = f"old_strategy_{run_label}", log_dir= log_dir)
+        report.to_csv(f"{output_dir}/old_str_classification_report.csv")
         logger.info(report)
 
 
@@ -205,7 +211,7 @@ def use_case_new_strategy(net = None,
         num_participants_comp = df_test_comp.shape[0] - counts_best_opt_comp["No_scr_no_col"]
 
         logger.info(f"---> Total cost of the strategy: {total_cost_comp:.2f} €")
-        logger.info(f"---> Mean cost per screened participant: {total_cost_w_lim/num_participants_comp:.2f} €")
+        logger.info(f"---> Mean cost per screened participant: {total_cost_comp/num_participants_comp:.2f} €")
         logger.info(f"---> Mean cost per individual in the total population: {total_cost_comp/df_test.shape[0]:.2f} €")
         logger.info(f"---> Total time for the simulation: {time_taken_comp:.2f} seconds")
 
@@ -219,6 +225,7 @@ def use_case_new_strategy(net = None,
 
         report, conf_matrix = plot_classification_results(y_true_new, y_pred_new, total_cost = total_cost_comp,  label = f"new_strategy_with_limits_{run_label}", log_dir = log_dir)
         logger.info(report)
+        report.to_csv(f"{output_dir}/comparison_classification_report.csv")
 
         for handler in logger.handlers:
             handler.close()          # Close the handler

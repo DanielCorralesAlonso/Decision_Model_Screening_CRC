@@ -432,7 +432,7 @@ def plot_screening_counts(counts,  possible_outcomes, operational_limit = None, 
     ax.legend()
 
     ax.set_ylim(0, 355000)
-    ax.set_xticks(range(len(possible_outcomes)), possible_outcomes, rotation = 45)
+    ax.set_xticks(range(len(possible_outcomes)), possible_outcomes, rotation = 45, ha = 'right')
     ax.set_xlabel("Screening outcome")
     ax.set_ylabel("Number of tests")
     ax.set_title("Recommended Tests vs. Operational Limit")
