@@ -166,7 +166,7 @@
 				<outline color="000080" />
 				<font color="000000" name="Arial" size="16" />
 				<position>1174 49 1291 123</position>
-				<barchart active="true" width="128" height="64" />
+				<barchart width="128" height="64" />
 			</node>
 			<node id="Age">
 				<name>Age</name>
@@ -174,7 +174,7 @@
 				<outline color="000080" />
 				<font color="000000" name="Arial" size="16" />
 				<position>682 45 799 119</position>
-				<barchart active="true" width="128" height="90" />
+				<barchart width="128" height="90" />
 			</node>
 			<node id="SD">
 				<name>SD</name>
@@ -182,7 +182,7 @@
 				<outline color="000080" />
 				<font color="000000" name="Arial" size="16" />
 				<position>972 208 1102 288</position>
-				<barchart active="true" width="128" height="72" />
+				<barchart width="128" height="72" />
 			</node>
 			<node id="SES">
 				<name>SES</name>
@@ -190,7 +190,7 @@
 				<outline color="000080" />
 				<font color="000000" name="Arial" size="16" />
 				<position>916 96 1033 170</position>
-				<barchart active="true" width="128" height="72" />
+				<barchart width="128" height="72" />
 			</node>
 			<node id="Depression">
 				<name>Depression</name>
@@ -198,7 +198,7 @@
 				<outline color="000080" />
 				<font color="000000" name="Arial" size="16" />
 				<position>1257 227 1387 307</position>
-				<barchart active="true" width="128" height="64" />
+				<barchart width="128" height="64" />
 			</node>
 			<node id="PA">
 				<name>PA</name>
@@ -206,7 +206,7 @@
 				<outline color="000080" />
 				<font color="000000" name="Arial" size="16" />
 				<position>628 245 758 325</position>
-				<barchart active="true" width="128" height="64" />
+				<barchart width="128" height="64" />
 			</node>
 			<node id="Smoking">
 				<name>Smoking</name>
@@ -214,7 +214,7 @@
 				<outline color="000080" />
 				<font color="000000" name="Arial" size="16" />
 				<position>961 301 1091 381</position>
-				<barchart active="true" width="128" height="72" />
+				<barchart width="128" height="72" />
 			</node>
 			<node id="Anxiety">
 				<name>Anxiety</name>
@@ -222,7 +222,7 @@
 				<outline color="000080" />
 				<font color="000000" name="Arial" size="16" />
 				<position>1161 326 1291 406</position>
-				<barchart active="true" width="128" height="64" />
+				<barchart width="128" height="64" />
 			</node>
 			<node id="Alcohol">
 				<name>Alcohol</name>
@@ -230,7 +230,7 @@
 				<outline color="000080" />
 				<font color="000000" name="Arial" size="16" />
 				<position>1248 428 1378 508</position>
-				<barchart active="true" width="128" height="64" />
+				<barchart width="128" height="64" />
 			</node>
 			<node id="BMI">
 				<name>BMI</name>
@@ -238,7 +238,7 @@
 				<outline color="000080" />
 				<font color="000000" name="Arial" size="16" />
 				<position>771 403 901 483</position>
-				<barchart active="true" width="128" height="90" />
+				<barchart width="128" height="90" />
 			</node>
 			<node id="Hyperchol_">
 				<name>Hyperchol.</name>
@@ -246,7 +246,7 @@
 				<outline color="000080" />
 				<font color="000000" name="Arial" size="16" />
 				<position>1029 550 1156 628</position>
-				<barchart active="true" width="128" height="64" />
+				<barchart width="128" height="64" />
 			</node>
 			<node id="Diabetes">
 				<name>Diabetes</name>
@@ -254,7 +254,7 @@
 				<outline color="000080" />
 				<font color="000000" name="Arial" size="16" />
 				<position>501 470 629 548</position>
-				<barchart active="true" width="128" height="64" />
+				<barchart width="128" height="64" />
 			</node>
 			<node id="Hypertension">
 				<name>Hypertension</name>
@@ -262,7 +262,7 @@
 				<outline color="000080" />
 				<font color="000000" name="Arial" size="16" />
 				<position>664 581 803 660</position>
-				<barchart active="true" width="128" height="64" />
+				<barchart width="128" height="64" />
 			</node>
 			<node id="CRC">
 				<name>CRC</name>
@@ -270,7 +270,7 @@
 				<outline color="000080" />
 				<font color="000000" name="Arial" size="16" />
 				<position>1063 713 1173 790</position>
-				<barchart active="true" width="128" height="64" />
+				<barchart width="128" height="64" />
 			</node>
 			<node id="Screening">
 				<name>Screening</name>
@@ -278,7 +278,7 @@
 				<outline color="000080" />
 				<font color="000000" name="Arial" size="16" />
 				<position>245 413 402 479</position>
-				<barchart active="true" width="180" height="144" />
+				<barchart width="180" height="144" />
 			</node>
 			<node id="Results_of_Screening">
 				<name>Results of Screening</name>
@@ -286,7 +286,7 @@
 				<outline color="000080" />
 				<font color="000000" name="Arial" size="16" />
 				<position>765 708 918 787</position>
-				<barchart active="true" width="138" height="72" />
+				<barchart width="138" height="72" />
 			</node>
 			<node id="Colonoscopy">
 				<name>Colonoscopy</name>
@@ -294,7 +294,7 @@
 				<outline color="000080" />
 				<font color="000000" name="Arial" size="16" />
 				<position>457 686 609 752</position>
-				<barchart active="true" width="128" height="64" />
+				<barchart width="128" height="64" />
 			</node>
 			<node id="Results_of_Colonoscopy">
 				<name>Results of Colonoscopy</name>
@@ -302,7 +302,7 @@
 				<outline color="000080" />
 				<font color="000000" name="Arial" size="16" />
 				<position>691 792 862 875</position>
-				<barchart active="true" width="163" height="72" />
+				<barchart width="163" height="72" />
 			</node>
 			<node id="INFO">
 				<name>INFO</name>
@@ -310,7 +310,6 @@
 				<outline color="000080" />
 				<font color="000000" name="Arial" size="16" />
 				<position>757 961 909 1031</position>
-				<barchart active="true" />
 			</node>
 			<node id="Cost_of_Screening">
 				<name>Cost of Screening</name>
@@ -318,7 +317,7 @@
 				<outline color="000080" />
 				<font color="000000" name="Arial" size="16" />
 				<position>443 833 608 899</position>
-				<barchart active="true" width="128" height="64" />
+				<barchart width="128" height="64" />
 			</node>
 			<node id="Complications">
 				<name>Complications</name>
@@ -326,7 +325,7 @@
 				<outline color="000080" />
 				<font color="000000" name="Arial" size="16" />
 				<position>137 640 303 707</position>
-				<barchart active="true" width="128" height="90" />
+				<barchart width="128" height="90" />
 			</node>
 			<node id="Cost_of_complications">
 				<name>Cost of complications</name>
@@ -334,7 +333,7 @@
 				<outline color="000080" />
 				<font color="000000" name="Arial" size="16" />
 				<position>77 790 258 854</position>
-				<barchart active="true" width="128" height="144" />
+				<barchart width="128" height="144" />
 			</node>
 			<node id="Value_of_comfort">
 				<name>Value of comfort</name>
@@ -342,7 +341,7 @@
 				<outline color="000080" />
 				<font color="000000" name="Arial" size="16" />
 				<position>262 802 431 869</position>
-				<barchart active="true" width="131" height="102" />
+				<barchart width="131" height="102" />
 			</node>
 			<node id="COST">
 				<name>COST</name>
@@ -350,7 +349,7 @@
 				<outline color="000080" />
 				<font color="000000" name="Arial" size="16" />
 				<position>251 930 396 998</position>
-				<barchart active="true" width="128" height="144" />
+				<barchart width="128" height="144" />
 			</node>
 			<node id="V">
 				<name>V</name>
@@ -358,7 +357,7 @@
 				<outline color="000080" />
 				<font color="000000" name="Arial" size="16" />
 				<position>518 1007 647 1061</position>
-				<barchart active="true" width="128" height="64" />
+				<barchart width="128" height="64" />
 			</node>
 			<node id="U">
 				<name>U</name>
@@ -366,7 +365,6 @@
 				<outline color="000080" />
 				<font color="000000" name="Arial" size="16" />
 				<position>513 1101 645 1154</position>
-				<barchart active="true" />
 			</node>
 			<arcformat parent="Age" child="INFO" width="1" color="99ccff" />
 			<arcformat parent="Alcohol" child="INFO" width="1" color="99ccff" />
@@ -375,6 +373,8 @@
 			<arcformat parent="Hypertension" child="INFO" width="1" color="99ccff" />
 			<arcformat parent="Sex" child="INFO" width="1" color="99ccff" />
 			<arcformat parent="Smoking" child="INFO" width="1" color="99ccff" />
+			<arcformat parent="Screening" child="INFO" width="1" color="99ccff" />
+			<arcformat parent="Colonoscopy" child="INFO" width="1" color="99ccff" />
 		</genie>
 	</extensions>
 </smile>

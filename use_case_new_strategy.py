@@ -63,7 +63,7 @@ def use_case_new_strategy(net = None,
         logger.info(f"Number of runs: {num_runs}")
     logger.info(f"Use all variables: {all_variables}")
     logger.info(f"Use case with new test: {use_case_new_test}")
-    logger.info(f"PE method: {cfg['rel_point_cond_mut_info']}")
+    # logger.info(f"PE method: {cfg['rel_point_cond_mut_info']}")
 
     
  
@@ -71,16 +71,17 @@ def use_case_new_strategy(net = None,
     if net == None:
         net = pysmile.Network()
         if use_case_new_test == True:
-            file_location = "outputs/linear_rel_point_cond_mut_info_elicitFalse_newtestTrue/decision_models/DM_screening_rel_point_cond_mut_info_linear_new_test.xdsl"
+            file_location = "decision_models/DM_screening_rel_point_cond_mut_info_linear_new_test.xdsl"
         elif from_elicitation == True:
             file_location = "outputs/linear_rel_point_cond_mut_info_elicitTrue_newtestFalse/decision_models/DM_screening_rel_point_cond_mut_info_linear.xdsl"
         else:
-            file_location = "outputs/linear_rel_point_cond_mut_info_elicitFalse_newtestFalse/decision_models/DM_screening_rel_point_cond_mut_info_linear.xdsl"
+            file_location = "decision_models/DM_screening_rel_point_cond_mut_info_linear.xdsl"
         net.read_file(file_location)
         logger.info(f"Located at: {file_location}")
 
     lambdas_comfort = net.get_node_definition("Value_of_comfort")
     logger.info(f"Comfort values: 1 - {lambdas_comfort[1]}, 2 - {lambdas_comfort[-4]}, 3 - {lambdas_comfort[2]}, 4 - {lambdas_comfort[0]}")
+
 
     df_test = pd.read_csv("private/df_2016.csv")
     df_test = preprocessing(df_test)
@@ -103,7 +104,9 @@ def use_case_new_strategy(net = None,
 
     logger.info(f"Operational limits for the screening strategies: {operational_limit}")
 
-    best_f1_score[run_label] = {"old": 0.0, "comp": 0.0}
+    best_f1_score[run_label] = {"f1 old": 0.0, "f1 comp": 0.0}
+
+    net.write_file(f"{log_dir}/DM_screening.xdsl")
 
 
     if single_run:
@@ -339,15 +342,21 @@ def use_case_new_strategy(net = None,
         plot_estimations_w_error_bars(mean_report_comp, std_report_comp, label="new_strategy_comparison", log_dir=log_dir)
         report_df_comp, conf_matrix_comp = plot_classification_results(report_df = mean_report_comp, conf_matrix=mean_conf_matrix_comp, std_conf_matrix=std_conf_matrix_comp, total_cost=mean_cost_comp, label = f"mean_new_strategy_comparison_{run_label}", plot= True, log_dir = log_dir)
 
+        # save report and confusion matrix
+        report_df_new.to_csv(f"{output_dir}/new_str_classification_report.csv")
+        report_df_new_w_lim.to_csv(f"{output_dir}/new_str_w_lim_classification_report.csv")
+        report_df_old.to_csv(f"{output_dir}/old_str_classification_report.csv")
+        report_df_comp.to_csv(f"{output_dir}/comparison_classification_report.csv")
+
         # save f1 score for the positive class 
         
-        best_f1_score[run_label]["old"] = report_df_old.loc["Positive"]["f1-score"]
-        best_f1_score[run_label]["comp"] = report_df_comp.loc["Positive"]["f1-score"]
+        best_f1_score[run_label]["f1 old"] = report_df_old.loc["Positive"]["f1-score"]
+        best_f1_score[run_label]["f1 comp"] = report_df_comp.loc["Positive"]["f1-score"]
         
 
-        for handler in logger.handlers:
+        '''for handler in logger.handlers:
             handler.close()          # Close the handler
-            logger.removeHandler(handler)  # Remove the handler from the logger
+            logger.removeHandler(handler)  # Remove the handler from the logger'''
 
 
         return best_f1_score

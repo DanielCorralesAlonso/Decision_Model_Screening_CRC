@@ -85,20 +85,7 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
     # ----------------------------------------------------------------------
     
     if predefined_lambdas is None:
-        if model_type == "tanh":
-            logger.info("Defining value of comfort...")
-            rho_4 = 0.6
-            rho_3 = 0.55
-            rho_2 = 0.50
-            rho_1 = 0.40
-            arr_comft = np.array([rho_4, rho_4, rho_4, rho_4, rho_4, rho_4, rho_4, rho_4, rho_4, rho_4, rho_4, rho_4, rho_4, rho_4,
-                                rho_4, rho_1, rho_3, rho_1, rho_3, rho_1, rho_3, rho_1, rho_3, rho_1, rho_2, rho_1, rho_2, rho_1, # Added discomfort when colonoscopy is not mandatory
-                                rho_4, rho_4, rho_3, rho_3, rho_3, rho_3, rho_3, rho_3, rho_3, rho_3, rho_2, rho_2, rho_2, rho_2,]) #No added discomfort when colonoscopy is mandatory
-            net2.set_node_definition("Value_of_comfort", arr_comft)
-
-            net2.set_mau_expressions(node_id = "V", expressions = [f"((8131.71-COST)/8131.71)*Tanh(INFO*Value_of_comfort)"])
-
-        elif model_type == "linear":
+        if model_type == "linear":
             logger.info("Eliciting value of comfort...")
 
             if elicit == True:
@@ -143,7 +130,7 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
                             lambda_list[2], lambda_list[0], lambda_list[2], lambda_list[0], 
                             lambda_list[2], lambda_list[0], lambda_list[1], lambda_list[0], lambda_list[1], lambda_list[0],])
 
-                    net2.set_node_definition("Value_of_comfort", arr_comft)
+                    net2.set_node_definition("Value_of_comfort", lambdas)
 
                     net2.set_mau_expressions(node_id = "V", expressions = [f"Value_of_comfort*INFO - Log10(COST+1)"])
 
@@ -207,9 +194,7 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
     logger.info("Calculating final utilities...")
     
 
-    if model_type == "tanh":
-        params = parameter_elicitation_utilities_tanh(PE_info = cfg[value_function]["PE_info"], PE_cost = cfg[value_function]["PE_cost"], rho_comfort = lambdas[2])
-    elif model_type == "linear":
+    if model_type == "linear":
         params = parameter_elicitation_utilities_linear(net2, PE = cfg[value_function]["PE_prob"], PE_info = cfg[value_function]["PE_info"], PE_cost = cfg[value_function]["PE_cost"], rho_comfort = lambdas[2], value_function = value_function, logging = logger)
 
     if params is None:
@@ -222,8 +207,6 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
         if change_risk_param:
             params = params[:2] + [rho_param]
 
-
-        # net2.set_mau_expressions(node_id = "U", expressions = [f"Max(0, Min({params[0]} - {params[1]}*Exp( - {params[2]} * V), 1))"])
         net2.set_mau_expressions(node_id = "U", expressions = [f"{params[0]} - {params[1]}*Exp( - {params[2]} * V)"])
 
         if new_test:

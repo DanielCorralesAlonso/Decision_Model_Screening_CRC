@@ -411,7 +411,7 @@ def plot_screening_counts(counts,  possible_outcomes, operational_limit = None, 
             bar1 = ax.bar(x[i], count, color='steelblue', alpha = 0.3, label = 'Recommended number of tests' if i == 0 else None)
 
         
-        ax.text(bar1[0].get_x() + bar1[0].get_width()/2, count + 5000, str(int(count)), ha='center', color='steelblue', fontsize=10)
+        ax.text(bar1[0].get_x() + bar1[0].get_width()/2, count + 5000, str(int(count)), ha='center', color='black', fontsize=15)
 
         
     try: 

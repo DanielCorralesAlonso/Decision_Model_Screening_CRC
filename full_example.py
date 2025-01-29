@@ -23,9 +23,9 @@ with open('config.yaml', 'r') as file:
 
 def full_example(only_counts = False):
     if cfg["new_test"] == True:
-        file_location = "outputs/linear_rel_point_cond_mut_info_elicitFalse_newtestTrue/decision_models/DM_screening_rel_point_cond_mut_info_linear_new_test.xdsl"
+        file_location = "decision_models/DM_screening_rel_point_cond_mut_info_linear_new_test.xdsl"
     else:
-        file_location = "outputs/linear_rel_point_cond_mut_info_elicitFalse_newtestFalse/decision_models/DM_screening_rel_point_cond_mut_info_linear.xdsl"
+        file_location = "decision_models/DM_screening_rel_point_cond_mut_info_linear.xdsl"
 
     df_test = pd.read_csv("private/df_2016.csv")
     df_test = preprocessing(df_test)
@@ -54,10 +54,10 @@ def full_example(only_counts = False):
         for j, param2 in enumerate(PE_cost_array):
             logger.info(f"PE_info: {param1}, PE_cost: {param2}, STARTING...")
             # Call the custom function with the current combination of parameters
+            net.clear_all_evidence()
             params = parameter_elicitation_utilities_linear(net,PE = 0.7, PE_info = param1, PE_cost = param2, rho_comfort = rho_comfort, value_function = "rel_point_cond_mut_info", logging = None)
             logger.info(f"Risk aversion params: {params}")
-
-            net.set_mau_expressions(node_id = "U", expressions = [f"Max(0, Min({params[0]} - {params[1]}*Exp( - {params[2]} * V), 1))"])
+            net.set_mau_expressions(node_id = "U", expressions = [f"{params[0]} - {params[1]}*Exp( - {params[2]} * V)"])
             net.update_beliefs()
 
             _ , counts, possible_outcomes = calculate_network_utilities(net, df_test, full_calculation = True)
@@ -65,7 +65,7 @@ def full_example(only_counts = False):
             #code from plots.py function plot_screening_counts()
             bars1 = axes[i,j].bar(possible_outcomes, counts, color = 'steelblue', alpha= 0.3, label = 'Number of tests')
             for bar in bars1:
-                axes[i,j].text(bar.get_x() + bar.get_width()/2, bar.get_height() + 3000, str(bar.get_height()), ha='center', color='black', fontsize=10)
+                axes[i,j].text(bar.get_x() + bar.get_width()/2, bar.get_height() + 3000, str(bar.get_height()), ha='center', color='black', fontsize=15)
 
             axes[i,j].legend()
 
@@ -85,11 +85,22 @@ def full_example(only_counts = False):
             else:
                 plt.savefig(f"{log_dir}/sens_analysis_screening_counts.png")
 
+            #create folder run_label
+            import os
+            run_label = f"PE_info_{i}_PE_cost_{j}"
+            log_dir_ext = f"{log_dir}/{run_label}"
+            os.makedirs(log_dir_ext, exist_ok=True)
+            net.write_file(f"{log_dir_ext}/DM_screening.xdsl")
+
+            # create a df with possible_outcomes and counts
+            df_counts = pd.DataFrame({"possible_outcomes": possible_outcomes, "counts": counts})
+            df_counts.to_csv(f"{log_dir_ext}/df_counts.csv")
+
             if not only_counts:
                 run_label = f"PE_info_{i}_PE_cost_{j}"
                 
 
-                best_f1_score = use_case_new_strategy(
+                f1_score = use_case_new_strategy(
                     net = net,
                     file_location = file_location,
                     single_run = single_run,
@@ -100,22 +111,25 @@ def full_example(only_counts = False):
                     run_label = run_label,
                     best_f1_score= best_f1_score
                     )
-            
-    if not only_counts:
-        best_f1_score = pd.DataFrame(best_f1_score)
-        best_params = best_f1_score.idxmax(axis=1)
-        logger.info(f"Best model: {best_params}")
+                logger.info(f"F1 score for PE_info = {param1} and PE_cost = {param2}: {best_f1_score}")
+                best_f1_score.update(f1_score)
 
-    for handler in logger.handlers:
-        handler.close()          # Close the handler
-        logger.removeHandler(handler)  # Remove the handler from the logger
+    
+
+    best_f1_score = pd.DataFrame(best_f1_score)
+    best_f1_score.to_csv(f"{log_dir}/best_f1_score.csv")
+    best_params = best_f1_score.idxmax(axis=1)
+    logger.info(f"Best model: {best_params}")
+
+
+
 
     plt.close(fig)
 
 
 
 if __name__ == "__main__":
-    full_example(only_counts=False)
+    full_example(only_counts=True)
 
 
 

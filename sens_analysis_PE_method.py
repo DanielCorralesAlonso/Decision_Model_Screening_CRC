@@ -44,12 +44,13 @@ def sens_analysis_PE_method(label = '', output_dir = 'logs', logger = None, log_
 
 
     if cfg["new_test"] == True:
-        file_location = "outputs/linear_rel_point_cond_mut_info_elicitFalse_newtestTrue/decision_models/DM_screening_rel_point_cond_mut_info_linear_new_test.xdsl"
+        file_location = "decision_models/DM_screening_rel_point_cond_mut_info_linear_new_test.xdsl"
     else:
-        file_location = "outputs/linear_rel_point_cond_mut_info_elicitFalse_newtestFalse/decision_models/DM_screening_rel_point_cond_mut_info_linear.xdsl"
+        file_location = "decision_models/DM_screening_rel_point_cond_mut_info_linear.xdsl"
 
     net = pysmile.Network()
     net.read_file(file_location)
+    logger.info(f"Reading from file: {file_location}")
 
 
     PE_info_array = np.array(cfg["full_example"]["PE_info_array"])
@@ -70,16 +71,20 @@ def sens_analysis_PE_method(label = '', output_dir = 'logs', logger = None, log_
     # optimal screening strategy may change. We will explore how the distribution of recommended
     # screening strategies changes as we vary the parameters of the PE method.
 
+    net.write_file(f"{log_dir}/DM_screening.xdsl")
+
 
     fig, axes = plt.subplots(len(PE_info_array), len(PE_cost_array), figsize=(16, 16))
 
     for i, param1 in enumerate(PE_info_array):
             for j, param2 in enumerate(PE_cost_array):
                 # Call the custom function with the current combination of parameters
+                net.clear_all_evidence()
+                logger.info(f"PE_info: {param1}, PE_cost: {param2}, STARTING...")
                 params = parameter_elicitation_utilities_linear(net,PE = 0.7, PE_info = param1, PE_cost = param2, rho_comfort = rho_comfort, value_function = "rel_point_cond_mut_info", logging = None)
                 logger.info(f"Params: {params}")
             
-                net.set_mau_expressions(node_id = "U", expressions = [f"Max(0, Min({params[0]} - {params[1]}*Exp( - {params[2]} * V), 1))"])
+                net.set_mau_expressions(node_id = "U", expressions = [f"{params[0]} - {params[1]}*Exp( - {params[2]} * V)"])
                 net.update_beliefs()
 
                 _ , counts, possible_outcomes = calculate_network_utilities(net, df_test, full_calculation = True)

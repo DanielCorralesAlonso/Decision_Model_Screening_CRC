@@ -51,7 +51,7 @@ def sens_analysis_elicitation(
 
 
     if logger == None:
-        logger, log_dir = create_folders_logger(single_run=single_run, label="sens_analysis_elicitation_", output_dir = output_dir )
+        logger, log_dir = create_folders_logger(single_run=single_run, label="sens_analysis_elicitation_", output_dir = output_dir, date=False, time=False)
     else:
         log_dir = os.path.join(log_dir, run_label)
         if not os.path.exists(log_dir):

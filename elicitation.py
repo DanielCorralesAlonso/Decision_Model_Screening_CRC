@@ -48,15 +48,11 @@ def parameter_elicitation_utilities_linear(net, PE, PE_info, PE_cost, rho_comfor
     net.update_beliefs()
 
     # pdb.set_trace()
-    worst_info = min(net.get_node_value("INFO"))   # 0   # 0.042 
+    worst_info = min(net.get_node_value("INFO"))
+    best_info = max(net.get_node_value("INFO"))
 
-    # net.set_evidence("Results_of_Colonoscopy", "colon_pred_true")
-    # net.update_beliefs()
-
-    best_info = max(net.get_node_value("INFO")) # 1 # 0.601
-
-    best_cost = 0    # 0    #12.14
-    worst_cost = 8131.71    #8131.71  
+    best_cost = 0    
+    worst_cost = 8131.71  
 
     v_best = rho_comfort * best_info - np.log10(best_cost+1)
     v_worst =  rho_comfort * worst_info - np.log10(worst_cost+1)

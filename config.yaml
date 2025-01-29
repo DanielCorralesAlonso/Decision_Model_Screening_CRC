@@ -43,15 +43,14 @@ point_cond_mut_info:
   PE_prob: 0.7     # Probability of equivalence
 
 rel_point_cond_mut_info:
-  PE_cost: 5     # Probability equivalent cost
-  PE_info: 4     # Probability equivalent info
+  PE_cost: 50     # Probability equivalent cost
+  PE_info: 4.1     # Probability equivalent info
   PE_prob: 0.7    # Probability of equivalence
 
 
 full_example:
   PE_cost_array: [5, 10, 50] # [3, 5, 10, 50, 100]
-  PE_info_array: [4.2, 4, 3.8] # [3.7, 4, 4.2 , 4.4, 4.5]
-  
+  PE_info_array:  [4.2, 4.1, 4]
 # -------------------------------------------------------------------------
 
 # -- Lower bound of estimation of performance metrics
@@ -148,8 +147,8 @@ colors:
 
 # -- Use case
 
-single_run: True
-num_runs: 300
+single_run: False
+num_runs: 200
 max_workers: 8
   
 all_variables: True

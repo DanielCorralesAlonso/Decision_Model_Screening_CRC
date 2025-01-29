@@ -30,7 +30,7 @@ def sens_analysis_param_U(net, info_array, cost_array, PE_array):
                 # Call the custom function with the current combination of parameters
                 params = parameter_elicitation_utilities_linear(net, PE = param3, PE_info = param1, PE_cost = param2, rho_comfort = rho_comfort, value_function = "rel_point_cond_mut_info", logging = None)
             
-                net.set_mau_expressions(node_id = "U", expressions = [f"Max(0, Min({params[0]} - {params[1]}*Exp( - {params[2]} * V), 1))"])
+                net.set_mau_expressions(node_id = "U", expressions = [f"{params[0]} - {params[1]}*Exp( - {params[2]} * V)"])
                 net.update_beliefs()
 
                 results = net.get_node_value("Screening")
