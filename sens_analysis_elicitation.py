@@ -112,6 +112,7 @@ def sens_analysis_elicitation(
 
 
     df_test, counts, possible_outcomes = calculate_network_utilities(net, df_test)
+    df_test.to_csv(f"outputs/df_2016_with_utilities.csv", index = False)
     lamdbas = net.get_node_definition("Value_of_comfort")
     lambda_list = [lamdbas[1], lamdbas[-4], lamdbas[2], lamdbas[0]]
     

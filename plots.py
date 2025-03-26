@@ -435,7 +435,7 @@ def plot_screening_counts(counts,  possible_outcomes, operational_limit = None, 
     ax.set_xticks(range(len(possible_outcomes)), possible_outcomes, rotation = 45, ha = 'right')
     ax.set_xlabel("Screening outcome")
     ax.set_ylabel("Number of tests")
-    ax.set_title("Recommended Tests vs. Operational Limit")
+    # ax.set_title("Recommended Tests vs. Operational Limit")
 
     if lambda_list is not None:
         ax.text(0.7, 0.8, r"$\lambda_1 =" + f"{lambda_list[0]:,.2f}" + "$", color='black', fontsize=9,
