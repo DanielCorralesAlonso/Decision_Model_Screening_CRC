@@ -1,4 +1,14 @@
-# Project Name
+# A Decision Support Model for Colorectal Cancer Screening
+
+- [Project Description](#project-description)
+  - [Paper Information](#paper-information)
+  - [Abstract](#abstract)
+  - [Image](#image)
+  - [Project Files](#project-files)
+- [Installation](#installation)
+- [Usage](#usage)
+  - [Notebook Use Cases](#notebook-use-cases)
+- [License](#license)
 
 ## Project Description
 
@@ -13,8 +23,6 @@ This project contains the code for the paper you published, titled "A Decision S
 ### Abstract
 
 We present a decision analysis-based approach to provide personalized colorectal cancer (CRC) screening suggestions. Based on an earlier CRC predictive model, we support decisions concerning whether and which screening method to consider and/or whether a colonoscopy should be administered. We include comfort, costs, complications, and information as decision criteria integrated within a multi-attribute utility model. Use cases concerning individual decision support, screening program assessment and design, and screening device benchmarking are presented.
-
-### Image
 
 ![Project Image](outputs/id_24_01_page-0001%20(1).jpg)
 
