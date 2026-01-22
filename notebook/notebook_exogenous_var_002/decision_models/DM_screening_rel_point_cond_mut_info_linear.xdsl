@@ -159,7 +159,7 @@
 		</maux>
 	</nodes>
 	<extensions>
-		<genie version="1.0" app="SMILE_ACADEMIC 2.2.5@b1d1d6931678" name="unknown">
+		<genie version="1.0" app="SMILE_ACADEMIC 2.3.2@e971faba194e" name="unknown">
 			<node id="Sex">
 				<name>Sex</name>
 				<interior color="ccffcc" />

@@ -30,9 +30,17 @@ calculate_info_values: True
 new_test: False 
 
 # --------- If new_test = True, the following parameters must be defined
-cost_new_test: 3
-sensitivity_new_test: 0.85
-specificity_new_test: 0.94
+new_tests:
+  New_Test_A:
+    cost: 3
+    sensitivity: 0.85
+    specificity: 0.94
+    comfort_level: 1
+  New_Test_B:
+    cost: 8
+    sensitivity: 0.9
+    specificity: 0.96
+    comfort_level: 2
 # -------------------------------------------------------------------------
 
 

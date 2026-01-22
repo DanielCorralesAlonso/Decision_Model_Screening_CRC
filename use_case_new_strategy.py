@@ -98,7 +98,15 @@ def use_case_new_strategy(net = None,
 
     if use_case_new_test == True:
         run_label = 'new_test'
-        operational_limit = cfg["operational_limit_new_test"]
+        operational_limit = cfg["operational_limit_new_test"].copy()
+
+        # Ensure all screening outcomes have a limit
+        screening_outcomes = net.get_outcome_ids("Screening")
+        for outcome in screening_outcomes:
+            if outcome not in ["No_screening"] and outcome not in operational_limit:
+                 logger.warning(f"Limit for {outcome} not found in config, setting to default (50000).")
+                 operational_limit[outcome] = 50000
+
         if "inf" in operational_limit.values():
             operational_limit = {k: np.inf if v == "inf" else v for k, v in operational_limit.items()}
 
@@ -206,7 +214,10 @@ def use_case_new_strategy(net = None,
         logger.info("Comparison of the strategies")
         
         if use_case_new_test == True:
-            operational_limit_comp["New_test"] = 0
+            screening_outcomes = net.get_outcome_ids("Screening")
+            for outcome in screening_outcomes:
+                if outcome not in operational_limit_comp and outcome != "No_screening":
+                    operational_limit_comp[outcome] = 0
 
         df_test_comp, total_cost_comp, time_taken_comp, positive_prediction_counts = new_screening_strategy(df_test_comp, net, possible_outcomes, counts, limit = True, operational_limit = operational_limit_comp, seed=seed ,  logger=logger, verbose = True)
         counts_best_opt_comp = df_test_comp["best_option_w_lim"].value_counts()
@@ -250,7 +261,7 @@ def use_case_new_strategy(net = None,
         conf_matrix_comp_list = []
 
         total_cost_list_old = []
-        total_cost_list_new =[]
+        total_cost_list_new = []
         total_cost_list_new_w_lim = []
         total_cost_list_comp = []
 
@@ -430,7 +441,10 @@ def run_experiment(i, df_test, file_location, possible_outcomes, counts, operati
                         "Blood_based": 0,"Stool_DNA": 0, "CTC": 0, "Colon_capsule": 0,
     }
     if use_case_new_test == True:
-        operational_limit_comp["New_test"] = 0
+        screening_outcomes = net.get_outcome_ids("Screening")
+        for outcome in screening_outcomes:
+            if outcome not in operational_limit_comp and outcome != "No_screening":
+                operational_limit_comp[outcome] = 0
 
     df_test_comp_util, total_cost_comp, time_taken_w_lim, positive_prediction_counts = new_screening_strategy(df_test_comp, net, possible_outcomes, counts, limit = True, seed = seed , operational_limit = operational_limit_comp)
     

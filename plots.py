@@ -16,7 +16,26 @@ with open('config.yaml', 'r') as file:
     cfg = yaml.safe_load(file)
 
 import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
 import pdb
+
+def assign_missing_colors(labels, color_dict):
+    existing_colors = set(c.upper() for c in color_dict.values())
+    cmap = plt.get_cmap('tab20') 
+    idx = 0
+    for label in labels:
+        if label not in color_dict:
+            while True:
+                c_hex = mcolors.to_hex(cmap(idx % 20)).upper()
+                idx += 1
+                if c_hex not in existing_colors:
+                    color_dict[label] = c_hex
+                    existing_colors.add(c_hex)
+                    break 
+                if idx > 100:
+                    color_dict[label] = c_hex
+                    break
+    return color_dict
 
 # Make an array and iterate over possible values of probabilities
 def plot_cond_mut_info(net1, net2 = None, subtitle = '', plot = True, zoom = (0.1, 0.1), step = 0.001, output_dir = None):
@@ -74,6 +93,7 @@ def plot_cond_mut_info(net1, net2 = None, subtitle = '', plot = True, zoom = (0.
     fig, ax = plt.subplots()
     labels = net.get_outcome_ids("Screening") + ["Colonoscopy"]
 
+    assign_missing_colors(labels, cfg["colors"])
     color_dict = cfg["colors"]
 
     if net2 is not None:
@@ -82,16 +102,16 @@ def plot_cond_mut_info(net1, net2 = None, subtitle = '', plot = True, zoom = (0.
             y1 = dict_net[net_array[0]][0][screening]
             y2 = dict_net[net_array[1]][0][screening]
 
-            ax.plot(x, y1, color_dict[labels[screening]])
-            ax.plot(x, y2, color = color_dict[labels[screening]])
-            ax.fill_between(x, y1, y2, alpha = 0.1, label = f"{labels[screening]}", color = color_dict[labels[screening]])
+            ax.plot(x, y1, color_dict.get(labels[screening], '#000000'))
+            ax.plot(x, y2, color = color_dict.get(labels[screening], '#000000'))
+            ax.fill_between(x, y1, y2, alpha = 0.1, label = f"{labels[screening]}", color = color_dict.get(labels[screening], '#000000'))
 
-        ax.plot(np.arange(0,1+step,step), h_y_arr, label = "H(CRC)", color = color_dict["H(CRC)"])
+        ax.plot(np.arange(0,1+step,step), h_y_arr, label = "H(CRC)", color = color_dict.get("H(CRC)", 'gray'))
     else:
         for screening in range(arr.shape[0]):
-            ax.plot(np.arange(0,1+step,step), arr[screening], label = f"{labels[screening]}", color = color_dict[labels[screening]])    
+            ax.plot(np.arange(0,1+step,step), arr[screening], label = f"{labels[screening]}", color = color_dict.get(labels[screening], '#000000'))    
 
-        ax.plot(np.arange(0,1+step,step), h_y_arr, label = "H(CRC)", color = color_dict["H(CRC)"])
+        ax.plot(np.arange(0,1+step,step), h_y_arr, label = "H(CRC)", color = color_dict.get("H(CRC)", 'gray'))
 
     handles, legend_labels = ax.get_legend_handles_labels()
     ax.legend(handles[::-1], legend_labels[::-1], loc='upper right', bbox_to_anchor=(1.35, 1), shadow=True)
@@ -119,15 +139,15 @@ def plot_cond_mut_info(net1, net2 = None, subtitle = '', plot = True, zoom = (0.
             y1 = dict_net[net_array[0]][0][screening]
             y2 = dict_net[net_array[1]][0][screening]
 
-            ax.plot(x, y1, color_dict[labels[screening]])
-            ax.plot(x, y2, color = color_dict[labels[screening]])
-            ax.fill_between(x, y1, y2, alpha = 0.1, label = f"{labels[screening]}", color = color_dict[labels[screening]])
-        ax.plot(np.arange(0,1+step,step), h_y_arr, label = "H(CRC)", color = color_dict["H(CRC)"])
+            ax.plot(x, y1, color_dict.get(labels[screening], '#000000'))
+            ax.plot(x, y2, color = color_dict.get(labels[screening], '#000000'))
+            ax.fill_between(x, y1, y2, alpha = 0.1, label = f"{labels[screening]}", color = color_dict.get(labels[screening], '#000000'))
+        ax.plot(np.arange(0,1+step,step), h_y_arr, label = "H(CRC)", color = color_dict.get("H(CRC)", 'gray'))
     else:
         for screening in range(arr.shape[0]):
-            ax.plot(np.arange(0,1+step,step), arr[screening], label = f"{labels[screening]}", color = color_dict[labels[screening]])   
+            ax.plot(np.arange(0,1+step,step), arr[screening], label = f"{labels[screening]}", color = color_dict.get(labels[screening], '#000000'))   
 
-        ax.plot(np.arange(0,1+step,step), h_y_arr, label = "H(CRC)", color = color_dict["H(CRC)"]) 
+        ax.plot(np.arange(0,1+step,step), h_y_arr, label = "H(CRC)", color = color_dict.get("H(CRC)", 'gray')) 
 
     handles, legend_labels = ax.get_legend_handles_labels()
     ax.legend(handles[::-1], legend_labels[::-1], loc='upper right', bbox_to_anchor=(1.35, 1), shadow=True)
@@ -155,17 +175,17 @@ def plot_cond_mut_info(net1, net2 = None, subtitle = '', plot = True, zoom = (0.
             y1 = dict_net[net_array[0]][0][screening]
             y2 = dict_net[net_array[1]][0][screening]
 
-            ax.plot(x, y1, color_dict[labels[screening]])
-            ax.plot(x, y2, color = color_dict[labels[screening]])
-            ax.fill_between(x, y1, y2, alpha = 0.1, label = f"{labels[screening]}", color = color_dict[labels[screening]])
+            ax.plot(x, y1, color_dict.get(labels[screening], '#000000'))
+            ax.plot(x, y2, color = color_dict.get(labels[screening], '#000000'))
+            ax.fill_between(x, y1, y2, alpha = 0.1, label = f"{labels[screening]}", color = color_dict.get(labels[screening], '#000000'))
 
-        ax.plot(np.arange(0,1+step,step), h_y_arr, label = "H(CRC)", color = color_dict["H(CRC)"])
+        ax.plot(np.arange(0,1+step,step), h_y_arr, label = "H(CRC)", color = color_dict.get("H(CRC)", 'gray'))
 
     else:
         for screening in range(arr.shape[0]):
-            ax.plot(np.arange(0,1+step,step), arr[screening], label = f"{labels[screening]}", color = color_dict[labels[screening]])
+            ax.plot(np.arange(0,1+step,step), arr[screening], label = f"{labels[screening]}", color = color_dict.get(labels[screening], '#000000'))
 
-        ax.plot(np.arange(0,1+step,step), h_y_arr, label = "H(CRC)", color = color_dict["H(CRC)"])    
+        ax.plot(np.arange(0,1+step,step), h_y_arr, label = "H(CRC)", color = color_dict.get("H(CRC)", 'gray'))    
 
     handles, legend_labels = ax.get_legend_handles_labels()
     ax.legend(handles[::-1], legend_labels[::-1], loc='upper right', bbox_to_anchor=(1.35, 1), shadow=True)
@@ -243,6 +263,7 @@ def plot_relative_cond_mut_info(net1, net2 = None, subtitle = '', zoom=(0.001, 0
     fig, ax = plt.subplots()
     labels = net.get_outcome_ids("Screening") + ["Colonoscopy"]
 
+    assign_missing_colors(labels, cfg["colors"])
     color_dict = cfg["colors"]
 
     if net2 is not None:
@@ -251,13 +272,13 @@ def plot_relative_cond_mut_info(net1, net2 = None, subtitle = '', zoom=(0.001, 0
             y1 = dict_net[net_array[0]][0][screening]
             y2 = dict_net[net_array[1]][0][screening]
 
-            ax.plot(x, y1, color_dict[labels[screening]])
-            ax.plot(x, y2, color = color_dict[labels[screening]])
-            ax.fill_between(x, y1, y2, alpha = 0.1, label = f"{labels[screening]}", color = color_dict[labels[screening]])
+            ax.plot(x, y1, color_dict.get(labels[screening], '#000000'))
+            ax.plot(x, y2, color = color_dict.get(labels[screening], '#000000'))
+            ax.fill_between(x, y1, y2, alpha = 0.1, label = f"{labels[screening]}", color = color_dict.get(labels[screening], '#000000'))
     else:
         x_values = np.arange(0,1+step,step)
         for screening in range(arr.shape[0]):
-            ax.plot(x_values, arr[screening], label = f"{labels[screening]}", color = color_dict[labels[screening]])    
+            ax.plot(x_values, arr[screening], label = f"{labels[screening]}", color = color_dict.get(labels[screening], '#000000'))    
 
     if subtitle == 'new_test':
         for i in range(len(arr) - 1):
@@ -295,12 +316,13 @@ def plot_relative_cond_mut_info(net1, net2 = None, subtitle = '', zoom=(0.001, 0
             y1 = dict_net[net_array[0]][0][screening]
             y2 = dict_net[net_array[1]][0][screening]
 
-            ax.plot(x, y1, color_dict[labels[screening]])
-            ax.plot(x, y2, color = color_dict[labels[screening]])
-            ax.fill_between(x, y1, y2, alpha = 0.1, label = f"{labels[screening]}", color = color_dict[labels[screening]])
+            ax.plot(x, y1, color_dict.get(labels[screening], '#000000'))
+            ax.plot(x, y2, color = color_dict.get(labels[screening], '#000000'))
+            ax.fill_between(x, y1, y2, alpha = 0.1, label = f"{labels[screening]}", color = color_dict.get(labels[screening], '#000000'))
     else:
+        x_values = np.arange(0,1+step,step)
         for screening in range(arr.shape[0]):
-            ax.plot(np.arange(0,1+step,step), arr[screening], label = f"{labels[screening]}", color = color_dict[labels[screening]])    
+            ax.plot(x_values, arr[screening], label = f"{labels[screening]}", color = color_dict.get(labels[screening], '#000000'))    
 
     handles, legend_labels = ax.get_legend_handles_labels()
     ax.legend(handles[::-1], legend_labels[::-1], loc='upper right', bbox_to_anchor=(1.35, 1), shadow=True)
@@ -327,12 +349,13 @@ def plot_relative_cond_mut_info(net1, net2 = None, subtitle = '', zoom=(0.001, 0
             y1 = dict_net[net_array[0]][0][screening]
             y2 = dict_net[net_array[1]][0][screening]
 
-            ax.plot(x, y1, color_dict[labels[screening]])
-            ax.plot(x, y2, color = color_dict[labels[screening]])
-            ax.fill_between(x, y1, y2, alpha = 0.1, label = f"{labels[screening]}", color = color_dict[labels[screening]])
+            ax.plot(x, y1, color_dict.get(labels[screening], '#000000'))
+            ax.plot(x, y2, color = color_dict.get(labels[screening], '#000000'))
+            ax.fill_between(x, y1, y2, alpha = 0.1, label = f"{labels[screening]}", color = color_dict.get(labels[screening], '#000000'))
     else:
+        x_values = np.arange(0,1+step,step)
         for screening in range(arr.shape[0]):
-            ax.plot(np.arange(0,1+step,step), arr[screening], label = f"{labels[screening]}", color = color_dict[labels[screening]])    
+            ax.plot(x_values, arr[screening], label = f"{labels[screening]}", color = color_dict.get(labels[screening], '#000000'))    
 
     handles, legend_labels = ax.get_legend_handles_labels()
     ax.legend(handles[::-1], legend_labels[::-1], loc='upper right', bbox_to_anchor=(1.35, 1), shadow=True)

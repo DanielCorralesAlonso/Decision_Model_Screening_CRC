@@ -150,12 +150,19 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
 
 
     # ----------------------------------------------------------------------
+    
     if new_test:
-        net.add_outcome("Screening", "New_test")
-        logger.info("Adding new test values...")
-        net2 = values_for_new_test(net2, config = cfg)
-        df_value = save_info_values(net2, value_function = value_function, new_test=True, output_dir = output_dir)
-        net2 = info_value_to_net(df_value, net2)
+        new_tests_config = cfg.get("new_tests", {})
+        if new_tests_config:
+            new_test = True # Ensure downstream logic treats this as having new tests
+            for test_name in new_tests_config:
+                if test_name not in net.get_outcome_ids("Screening"):
+                    net.add_outcome("Screening", test_name)
+
+            logger.info(f"Adding values for {len(new_tests_config)} new tests...")
+            net2 = values_for_new_tests(net2, new_tests_config = new_tests_config)
+            df_value = save_info_values(net2, value_function = value_function, new_test=True, output_dir = output_dir)
+            net2 = info_value_to_net(df_value, net2)
 
 
 
@@ -335,46 +342,47 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
 
 
 
-def values_for_new_test(net, config):
-    num_scr_tests = len(net.get_outcome_ids("Screening"))
+def values_for_new_tests(net, new_tests_config):
+    screening_outcomes = net.get_outcome_ids("Screening")
+    num_scr_tests = len(screening_outcomes)
 
-
-    # ---Set comfort ----
-    comfort_definition = net.get_node_definition("Value_of_comfort")
-
-    value_of_comfort_new_test = comfort_definition[2]
-    comfort_definition[-2] = value_of_comfort_new_test
-    comfort_definition[-1] = comfort_definition[1]
-
-    net.set_node_definition("Value_of_comfort", comfort_definition)
-
-
-    # --- Set cost ---.
-    cost_definition = net.get_node_definition("Cost_of_Screening")
-
-    cost_new_test = config["cost_new_test"]
-    cost_definition[-2] = cost_new_test
-    cost_definition[-1] = cost_definition[1] + cost_new_test
-
-    net.set_node_definition("Cost_of_Screening", cost_definition)
-
-
-    # --- Set sensitivity and specificity ---
-
+    # --- Definitions ---
+    comfort_definition = np.array(net.get_node_definition("Value_of_comfort"))
+    cost_definition = np.array(net.get_node_definition("Cost_of_Screening"))
+    
     sens_spec_arr = np.array(net.get_node_definition("Results_of_Screening")).reshape(2,-1,3)
-
-    sens_spec_arr[0,-1,:] = [0, config["specificity_new_test"], 1 - config["specificity_new_test"]]
-    sens_spec_arr[1,-1,:] = [0, 1 - config["sensitivity_new_test"], config["sensitivity_new_test"]]
-
-    net.set_node_definition("Results_of_Screening", sens_spec_arr.reshape(-1))
-
-
-    # ---- Set complications ----
     complications_arr = np.array(net.get_node_definition("Complications")).reshape(num_scr_tests, 2, -1)
 
-    complications_arr[-1, 0] = np.array([1,0,0,0,0])
-    complications_arr[-1, 1] = np.array(net.get_node_definition("Complications")).reshape(num_scr_tests, 2, -1)[0,1]
+    for test_name, params in new_tests_config.items():
+        if test_name not in screening_outcomes:
+            continue
+        
+        idx = screening_outcomes.index(test_name)
+        ref_idx = params.get("comfort_level", 1) # Default to gFOBT-like comfort if not specified
 
+        # --- Set comfort ---
+        comfort_definition[2 * idx] = comfort_definition[2 * ref_idx]
+        comfort_definition[2 * idx + 1] = comfort_definition[1]
+
+        # --- Set cost ---
+        cost_val = params.get("cost", 0)
+        cost_definition[2 * idx] = cost_val
+        cost_definition[2 * idx + 1] = cost_definition[1] + cost_val
+
+        # --- Set sensitivity and specificity ---
+        sens = params.get("sensitivity", 0)
+        spec = params.get("specificity", 0)
+        
+        sens_spec_arr[0, idx, :] = [0, spec, 1 - spec]
+        sens_spec_arr[1, idx, :] = [0, 1 - sens, sens]
+
+        # --- Set complications ---
+        complications_arr[idx, 0] = np.array([1,0,0,0,0])
+        complications_arr[idx, 1] = complications_arr[0, 1]
+
+    net.set_node_definition("Value_of_comfort", comfort_definition)
+    net.set_node_definition("Cost_of_Screening", cost_definition)
+    net.set_node_definition("Results_of_Screening", sens_spec_arr.reshape(-1))
     net.set_node_definition("Complications", complications_arr.reshape(-1))
 
     return net
