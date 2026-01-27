@@ -37,7 +37,7 @@ def mutual_info_measures(net, plot = False, p_CRC_false = None, p_CRC_true = Non
     rel_cond_mut_info_scr = cond_mut_info_scr / H_y
     rel_cond_mut_info_scr = np.nan_to_num(rel_cond_mut_info_scr, 0)
     
-    df_plotted_scr = plot_df(point_cond_mut_info_scr, net, ["Results_of_Screening", "CRC", "Screening"])
+    # df_plotted_scr = plot_df(point_cond_mut_info_scr, net, ["Results_of_Screening", "CRC", "Screening"])
 
     # --- Colonoscopy ---------------------------------------------------------
 
@@ -58,7 +58,7 @@ def mutual_info_measures(net, plot = False, p_CRC_false = None, p_CRC_true = Non
         rel_cond_mut_info_col = cond_mut_info_col / H_y
         rel_cond_mut_info_col = np.nan_to_num(rel_cond_mut_info_col, 0)
         
-        df_plotted_col = plot_df(point_cond_mut_info_col, net, ["Results_of_Colonoscopy", "CRC", "Colonoscopy"])
+        # df_plotted_col = plot_df(point_cond_mut_info_col, net, ["Results_of_Colonoscopy", "CRC", "Colonoscopy"])
 
         dict_scr = {"point_cond_mut_info": point_cond_mut_info_scr, "rel_point_cond_mut_info": rel_point_cond_mut_info_scr, "cond_mut_info": cond_mut_info_scr, "rel_cond_mut_info": rel_cond_mut_info_scr}
         dict_col = {"point_cond_mut_info": point_cond_mut_info_col, "rel_point_cond_mut_info": rel_point_cond_mut_info_col, "cond_mut_info": cond_mut_info_col, "rel_cond_mut_info": rel_cond_mut_info_col}
@@ -74,29 +74,41 @@ def mutual_info_measures(net, plot = False, p_CRC_false = None, p_CRC_true = Non
         except:
             pass
 
-        point_cond_mut_info_col_array = []
-        rel_point_cond_mut_info_col_array = []
-        cond_mut_info_col_array = []
-        rel_cond_mut_info_col_array = []
+        # Pre-fetch definition for Colonoscopy
+        n_col = net.get_outcome_count("Colonoscopy")
+        col_res_probs = np.array(net.get_node_definition("Results_of_Colonoscopy")).reshape(2, n_col, 3)
+
+        # Pre-allocate arrays
+        n_scr_outcomes = len(net.get_outcome_ids("Screening"))
+        n_res_scr_outcomes = len(net.get_outcome_ids("Results_of_Screening"))
+        
+        point_cond_mut_info_col_array = np.zeros((n_scr_outcomes, n_res_scr_outcomes, 2, n_col, 3))
+        rel_point_cond_mut_info_col_array = np.zeros((n_scr_outcomes, n_res_scr_outcomes, 2, n_col, 3))
+        cond_mut_info_col_array = np.zeros((n_scr_outcomes, n_res_scr_outcomes, 2, n_col, 3))
+        rel_cond_mut_info_col_array = np.zeros((n_scr_outcomes, n_res_scr_outcomes, 2, n_col, 3))
 
         net.set_evidence("Screening", "No_screening")
         net.set_evidence("Results_of_Screening", "No_pred_screening")
         net.update_beliefs()
 
         p_CRC_false_prior, p_CRC_true_prior = net.get_node_value("CRC")
-        for scr in net.get_outcome_ids("Screening"):
+        
+        for i_scr, scr in enumerate(net.get_outcome_ids("Screening")):
             net.set_evidence("Screening", scr)
+            net.update_beliefs() # Move update_beliefs here for optimization
 
-            for elem in net.get_outcome_ids("Results_of_Screening"):
-                net.update_beliefs()
+            for i_res, elem in enumerate(net.get_outcome_ids("Results_of_Screening")):
+                
                 try: 
                     net.set_evidence("Results_of_Screening", elem)
-                    
                     net.update_beliefs()
 
                     p_CRC_false_pos, p_CRC_true_pos = net.get_node_value("CRC")
                     
-                    point_cond_mut_info_col, cond_mut_info_col = calculate_values(net, p_CRC_false_pos, p_CRC_true_pos, "Colonoscopy", "Results_of_Colonoscopy")
+                    point_cond_mut_info_col, cond_mut_info_col = calculate_values(
+                        net, p_CRC_false_pos, p_CRC_true_pos, "Colonoscopy", "Results_of_Colonoscopy",
+                        node_probs=col_res_probs
+                    )
                     
                     p_y = np.array([p_CRC_false_prior, p_CRC_true_prior])
                     H_y = np.sum(p_y * np.log(1 / p_y) )
@@ -107,29 +119,21 @@ def mutual_info_measures(net, plot = False, p_CRC_false = None, p_CRC_true = Non
                     rel_cond_mut_info_col = cond_mut_info_col / H_y
                     rel_cond_mut_info_col = np.nan_to_num(rel_cond_mut_info_col, 0)
 
-                    df_plotted_col = plot_df(point_cond_mut_info_col, net, ["Results_of_Colonoscopy", "CRC", "Colonoscopy"])
+                    # Assign to pre-allocated arrays
+                    point_cond_mut_info_col_array[i_scr, i_res] = point_cond_mut_info_col
+                    rel_point_cond_mut_info_col_array[i_scr, i_res] = rel_point_cond_mut_info_col
+                    cond_mut_info_col_array[i_scr, i_res] = cond_mut_info_col
+                    rel_cond_mut_info_col_array[i_scr, i_res] = rel_cond_mut_info_col
                 
                 except:
-                    point_cond_mut_info_col = np.zeros((2,2,3))
-                    rel_point_cond_mut_info_col = np.zeros((2,2,3))
-                    cond_mut_info_col = np.zeros((2,2,3))
-                    rel_cond_mut_info_col = np.zeros((2,2,3))
+                    # Arrays are already initialized with zeros
+                    pass
 
-                point_cond_mut_info_col_array.append(point_cond_mut_info_col)
-                rel_point_cond_mut_info_col_array.append(rel_point_cond_mut_info_col)
-                cond_mut_info_col_array.append(cond_mut_info_col)
-                rel_cond_mut_info_col_array.append(rel_cond_mut_info_col)
-
-            
                 net.clear_evidence("Results_of_Screening")
 
             net.clear_evidence("Screening")
-            net.update_beliefs()
         
-        point_cond_mut_info_col_array = np.stack(point_cond_mut_info_col_array, axis = 0).reshape(n,3,2,2,3)
-        rel_point_cond_mut_info_col_array = np.stack(rel_point_cond_mut_info_col_array, axis = 0).reshape(n,3,2,2,3)
-        cond_mut_info_col_array = np.stack(cond_mut_info_col_array, axis = 0).reshape(n,3,2,2,3)
-        rel_cond_mut_info_col_array = np.stack(rel_cond_mut_info_col_array, axis = 0).reshape(n,3,2,2,3)
+        # Arrays are already in the correct shape, no reshaping needed
 
         point_cond_mut_info = point_cond_mut_info_col_array
         rel_point_cond_mut_info = rel_point_cond_mut_info_col_array
@@ -169,23 +173,23 @@ def mutual_info_measures(net, plot = False, p_CRC_false = None, p_CRC_true = Non
     return dict, dict_scr, dict_col
 
 
-# def calculate_values_new(net, scr, res_scr, p_CRC_false, p_CRC_true, decision_node, chance_node, normalize = False, weighted = False):
 
-
-
-def calculate_values(net, p_CRC_false, p_CRC_true, decision_node, value_node, normalize = False, weighted = False):
+def calculate_values(net, p_CRC_false, p_CRC_true, decision_node, value_node, normalize = False, weighted = False, node_probs = None):
 
     p_y = np.array([p_CRC_false, p_CRC_true])
     H_y = np.sum(p_y * np.log(1 / p_y) )
 
     n = net.get_outcome_count(decision_node)
 
-    p_x_yz = np.array(net.get_node_definition(value_node)).reshape(2,n,3)
+    if node_probs is None:
+        p_x_yz = np.array(net.get_node_definition(value_node)).reshape(2,n,3)
+    else:
+        p_x_yz = node_probs
     
     p_y = np.array([p_CRC_false, p_CRC_true])
-    p_y = np.repeat(p_y, 3*n).reshape(2,n,3)
+    # p_y = np.repeat(p_y, 3*n).reshape(2,n,3)
 
-    p_x_z = p_y * p_x_yz
+    p_x_z =  p_y[:, None, None] * p_x_yz
     p_x_z = np.sum(p_x_z, axis = 0)
     p_x_z = np.tile(p_x_z, (2,1)).reshape((2,n,3))
 
@@ -197,14 +201,8 @@ def calculate_values(net, p_CRC_false, p_CRC_true, decision_node, value_node, no
         point_cond_mut_info = np.nan_to_num(point_cond_mut_info, 0)
 
 
-    cond_mut_info = (p_y * ( p_x_yz * point_cond_mut_info ) )# .reshape(2,n,3))
+    cond_mut_info = (p_y[:, None, None] * ( p_x_yz * point_cond_mut_info ) )
     cond_mut_info = np.nan_to_num(cond_mut_info, 0)
-
-    '''rel_point_cond_mut_info = point_cond_mut_info / H_y
-    rel_point_cond_mut_info = np.nan_to_num(rel_point_cond_mut_info, 0)
-
-    rel_cond_mut_info = cond_mut_info / H_y
-    rel_cond_mut_info = np.nan_to_num(rel_cond_mut_info, 0)'''
 
 
     return point_cond_mut_info, cond_mut_info

@@ -4,7 +4,6 @@ import pysmile_license
 import numpy as np
 import pandas as pd
 import itertools
-import pdb
 
 from get_info_values import mutual_info_measures
 
@@ -21,14 +20,12 @@ def save_info_values(net, value_function = "point_cond_mut_info", new_test = Fal
     value_array = []
 
     for elem in parent_combinations:
-        # net.clear_all_evidence()
 
         for i in range(len(parents)):
             net.set_evidence(parents[i], elem[i])
 
         net.update_beliefs() 
         dict, dict_scr, dict_col = mutual_info_measures(net, normalize = normalize, weighted = weighted)
-        #pdb.set_trace()
 
         if value_function == "point_cond_mut_info":
             value_scr = dict_scr["point_cond_mut_info"]

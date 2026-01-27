@@ -9,10 +9,6 @@ noise_std: 0.3
 lambda_list_from_config: True
 lambda_list: [4.011942483017116, 4.168480067521723, 6.801984517973132, 7.0]
 
-# original = [4.011942483017116, 4.168480067521723, 6.801984517973132, 7.0]
-# first change = [4.011942483017116, 4.168480067521723, 6.3 , 7.0]
-# second change = [4.8, 5, 6.801984517973132, 7.0]
-
 patient_chars: {"Age": "age_4_adult", 
                         "Sex": "M",
                         "SD": "SD_2_normal",
@@ -27,7 +23,7 @@ calculate_info_values: True
 
 
 # -- Flag for assigning a new test
-new_test: False 
+new_test: True 
 
 # --------- If new_test = True, the following parameters must be defined
 new_tests:
@@ -35,12 +31,12 @@ new_tests:
     cost: 3
     sensitivity: 0.85
     specificity: 0.94
-    comfort_level: 1
+    comfort_level: 3
   New_Test_B:
     cost: 8
     sensitivity: 0.9
     specificity: 0.96
-    comfort_level: 2
+    comfort_level: 3
 # -------------------------------------------------------------------------
 
 
@@ -57,7 +53,7 @@ rel_point_cond_mut_info:
 
 
 full_example:
-  PE_cost_array: [5, 10, 50] # [3, 5, 10, 50, 100]
+  PE_cost_array: [5, 10, 50] 
   PE_info_array:  [4.2, 4.1, 4]
 # -------------------------------------------------------------------------
 
@@ -155,9 +151,9 @@ colors:
 
 # -- Use case
 
-single_run: False
-num_runs: 200
-max_workers: 8
+single_run: True
+num_runs: 50
+max_workers: 4
   
 all_variables: True
 from_elicitation: False

@@ -20,11 +20,7 @@ np.seterr(divide='ignore', invalid = 'ignore')
 
 
 def calculate_network_utilities(net, df_test, logger=None, full_calculation = False):
-    # pdb.set_trace()
-
-    #net = pysmile.Network()
-    # net.read_file(f"outputs/linear_rel_point_cond_mut_info_elicitFalse_newtestFalse/decision_models/DM_screening_rel_point_cond_mut_info_linear.xdsl")
-
+    
     y = np.array(list(df_test["CRC"]*1))
 
     possible_outcomes = net.get_outcome_ids("Screening")

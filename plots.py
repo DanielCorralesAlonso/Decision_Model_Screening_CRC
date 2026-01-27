@@ -38,7 +38,7 @@ def assign_missing_colors(labels, color_dict):
     return color_dict
 
 # Make an array and iterate over possible values of probabilities
-def plot_cond_mut_info(net1, net2 = None, subtitle = '', plot = True, zoom = (0.1, 0.1), step = 0.001, output_dir = None):
+def plot_cond_mut_info(net1, net2 = None, subtitle = '', plot = True, zoom = (0.1, 0.1), step = 0.01, output_dir = None):
 
     net_array = [net1]
     num_scr = len(net1.get_outcome_ids("Screening"))
@@ -210,167 +210,186 @@ def plot_cond_mut_info(net1, net2 = None, subtitle = '', plot = True, zoom = (0.
 
 def plot_relative_cond_mut_info(net1, net2 = None, subtitle = '', zoom=(0.001, 0.1), step = 0.001, output_dir = None):
     net_array = [net1]
-    num_scr = len(net1.get_outcome_ids("Screening"))
     if net2 is not None:
         net_array.append(net2)
 
+    # 1. OPTIMIZATION: Adaptive X-axis Steps
+    # We need fine resolution only in [0, zoom[0]] and [1-zoom[0], 1]
+    # For the middle part, we can use a coarser step.
+    x_limit = zoom[0]
+    fine_step = step
+    coarse_step = max(step * 10, 0.01)
+
+    # Ensure ranges don't overlap or cross weirdly if zoom is large
+    if x_limit >= 0.5:
+        # If zoom area covers half or more, just use fine step everywhere
+        x_values = np.arange(0, 1 + fine_step, fine_step)
+    else:
+        x_left = np.arange(0, x_limit + fine_step, fine_step)
+        # Ensure we start middle part aligned roughly
+        x_right = np.arange(1 - x_limit, 1 + fine_step, fine_step)
+        
+        # Middle range
+        mid_start = x_left[-1] + coarse_step
+        mid_end = x_right[0] - coarse_step
+        
+        if mid_start < mid_end:
+            x_mid = np.arange(mid_start, mid_end + coarse_step, coarse_step)
+            x_values = np.unique(np.concatenate((x_left, x_mid, x_right)))
+        else:
+             x_values = np.unique(np.concatenate((x_left, x_right)))
+
+    # ensure exactly [0, 1] bounds and sorted
+    x_values = x_values[(x_values >= 0) & (x_values <= 1)]
+    x_values.sort()
+
     dict_net = {}
+    
+    # 2. CALCULATION LOOP
     for net in net_array:
-        arr = []
-        h_y_arr = []
-        i = 0
+        list_data = [] # List to collect screening+colonoscopy vectors
+        list_h_y = []
 
-        for prob in np.arange(0, 1+step, step):
-
+        for prob in x_values:
             p_CRC_false, p_CRC_true = [1-prob, prob] 
 
+            # Entropy H(Y)
             p_y = np.array([p_CRC_false, p_CRC_true])
-            H_y = np.sum(p_y * np.log(1 / p_y) )
+            # Handle log(0)
+            with np.errstate(divide='ignore', invalid='ignore'):
+                log_p_y = np.log(1 / p_y)
+                log_p_y[np.isinf(log_p_y)] = 0
+                H_y = np.sum(p_y * log_p_y) 
 
-            dict, dict_scr, dict_col = mutual_info_measures(net,plot = True,  p_CRC_false = p_CRC_false, p_CRC_true = p_CRC_true )
+            dict, dict_scr, dict_col = mutual_info_measures(net, plot = True,  p_CRC_false = p_CRC_false, p_CRC_true = p_CRC_true )
 
             rel_cond_mut_info_scr = dict_scr["rel_cond_mut_info"]
             rel_cond_mut_info_col = dict_col["rel_cond_mut_info"]
 
-            #print("Relative Mutual Information for Screening:")
+            # Summing
             aux_arr_scr = rel_cond_mut_info_scr.sum(axis = 0).sum(axis = 1)
-            #print(aux_arr_scr)
-
-            #print("Relative Mutual Information for Colonoscopy:")
             aux_arr_col = rel_cond_mut_info_col.sum(axis = 0).sum(axis = 1)
-            #print(aux_arr_col)
+            
+            # Combine: Screening vars + Colonoscopy (matches original structure)
+            combined_row = np.concatenate((aux_arr_scr, [aux_arr_col[1]]))
+            
+            list_data.append(combined_row)
+            list_h_y.append(H_y)
 
-
-            arr = np.append(arr, np.append(aux_arr_scr, np.expand_dims(aux_arr_col[1], axis = 0) ,0) , 0)   
-            # h_y_arr = np.append(h_y_arr, H_y)
-
-
-        arr = arr.reshape(int(1 / step + 1),num_scr+1)
-        arr = arr.transpose()
-
+        # Structure: (num_vars, num_points)
+        arr = np.array(list_data).T 
+        h_y_arr = np.array(list_h_y)
         h_y_arr = np.nan_to_num(h_y_arr, nan=0)
 
         dict_net[net] = [arr, h_y_arr]
-   
-        # Save the relative conditional mutual information for screening
-    
+        
+        # Save CSV (with index since steps are non-uniform)
+        df_save = pd.DataFrame(arr.T)
+        df_save.index = x_values
+        df_save.index.name = 'p_CRC'
+
         if subtitle == 'new_test':
-            pd.DataFrame(arr).to_csv(f"{output_dir}/output_data/rel_cond_mut_info_new_test.csv")
+            df_save.to_csv(f"{output_dir}/output_data/rel_cond_mut_info_new_test.csv")
         else:
-            pd.DataFrame(arr).to_csv(f"{output_dir}/output_data/rel_cond_mut_info.csv")
+            df_save.to_csv(f"{output_dir}/output_data/rel_cond_mut_info.csv")
 
-
-    fig, ax = plt.subplots()
-    labels = net.get_outcome_ids("Screening") + ["Colonoscopy"]
-
+    # 3. PLOTTING FUNCTION
+    labels = net1.get_outcome_ids("Screening") + ["Colonoscopy"]
     assign_missing_colors(labels, cfg["colors"])
     color_dict = cfg["colors"]
 
-    if net2 is not None:
-        for screening in range(arr.shape[0]):
-            x = np.arange(0,1+step,step)
-            y1 = dict_net[net_array[0]][0][screening]
-            y2 = dict_net[net_array[1]][0][screening]
+    def create_subplot(x_vals, mask, suffix, xlim=None, ylim=None):
+        fig, ax = plt.subplots()
+        
+        # Apply mask to x
+        x_plot = x_vals[mask]
+        
+        if net2 is not None:
+            # Dual net plot
+            # Net 1
+            y1_all, _ = dict_net[net_array[0]]
+            # Net 2
+            y2_all, h_y_all = dict_net[net_array[1]]
+            
+            # Mask data
+            y1_subset = y1_all[:, mask]
+            y2_subset = y2_all[:, mask]
+            h_y_subset = h_y_all[mask]
 
-            ax.plot(x, y1, color_dict.get(labels[screening], '#000000'))
-            ax.plot(x, y2, color = color_dict.get(labels[screening], '#000000'))
-            ax.fill_between(x, y1, y2, alpha = 0.1, label = f"{labels[screening]}", color = color_dict.get(labels[screening], '#000000'))
-    else:
-        x_values = np.arange(0,1+step,step)
-        for screening in range(arr.shape[0]):
-            ax.plot(x_values, arr[screening], label = f"{labels[screening]}", color = color_dict.get(labels[screening], '#000000'))    
+            for i in range(len(labels)):
+                c = color_dict.get(labels[i], '#000000')
+                ax.plot(x_plot, y1_subset[i], color=c)
+                ax.plot(x_plot, y2_subset[i], color=c)
+                ax.fill_between(x_plot, y1_subset[i], y2_subset[i], alpha=0.1, label=labels[i], color=c)
+            
+            # ax.plot(x_plot, h_y_subset, label="H(CRC)", color=color_dict.get("H(CRC)", 'gray'))
+            save_name = f"rel_cond_mut_info_{suffix}_bounds.png"
+        else:
+            # Single net plot
+            y_all, h_y_all = dict_net[net_array[0]]
+            y_subset = y_all[:, mask]
+            h_y_subset = h_y_all[mask]
+            
+            for i in range(len(labels)):
+                c = color_dict.get(labels[i], '#000000')
+                ax.plot(x_plot, y_subset[i], label=labels[i], color=c)
+            
+            # ax.plot(x_plot, h_y_subset, label="H(CRC)", color=color_dict.get("H(CRC)", 'gray'))
+            save_name = f"rel_cond_mut_info_{suffix}.png"
 
-    if subtitle == 'new_test':
-        for i in range(len(arr) - 1):
-            if (arr[-1][i] > arr[5][i] and arr[-1][i+1] <= arr[5][i+1]):
-                pdb.set_trace()
-                ax.axvline(x=x_values[i],  ymin=0, ymax=1, color='gray', alpha = 0.2, linestyle='--')
-    else:
-        ax.axvline(x=0.02,  ymin=0, ymax=1, color='gray', alpha=0.2, linestyle='--')
+        # Extra logic for 'new_test' (only on full plot typically, or if visible)
+        '''if subtitle == 'new_test' and suffix == subtitle : 
+            # Check last processed net's array (matches original logic)
+            arr_check = dict_net[net_array[-1]][0] 
+            # Original logic: intersection of last curve and 6th curve (index 5)
+            if arr_check.shape[0] > 5:
+                y_last = arr_check[-1]
+                y_ref = arr_check[5]
+                # Manual intersection check on the plot points
+                # simplified from original loop
+                signs = np.sign(y_last - y_ref)
+                sign_changes = ((np.roll(signs, 1) - signs) != 0) & (signs != 0)
+                sign_changes[0] = False
+                
+                crossing_indices = np.where(sign_changes)[0]
+                for idx in crossing_indices:
+                     if x_values[idx] >= x_plot[0] and x_values[idx] <= x_plot[-1]:
+                         ax.axvline(x=x_values[idx], ymin=0, ymax=1, color='gray', alpha=0.2, linestyle='--')
+        elif suffix == subtitle and not (subtitle == 'new_test'):
+             # Default vertical line
+             if 0.02 >= x_plot[0] and 0.02 <= x_plot[-1]:
+                 ax.axvline(x=0.02, ymin=0, ymax=1, color='gray', alpha=0.2, linestyle='--')'''
 
-    handles, legend_labels = ax.get_legend_handles_labels()
-    ax.legend(handles[::-1], legend_labels[::-1], loc='upper right', bbox_to_anchor=(1.35, 1), shadow=True)
-    '''ordered_functions = ['Colonoscopy', 'Colon_capsule', 'sDNA', 'FIT', 'CTC', 'Blood_based', 'gFOBT', 'No_screening']
-    leg = plt.legend(ordered_functions,)'''
+        handles, legend_labels = ax.get_legend_handles_labels()
+        ax.legend(handles[::-1], legend_labels[::-1], loc='upper right', bbox_to_anchor=(1.35, 1), shadow=True)
+        
+        plt.title("Relative Reduction of Uncertainty with respect to CRC")
+        
+        if xlim:
+            ax.set_xlim(*xlim)
+            ax.set_ylim(*ylim)
+        else:
+            ax.set_xlabel("p(CRC)")
+            ax.set_ylabel("RMI")
 
-    title = "Relative Reduction of Uncertainty with respect to CRC"
-    plt.title(title)
-    ax.set_xlabel("p(CRC)")
-    ax.set_ylabel("RMI")
-  
-    if net2 is not None:
-        plt.savefig(f"{output_dir}/output_images/rel_cond_mut_info_{subtitle}_bounds.png", bbox_inches='tight')     
-    else:
-        plt.savefig(f"{output_dir}/output_images/rel_cond_mut_info_{subtitle}.png", bbox_inches='tight')
-    plt.close()
+        plt.savefig(f"{output_dir}/output_images/{save_name}", bbox_inches='tight')
+        plt.close(fig)
 
+    # 4. Generate Plots
+    
+    # Full plot
+    # Mask all
+    mask_full = np.ones_like(x_values, dtype=bool)
+    create_subplot(x_values, mask_full, subtitle)
+    
+    # Left zoom
+    # Filter points somewhat within range to avoid plotting everything
+    mask_left = x_values <= (zoom[0] + fine_step)
+    create_subplot(x_values, mask_left, f"zoom_{subtitle}", xlim=(0, zoom[0]), ylim=(-5*step, zoom[1]))
 
-
-    fig, ax = plt.subplots()
-    labels = net.get_outcome_ids("Screening") + ["Colonoscopy"]
-    color_dict = cfg["colors"]
-
-    if net2 is not None:
-        for screening in range(arr.shape[0]):
-            x = np.arange(0,1+step,step)
-            y1 = dict_net[net_array[0]][0][screening]
-            y2 = dict_net[net_array[1]][0][screening]
-
-            ax.plot(x, y1, color_dict.get(labels[screening], '#000000'))
-            ax.plot(x, y2, color = color_dict.get(labels[screening], '#000000'))
-            ax.fill_between(x, y1, y2, alpha = 0.1, label = f"{labels[screening]}", color = color_dict.get(labels[screening], '#000000'))
-    else:
-        x_values = np.arange(0,1+step,step)
-        for screening in range(arr.shape[0]):
-            ax.plot(x_values, arr[screening], label = f"{labels[screening]}", color = color_dict.get(labels[screening], '#000000'))    
-
-    handles, legend_labels = ax.get_legend_handles_labels()
-    ax.legend(handles[::-1], legend_labels[::-1], loc='upper right', bbox_to_anchor=(1.35, 1), shadow=True)
-    title = "Relative Reduction of Uncertainty with respect to CRC"
-    plt.title(title)
-     
-    ax.set_xlim(0, zoom[0])
-    ax.set_ylim(-5*step,zoom[1])
-
-    if net2 is not None:
-        plt.savefig(f"{output_dir}/output_images/rel_cond_mut_info_zoom_{subtitle}_bounds.png", bbox_inches='tight')     
-    else:
-        plt.savefig(f"{output_dir}/output_images/rel_cond_mut_info_zoom_{subtitle}.png", bbox_inches='tight')
-    plt.close()
-
-
-    fig, ax = plt.subplots()
-    labels = net.get_outcome_ids("Screening") + ["Colonoscopy"]
-    color_dict = cfg["colors"]
-
-    if net2 is not None:
-        for screening in range(arr.shape[0]):
-            x = np.arange(0,1+step,step)
-            y1 = dict_net[net_array[0]][0][screening]
-            y2 = dict_net[net_array[1]][0][screening]
-
-            ax.plot(x, y1, color_dict.get(labels[screening], '#000000'))
-            ax.plot(x, y2, color = color_dict.get(labels[screening], '#000000'))
-            ax.fill_between(x, y1, y2, alpha = 0.1, label = f"{labels[screening]}", color = color_dict.get(labels[screening], '#000000'))
-    else:
-        x_values = np.arange(0,1+step,step)
-        for screening in range(arr.shape[0]):
-            ax.plot(x_values, arr[screening], label = f"{labels[screening]}", color = color_dict.get(labels[screening], '#000000'))    
-
-    handles, legend_labels = ax.get_legend_handles_labels()
-    ax.legend(handles[::-1], legend_labels[::-1], loc='upper right', bbox_to_anchor=(1.35, 1), shadow=True)
-    title = "Relative Reduction of Uncertainty with respect to CRC"
-    plt.title(title)
-     
-    ax.set_xlim(1 - zoom[0], 1)
-    ax.set_ylim(-5*step,zoom[1])
-
-    if net2 is not None:
-        plt.savefig(f"{output_dir}/output_images/rel_cond_mut_info_zoom_2_{subtitle}_bounds.png", bbox_inches='tight')     
-    else:
-        plt.savefig(f"{output_dir}/output_images/rel_cond_mut_info_zoom_2_{subtitle}.png", bbox_inches='tight')
-    plt.close()
-
+    # Right zoom
+    mask_right = x_values >= (1 - zoom[0] - fine_step)
+    create_subplot(x_values, mask_right, f"zoom_2_{subtitle}", xlim=(1-zoom[0], 1), ylim=(-5*step, zoom[1]))
 
     return
 

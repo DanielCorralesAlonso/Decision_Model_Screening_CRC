@@ -41,7 +41,8 @@ def use_case_new_strategy(net = None,
         log_dir = None,
         run_label = 'run',
         best_f1_score = {},
-        output_dir = 'logs'
+        output_dir = 'logs',
+        full_analysis = True
     ):
 
     # check if an element in operational limit is inf
@@ -71,11 +72,11 @@ def use_case_new_strategy(net = None,
     if net == None:
         net = pysmile.Network()
         if use_case_new_test == True:
-            file_location = "decision_models/DM_screening_rel_point_cond_mut_info_linear_new_test.xdsl"
+            file_location = "outputs/linear_rel_point_cond_mut_info_elicitFalse_newtestTrue/decision_models/DM_screening_rel_point_cond_mut_info_linear_new_test.xdsl"
         elif from_elicitation == True:
             file_location = "outputs/linear_rel_point_cond_mut_info_elicitTrue_newtestFalse/decision_models/DM_screening_rel_point_cond_mut_info_linear.xdsl"
         else:
-            file_location = "decision_models/DM_screening_rel_point_cond_mut_info_linear.xdsl"
+            file_location = "outputs/linear_rel_point_cond_mut_info_elicitFalse_newtestFalse/decision_models/DM_screening_rel_point_cond_mut_info_linear.xdsl"
         net.read_file(file_location)
         logger.info(f"Located at: {file_location}")
 
@@ -104,8 +105,8 @@ def use_case_new_strategy(net = None,
         screening_outcomes = net.get_outcome_ids("Screening")
         for outcome in screening_outcomes:
             if outcome not in ["No_screening"] and outcome not in operational_limit:
-                 logger.warning(f"Limit for {outcome} not found in config, setting to default (50000).")
-                 operational_limit[outcome] = 50000
+                 logger.warning(f"Limit for {outcome} not found in config, setting to default (20000).")
+                 operational_limit[outcome] = 20000
 
         if "inf" in operational_limit.values():
             operational_limit = {k: np.inf if v == "inf" else v for k, v in operational_limit.items()}
@@ -186,60 +187,61 @@ def use_case_new_strategy(net = None,
         logger.info(report)
 
 
-        logger.info("----------------------")
-        logger.info("Old screening strategy")
-        df_test_for_old_str, total_cost_old, time_taken_old = old_screening_strategy(df_test_for_old_str, net, possible_outcomes, logger=logger, seed=seed ,  verbose = True)
-        counts_best_opt_old = df_test_for_old_str["best_option"].value_counts()
-        counts_best_opt_old = counts_best_opt_old.reindex(possible_outcomes, fill_value = 0)
-        num_participants_old = df_test_for_old_str.shape[0] - counts_best_opt_old["No_scr_no_col"]
+        if full_analysis:
+            logger.info("----------------------")
+            logger.info("Old screening strategy")
+            df_test_for_old_str, total_cost_old, time_taken_old = old_screening_strategy(df_test_for_old_str, net, possible_outcomes, logger=logger, seed=seed ,  verbose = True)
+            counts_best_opt_old = df_test_for_old_str["best_option"].value_counts()
+            counts_best_opt_old = counts_best_opt_old.reindex(possible_outcomes, fill_value = 0)
+            num_participants_old = df_test_for_old_str.shape[0] - counts_best_opt_old["No_scr_no_col"]
 
-        logger.info(f"---> Total cost of the strategy: {total_cost_old:.2f} €")
-        logger.info(f"---> Mean cost per screened participant: {total_cost_old/num_participants_old:.2f} €")
-        logger.info(f"---> Mean cost per individual in the total population: {total_cost_old/df_test.shape[0]:.2f} €")
-        logger.info(f"---> Total time for the simulation: {time_taken_old:.2f} seconds")
+            logger.info(f"---> Total cost of the strategy: {total_cost_old:.2f} €")
+            logger.info(f"---> Mean cost per screened participant: {total_cost_old/num_participants_old:.2f} €")
+            logger.info(f"---> Mean cost per individual in the total population: {total_cost_old/df_test.shape[0]:.2f} €")
+            logger.info(f"---> Total time for the simulation: {time_taken_old:.2f} seconds")
 
-        y_true_old = df_test_for_old_str["CRC"]
-        y_pred_old = df_test_for_old_str["Final_decision"]
+            y_true_old = df_test_for_old_str["CRC"]
+            y_pred_old = df_test_for_old_str["Final_decision"]
 
-        df_test_for_old_str.to_csv(f"{log_dir}/df_test_old.csv")
-        counts_old = df_test_for_old_str.groupby(["best_option", "Prediction_screening", "Prediction_colonoscopy", "Final_decision", "CRC"])[["CRC"]].count()
-        counts_old.to_csv(f"{log_dir}/counts_old.csv")
-        logger.info(f"---> Distribution of positive predictions: \n {counts_old}")
+            df_test_for_old_str.to_csv(f"{log_dir}/df_test_old.csv")
+            counts_old = df_test_for_old_str.groupby(["best_option", "Prediction_screening", "Prediction_colonoscopy", "Final_decision", "CRC"])[["CRC"]].count()
+            counts_old.to_csv(f"{log_dir}/counts_old.csv")
+            logger.info(f"---> Distribution of positive predictions: \n {counts_old}")
 
-        report, conf_matrix = plot_classification_results(y_true_old, y_pred_old, total_cost = total_cost_old, label = f"old_strategy_{run_label}", log_dir= log_dir)
-        report.to_csv(f"{output_dir}/old_str_classification_report.csv")
-        logger.info(report)
+            report, conf_matrix = plot_classification_results(y_true_old, y_pred_old, total_cost = total_cost_old, label = f"old_strategy_{run_label}", log_dir= log_dir)
+            report.to_csv(f"{output_dir}/old_str_classification_report.csv")
+            logger.info(report)
 
 
-        logger.info("Comparison of the strategies")
-        
-        if use_case_new_test == True:
-            screening_outcomes = net.get_outcome_ids("Screening")
-            for outcome in screening_outcomes:
-                if outcome not in operational_limit_comp and outcome != "No_screening":
-                    operational_limit_comp[outcome] = 0
+            logger.info("Comparison of the strategies")
+            
+            if use_case_new_test == True:
+                screening_outcomes = net.get_outcome_ids("Screening")
+                for outcome in screening_outcomes:
+                    if outcome not in operational_limit_comp and outcome != "No_screening":
+                        operational_limit_comp[outcome] = 0
 
-        df_test_comp, total_cost_comp, time_taken_comp, positive_prediction_counts = new_screening_strategy(df_test_comp, net, possible_outcomes, counts, limit = True, operational_limit = operational_limit_comp, seed=seed ,  logger=logger, verbose = True)
-        counts_best_opt_comp = df_test_comp["best_option_w_lim"].value_counts()
-        counts_best_opt_comp= counts_best_opt_comp.reindex(possible_outcomes, fill_value = 0)
-        num_participants_comp = df_test_comp.shape[0] - counts_best_opt_comp["No_scr_no_col"]
+            df_test_comp, total_cost_comp, time_taken_comp, positive_prediction_counts = new_screening_strategy(df_test_comp, net, possible_outcomes, counts, limit = True, operational_limit = operational_limit_comp, seed=seed ,  logger=logger, verbose = True)
+            counts_best_opt_comp = df_test_comp["best_option_w_lim"].value_counts()
+            counts_best_opt_comp= counts_best_opt_comp.reindex(possible_outcomes, fill_value = 0)
+            num_participants_comp = df_test_comp.shape[0] - counts_best_opt_comp["No_scr_no_col"]
 
-        logger.info(f"---> Total cost of the strategy: {total_cost_comp:.2f} €")
-        logger.info(f"---> Mean cost per screened participant: {total_cost_comp/num_participants_comp:.2f} €")
-        logger.info(f"---> Mean cost per individual in the total population: {total_cost_comp/df_test.shape[0]:.2f} €")
-        logger.info(f"---> Total time for the simulation: {time_taken_comp:.2f} seconds")
+            logger.info(f"---> Total cost of the strategy: {total_cost_comp:.2f} €")
+            logger.info(f"---> Mean cost per screened participant: {total_cost_comp/num_participants_comp:.2f} €")
+            logger.info(f"---> Mean cost per individual in the total population: {total_cost_comp/df_test.shape[0]:.2f} €")
+            logger.info(f"---> Total time for the simulation: {time_taken_comp:.2f} seconds")
 
-        y_true_new = df_test_comp["CRC"]
-        y_pred_new = df_test_comp["Final_decision"]
+            y_true_new = df_test_comp["CRC"]
+            y_pred_new = df_test_comp["Final_decision"]
 
-        df_test_comp.to_csv(f"{log_dir}/df_test_comp.csv")
-        counts_new_str_comp = df_test_comp.groupby(["best_option_w_lim", "Prediction_screening", "Prediction_colonoscopy", "Final_decision", "CRC"])[["CRC"]].count()
-        counts_new_str_comp.to_csv(f"{log_dir}/counts_new_w_lim_comp.csv")
-        logger.info(f"---> Distribution of positive predictions: \n {counts_new_str_comp}")
+            df_test_comp.to_csv(f"{log_dir}/df_test_comp.csv")
+            counts_new_str_comp = df_test_comp.groupby(["best_option_w_lim", "Prediction_screening", "Prediction_colonoscopy", "Final_decision", "CRC"])[["CRC"]].count()
+            counts_new_str_comp.to_csv(f"{log_dir}/counts_new_w_lim_comp.csv")
+            logger.info(f"---> Distribution of positive predictions: \n {counts_new_str_comp}")
 
-        report, conf_matrix = plot_classification_results(y_true_new, y_pred_new, total_cost = total_cost_comp,  label = f"new_strategy_with_limits_{run_label}", log_dir = log_dir)
-        logger.info(report)
-        report.to_csv(f"{output_dir}/comparison_classification_report.csv")
+            report, conf_matrix = plot_classification_results(y_true_new, y_pred_new, total_cost = total_cost_comp,  label = f"new_strategy_with_limits_{run_label}", log_dir = log_dir)
+            logger.info(report)
+            report.to_csv(f"{output_dir}/comparison_classification_report.csv")
 
         for handler in logger.handlers:
             handler.close()          # Close the handler
@@ -269,7 +271,7 @@ def use_case_new_strategy(net = None,
         plot_screening_counts(counts, possible_outcomes, operational_limit, log_dir=log_dir, timestamp = '_')
         
         with ProcessPoolExecutor(max_workers=cfg['max_workers']) as executor:
-            futures = [executor.submit(run_experiment, i, df_test, file_location, possible_outcomes, counts, operational_limit, use_case_new_test, log_dir) for i in range(num_runs)]
+            futures = [executor.submit(run_experiment, i, df_test, file_location, possible_outcomes, counts, operational_limit, use_case_new_test, log_dir, seed=None, full_analysis=full_analysis) for i in range(num_runs)]
             all_results = []
             for future in tqdm(as_completed(futures), total=num_runs, desc="Processing iterations"):
                 all_results.append(future.result())
@@ -316,58 +318,56 @@ def use_case_new_strategy(net = None,
         plot_estimations_w_error_bars(mean_report_new_w_lim, std_report_new_w_lim, label="new_strategy_with_limits", log_dir=log_dir)
         plot_classification_results(report_df = mean_report_new_w_lim, conf_matrix=mean_conf_matrix_new_w_lim, std_conf_matrix=std_conf_matrix_new_w_lim, total_cost=mean_cost_new_w_lim, label = f"mean_new_strategy_with_limits_{run_label}", plot= True, log_dir = log_dir)
 
-        
-        report_df_old = [result["report_df_old"] for result in all_results]
-        conf_matrix_old_list = [result["conf_matrix_old"] for result in all_results]
-        total_cost_list_old = [result["total_cost_old"] for result in all_results]
-
-        report_df_old = pd.concat(report_df_old, axis = 0, keys=range(len(report_df_old)))
-        
-        mean_conf_matrix_old = np.stack(conf_matrix_old_list, axis = 0).mean(axis = 0)
-        std_conf_matrix_old = np.stack(conf_matrix_old_list, axis = 0).std(axis = 0)
-        
-        mean_report_old = report_df_old.groupby(level=1, sort = False).mean()
-        std_report_old = report_df_old.groupby(level=1, sort = False).std()
-
-        mean_cost_old = np.array(total_cost_list_old).mean()
-        std_cost_old = np.array(total_cost_list_old).std()
-
-        plot_estimations_w_error_bars(mean_report_old, std_report_old, label="old_strategy", log_dir = log_dir)
-        report_df_old, conf_matrix_old = plot_classification_results(report_df = mean_report_old, total_cost = mean_cost_old, conf_matrix= mean_conf_matrix_old, std_conf_matrix= std_conf_matrix_old, label = f"mean_old_strategy_{run_label}", plot= True, log_dir = log_dir)
-
-        report_df_comp = [result["report_df_comp"] for result in all_results]
-        conf_matrix_comp_list = [result["conf_matrix_comp"] for result in all_results]
-        total_cost_list_comp = [result["total_cost_comp"] for result in all_results]
-
-        report_df_comp = pd.concat(report_df_comp, axis = 0, keys=range(len(report_df_comp)))
-
-        mean_conf_matrix_comp = np.stack(conf_matrix_comp_list, axis = 0).mean(axis = 0)
-        std_conf_matrix_comp = np.stack(conf_matrix_comp_list, axis = 0).std(axis = 0)
-
-        mean_report_comp = report_df_comp.groupby(level=1, sort = False).mean()
-        std_report_comp = report_df_comp.groupby(level=1, sort = False).std()
-
-        mean_cost_comp = np.array(total_cost_list_comp).mean()
-        std_cost_comp = np.array(total_cost_list_comp).std()
-
-        plot_estimations_w_error_bars(mean_report_comp, std_report_comp, label="new_strategy_comparison", log_dir=log_dir)
-        report_df_comp, conf_matrix_comp = plot_classification_results(report_df = mean_report_comp, conf_matrix=mean_conf_matrix_comp, std_conf_matrix=std_conf_matrix_comp, total_cost=mean_cost_comp, label = f"mean_new_strategy_comparison_{run_label}", plot= True, log_dir = log_dir)
-
-        # save report and confusion matrix
+        # save new strategy reports
         report_df_new.to_csv(f"{output_dir}/new_str_classification_report.csv")
         report_df_new_w_lim.to_csv(f"{output_dir}/new_str_w_lim_classification_report.csv")
-        report_df_old.to_csv(f"{output_dir}/old_str_classification_report.csv")
-        report_df_comp.to_csv(f"{output_dir}/comparison_classification_report.csv")
 
-        # save f1 score for the positive class 
-        
-        best_f1_score[run_label]["f1 old"] = report_df_old.loc["Positive"]["f1-score"]
-        best_f1_score[run_label]["f1 comp"] = report_df_comp.loc["Positive"]["f1-score"]
-        
+        if full_analysis:
+            report_df_old = [result["report_df_old"] for result in all_results]
+            conf_matrix_old_list = [result["conf_matrix_old"] for result in all_results]
+            total_cost_list_old = [result["total_cost_old"] for result in all_results]
 
-        '''for handler in logger.handlers:
-            handler.close()          # Close the handler
-            logger.removeHandler(handler)  # Remove the handler from the logger'''
+            report_df_old = pd.concat(report_df_old, axis = 0, keys=range(len(report_df_old)))
+            
+            mean_conf_matrix_old = np.stack(conf_matrix_old_list, axis = 0).mean(axis = 0)
+            std_conf_matrix_old = np.stack(conf_matrix_old_list, axis = 0).std(axis = 0)
+            
+            mean_report_old = report_df_old.groupby(level=1, sort = False).mean()
+            std_report_old = report_df_old.groupby(level=1, sort = False).std()
+
+            mean_cost_old = np.array(total_cost_list_old).mean()
+            std_cost_old = np.array(total_cost_list_old).std()
+
+            plot_estimations_w_error_bars(mean_report_old, std_report_old, label="old_strategy", log_dir = log_dir)
+            report_df_old, conf_matrix_old = plot_classification_results(report_df = mean_report_old, total_cost = mean_cost_old, conf_matrix= mean_conf_matrix_old, std_conf_matrix= std_conf_matrix_old, label = f"mean_old_strategy_{run_label}", plot= True, log_dir = log_dir)
+
+            report_df_comp = [result["report_df_comp"] for result in all_results]
+            conf_matrix_comp_list = [result["conf_matrix_comp"] for result in all_results]
+            total_cost_list_comp = [result["total_cost_comp"] for result in all_results]
+
+            report_df_comp = pd.concat(report_df_comp, axis = 0, keys=range(len(report_df_comp)))
+
+            mean_conf_matrix_comp = np.stack(conf_matrix_comp_list, axis = 0).mean(axis = 0)
+            std_conf_matrix_comp = np.stack(conf_matrix_comp_list, axis = 0).std(axis = 0)
+
+            mean_report_comp = report_df_comp.groupby(level=1, sort = False).mean()
+            std_report_comp = report_df_comp.groupby(level=1, sort = False).std()
+
+            mean_cost_comp = np.array(total_cost_list_comp).mean()
+            std_cost_comp = np.array(total_cost_list_comp).std()
+
+            plot_estimations_w_error_bars(mean_report_comp, std_report_comp, label="new_strategy_comparison", log_dir=log_dir)
+            report_df_comp, conf_matrix_comp = plot_classification_results(report_df = mean_report_comp, conf_matrix=mean_conf_matrix_comp, std_conf_matrix=std_conf_matrix_comp, total_cost=mean_cost_comp, label = f"mean_new_strategy_comparison_{run_label}", plot= True, log_dir = log_dir)
+
+            # save report and confusion matrix
+            report_df_old.to_csv(f"{output_dir}/old_str_classification_report.csv")
+            report_df_comp.to_csv(f"{output_dir}/comparison_classification_report.csv")
+
+            # save f1 score for the positive class 
+            
+            best_f1_score[run_label]["f1 old"] = report_df_old.loc["Positive"]["f1-score"]
+            best_f1_score[run_label]["f1 comp"] = report_df_comp.loc["Positive"]["f1-score"]
+
 
 
         return best_f1_score
@@ -378,7 +378,7 @@ def use_case_new_strategy(net = None,
 
 
 
-def run_experiment(i, df_test, file_location, possible_outcomes, counts, operational_limit, use_case_new_test, log_dir, seed = None):
+def run_experiment(i, df_test, file_location, possible_outcomes, counts, operational_limit, use_case_new_test, log_dir, seed=None, full_analysis= True):
 
     results = {
         "report_df_new": None,
@@ -400,9 +400,7 @@ def run_experiment(i, df_test, file_location, possible_outcomes, counts, operati
 
     df_test_new = df_test.copy()
     df_test_new_w_lim = df_test.copy()
-    df_test_old = df_test.copy()
-    df_test_comp = df_test.copy()
-
+    
     seed = (i,)
     df_test_new, total_cost_new, time_taken, positive_predictions_count = new_screening_strategy(df_test_new, net, possible_outcomes, counts = counts, limit=False, seed = seed , operational_limit = dict(zip(operational_limit.keys(), counts)))
 
@@ -426,33 +424,39 @@ def run_experiment(i, df_test, file_location, possible_outcomes, counts, operati
     results["total_cost_new_w_lim"] = total_cost_new_w_lim
 
 
-    df_test_old, total_cost_old, time_taken = old_screening_strategy(df_test_old, net, possible_outcomes, seed = seed)
+    if full_analysis:
+        df_test_old = df_test.copy()
+        df_test_comp = df_test.copy()
 
-    y_true_old = df_test_old["CRC"]
-    y_pred_old = df_test_old["Final_decision"]
-    report_old, conf_matrix_old = plot_classification_results(y_true_old, y_pred_old, total_cost = total_cost_old, label = "old_strategy", plot = False, log_dir = log_dir)
+        df_test_old, total_cost_old, time_taken = old_screening_strategy(df_test_old, net, possible_outcomes, seed = seed)
 
-    results["report_df_old"] = report_old
-    results["conf_matrix_old"] = conf_matrix_old
-    results["total_cost_old"] = total_cost_old
+        y_true_old = df_test_old["CRC"]
+        y_pred_old = df_test_old["Final_decision"]
+        report_old, conf_matrix_old = plot_classification_results(y_true_old, y_pred_old, total_cost = total_cost_old, label = "old_strategy", plot = False, log_dir = log_dir)
 
-    # logger.info("Comparison of the strategies")
-    operational_limit_comp = { "No_scr_no_col": np.inf, "No_scr_col": 0, "gFOBT": 0,"FIT": 49074, 
-                        "Blood_based": 0,"Stool_DNA": 0, "CTC": 0, "Colon_capsule": 0,
-    }
-    if use_case_new_test == True:
-        screening_outcomes = net.get_outcome_ids("Screening")
-        for outcome in screening_outcomes:
-            if outcome not in operational_limit_comp and outcome != "No_screening":
-                operational_limit_comp[outcome] = 0
+        results["report_df_old"] = report_old
+        results["conf_matrix_old"] = conf_matrix_old
+        results["total_cost_old"] = total_cost_old
 
-    df_test_comp_util, total_cost_comp, time_taken_w_lim, positive_prediction_counts = new_screening_strategy(df_test_comp, net, possible_outcomes, counts, limit = True, seed = seed , operational_limit = operational_limit_comp)
-    
-    y_true_new = df_test_comp_util["CRC"]
-    y_pred_new = df_test_comp_util["Final_decision"]
-    report_comp, conf_matrix_comp = plot_classification_results(y_true_new, y_pred_new, total_cost = total_cost_comp,  label = "new_strategy_with_limits", log_dir = log_dir, plot = False)
-    
-    results["report_df_comp"] = report_comp
+        # logger.info("Comparison of the strategies")
+        operational_limit_comp = { "No_scr_no_col": np.inf, "No_scr_col": 0, "gFOBT": 0,"FIT": 49074, 
+                            "Blood_based": 0,"Stool_DNA": 0, "CTC": 0, "Colon_capsule": 0,
+        }
+        if use_case_new_test == True:
+            screening_outcomes = net.get_outcome_ids("Screening")
+            for outcome in screening_outcomes:
+                if outcome not in operational_limit_comp and outcome != "No_screening":
+                    operational_limit_comp[outcome] = 0
+
+        df_test_comp_util, total_cost_comp, time_taken_w_lim, positive_prediction_counts = new_screening_strategy(df_test_comp, net, possible_outcomes, counts, limit = True, seed = seed , operational_limit = operational_limit_comp)
+        
+        y_true_new = df_test_comp_util["CRC"]
+        y_pred_new = df_test_comp_util["Final_decision"]
+        report_comp, conf_matrix_comp = plot_classification_results(y_true_new, y_pred_new, total_cost = total_cost_comp,  label = "new_strategy_with_limits", log_dir = log_dir, plot = False)
+        
+        results["report_df_comp"] = report_comp
+        results["conf_matrix_comp"] = conf_matrix_comp
+        results["report_df_comp"] = report_comp
     results["conf_matrix_comp"] = conf_matrix_comp
     results["total_cost_comp"] = total_cost_comp
 

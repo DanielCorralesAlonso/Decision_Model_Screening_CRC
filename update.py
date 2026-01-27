@@ -18,8 +18,6 @@ import logging
 import datetime 
 import os
 
-import pdb
-
 import yaml
 
 with open('config.yaml', 'r') as file:
@@ -51,7 +49,6 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
 
 
     if exogenous_var_prob is not None:
-        # pdb.set_trace()
         new_cpt = net.get_node_definition('CRC')
         new_cpt[0] = 1 - exogenous_var_prob
         new_cpt[1] = exogenous_var_prob
@@ -73,11 +70,11 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
         logger.info("Calculating information values...")
 
         df_value = save_info_values(net, value_function = value_function, output_dir=output_dir)
-        # pdb.set_trace()
+
 
         net2 = info_value_to_net( df_value, net)
         df_value.to_csv(f"{output_dir}/output_data/INFO_node.csv")
-        # pdb.set_trace()
+
     else:
         net2 = net
         net2.update_beliefs()
@@ -183,16 +180,16 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
     # ----------------------------------------------------------------------
     logger.info("Plotting info functions...")
     if new_test:
-        plot_cond_mut_info(net2, subtitle='new_test', output_dir = output_dir)
+        # plot_cond_mut_info(net2, subtitle='new_test', output_dir = output_dir)
         plot_relative_cond_mut_info(net2, subtitle = 'new_test', zoom = (0.001, 0.1), step = 0.001, output_dir = output_dir)
     if sens_analysis_metrics == "lower":
-        plot_cond_mut_info(net2, subtitle='sens_analysis_lower', output_dir = output_dir)
+        # plot_cond_mut_info(net2, subtitle='sens_analysis_lower', output_dir = output_dir)
         plot_relative_cond_mut_info(net2, subtitle = 'sens_analysis_lower', zoom = (0.001, 0.1), step = 0.001, output_dir = output_dir)
     if sens_analysis_metrics == "upper":
-        plot_cond_mut_info(net2, subtitle='sens_analysis_upper', output_dir = output_dir)
+        # plot_cond_mut_info(net2, subtitle='sens_analysis_upper', output_dir = output_dir)
         plot_relative_cond_mut_info(net2, subtitle = 'sens_analysis_upper', zoom = (0.001, 0.1), step = 0.001, output_dir = output_dir)
     else: 
-        plot_cond_mut_info(net2, subtitle='', output_dir = output_dir)
+        # plot_cond_mut_info(net2, subtitle='', output_dir = output_dir)
         plot_relative_cond_mut_info(net2, subtitle = '', zoom = (0.001, 0.1), step = 0.001, output_dir = output_dir)
     # ----------------------------------------------------------------------
 
@@ -295,44 +292,6 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
 
     logger.info(f"\n {df_scr}")
 
-
-    # ----------------------------------------------------------------------
-    '''net2.add_arc("Results_of_Screening", "Colonoscopy")
-    net2.update_beliefs()
-
-    if new_test:
-        vars1 = ["No scr", "gFOBT", "FIT", "Blood_test", "sDNA", "CTC", "CC", "New_test"]
-    else:
-        vars1 = ["No scr", "gFOBT", "FIT", "Blood_test", "sDNA", "CTC", "CC"]
-
-    vars2 = ["No pred", "Pred False", "Pred True"]
-    
-    comb = list(itertools.product(vars1, vars2))
-
-    index = pd.MultiIndex.from_tuples(comb)
-    arr = np.array(net2.get_node_value("U"))
-    rounded_arr = np.round(arr, 2)
-
-    df_U_ext = pd.DataFrame(rounded_arr.reshape(-1,2).transpose(), index = ["No colonoscopy", "Colonoscopy"], columns=index)
-    logger.info(f"\n {df_U_ext}")
-
-    if new_test:
-        df_U_ext.to_csv(f"{output_dir}/output_data/U_values_cond_new_test.csv")
-        net2.write_file(f"{output_dir}/decision_models/DM_screening_{value_function}_{model_type}_new_test.xdsl")
-
-    if sens_analysis_metrics == "lower":
-        df_U_ext.to_csv(f"{output_dir}/output_data/U_values_cond_sens_analysis_lower.csv")
-        net2.write_file(f"{output_dir}/decision_models/DM_screening_{value_function}_{model_type}_sens_analysis_lower.xdsl")
-    if sens_analysis_metrics == "upper":
-        df_U_ext.to_csv(f"{output_dir}/output_data/U_values_cond_sens_analysis_upper.csv")
-        net2.write_file(f"{output_dir}/decision_models/DM_screening_{value_function}_{model_type}_sens_analysis_upper.xdsl")
-    else:
-        df_U_ext.to_csv(f"{output_dir}/output_data/U_values_cond.csv")
-        net2.write_file(f"{output_dir}/decision_models/DM_screening_{value_function}_{model_type}.xdsl")
-            
-    # ----------------------------------------------------------------------
-
-    logger.info("Value of screening...")'''
     
     for handler in logger.handlers:
         handler.close()          # Close the handler
@@ -358,11 +317,11 @@ def values_for_new_tests(net, new_tests_config):
             continue
         
         idx = screening_outcomes.index(test_name)
-        ref_idx = params.get("comfort_level", 1) # Default to gFOBT-like comfort if not specified
+        ref_idx = params.get("comfort_level", 3) # Default to gFOBT-like comfort if not specified
 
         # --- Set comfort ---
-        comfort_definition[2 * idx] = comfort_definition[2 * ref_idx]
-        comfort_definition[2 * idx + 1] = comfort_definition[1]
+        comfort_definition[2 * idx] = cfg["lambda_list"][ref_idx]
+        comfort_definition[2 * idx + 1] = cfg["lambda_list"][1]
 
         # --- Set cost ---
         cost_val = params.get("cost", 0)
