@@ -118,8 +118,8 @@ def plot_cond_mut_info(net1, net2 = None, subtitle = '', plot = True, zoom = (0.
 
     title = "Conditional Mutual Information "
     plt.title(title)
-    ax.set_xlabel("p(CRC)")
-    ax.set_ylabel("CMI")
+    ax.set_xlabel("Probability of CRC")
+    ax.set_ylabel("Conditional Mutual Information")
   
     if net2 is not None:
         plt.savefig(f"{output_dir}/output_images/cond_mut_info_{subtitle}_bounds.png", bbox_inches='tight')     
@@ -369,8 +369,8 @@ def plot_relative_cond_mut_info(net1, net2 = None, subtitle = '', zoom=(0.001, 0
             ax.set_xlim(*xlim)
             ax.set_ylim(*ylim)
         else:
-            ax.set_xlabel("p(CRC)")
-            ax.set_ylabel("RMI")
+            ax.set_xlabel("Probability of CRC")
+            ax.set_ylabel("Relative Conditional Mutual Information")
 
         plt.savefig(f"{output_dir}/output_images/{save_name}", bbox_inches='tight')
         plt.close(fig)

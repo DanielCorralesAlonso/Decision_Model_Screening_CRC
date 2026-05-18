@@ -27,15 +27,20 @@ new_test: True
 
 # --------- If new_test = True, the following parameters must be defined
 new_tests:
-  New_Test_A:
+  ONCOVOC:
     cost: 3
-    sensitivity: 0.85
-    specificity: 0.94
+    sensitivity: 0.86
+    specificity: 0.95
     comfort_level: 3
-  New_Test_B:
-    cost: 8
-    sensitivity: 0.9
+  ONCOCRISPR:
+    cost: 17
+    sensitivity: 0.96
     specificity: 0.96
+    comfort_level: 3
+  ONCONMR:
+    cost: 30
+    sensitivity: 0.73
+    specificity: 0.94
     comfort_level: 3
 # -------------------------------------------------------------------------
 
@@ -91,8 +96,6 @@ sens_analysis_metrics_lower:
     0, 0.03, 0.97,    # Colonoscopy
   ]
 
-
-
 sens_analysis_metrics_upper: {
   "screening": [
 
@@ -142,9 +145,11 @@ colors:
   Stool_DNA: '#9467bd'
   CTC: '#8c564b'
   Colon_capsule: '#e377c2'
-  Colonoscopy: '#bcbd22'
-  New_test: '#17becf'        # Possible name for new test, change if necessary.
+  Colonoscopy: '#bcbd22'   
   H(CRC): '#7f7f7f' 
+  ONCOVOC: '#d4e600'    # lime-yellow  (~90°)
+  ONCOCRISPR: '#00c87a' # teal-green   (~150°)
+  ONCONMR: '#5050e0'     # blue-violet  (~270°)
 
 
 
@@ -192,4 +197,7 @@ operational_limit_new_test : {
         "CTC": 2000,
         "Colon_capsule": 2000,
         "New_test": 50000,
+        "ONCOVOC": 20000,
+        "ONCOCRISPR": 20000,
+        "ONCONMR": 20000
         }
