@@ -99,9 +99,9 @@
 			<state id="Stool_DNA" />
 			<state id="CTC" />
 			<state id="Colon_capsule" />
-			<state id="ONCOVOC" />
-			<state id="ONCOCRISPR" />
-			<state id="ONCONMR" />
+			<state id="ONCO_VOC" />
+			<state id="ONCO_CRISPR" />
+			<state id="ONCO_NMR" />
 			<parents>PA SD Smoking BMI Alcohol Sex Age</parents>
 		</decision>
 		<cpt id="Results_of_Screening">

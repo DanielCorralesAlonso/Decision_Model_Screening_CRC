@@ -20,6 +20,7 @@ import os
 
 import yaml
 
+import json
 with open('config.yaml', 'r') as file:
     cfg = yaml.safe_load(file)
 
@@ -152,14 +153,27 @@ def update_influence_diagram(model_type = None, value_function = None, elicit = 
         new_tests_config = cfg.get("new_tests", {})
         if new_tests_config:
             new_test = True # Ensure downstream logic treats this as having new tests
+            # add outcomes using a sanitized id (no hyphens/spaces) to avoid pysmile/SMILE auto-renaming
+            screening_outcomes = net.get_outcome_ids("Screening")
             for test_name in new_tests_config:
-                if test_name not in net.get_outcome_ids("Screening"):
-                    net.add_outcome("Screening", test_name)
+                safe_name = test_name.replace('-', '_').replace(' ', '_')
+                # Prefer existing exact match, then sanitized match, otherwise add sanitized
+                if test_name in screening_outcomes:
+                    actual_name = test_name
+                elif safe_name in screening_outcomes:
+                    actual_name = safe_name
+                else:
+                    net.add_outcome("Screening", safe_name)
+                    actual_name = safe_name
+
+                # No mapping recorded; use sanitized internal ids (underscored) everywhere
 
             logger.info(f"Adding values for {len(new_tests_config)} new tests...")
             net2 = values_for_new_tests(net2, new_tests_config = new_tests_config)
             df_value = save_info_values(net2, value_function = value_function, new_test=True, output_dir = output_dir)
             net2 = info_value_to_net(df_value, net2)
+
+            # No mapping file will be written; internal (underscored) ids are used consistently
 
 
 
@@ -313,10 +327,17 @@ def values_for_new_tests(net, new_tests_config):
     complications_arr = np.array(net.get_node_definition("Complications")).reshape(num_scr_tests, 2, -1)
 
     for test_name, params in new_tests_config.items():
-        if test_name not in screening_outcomes:
+        # handle hyphenated or space-containing names: try sanitized version too
+        safe_name = test_name.replace('-', '_').replace(' ', '_')
+        if test_name in screening_outcomes:
+            idx = screening_outcomes.index(test_name)
+            actual_name = test_name
+        elif safe_name in screening_outcomes:
+            idx = screening_outcomes.index(safe_name)
+            actual_name = safe_name
+        else:
+            # not present in the network
             continue
-        
-        idx = screening_outcomes.index(test_name)
         ref_idx = params.get("comfort_level", 3) # Default to gFOBT-like comfort if not specified
 
         # --- Set comfort ---

@@ -20,22 +20,33 @@ import matplotlib.colors as mcolors
 import pdb
 
 def assign_missing_colors(labels, color_dict):
+    """Return a mapping for the given labels to colors.
+
+    - `color_dict` (from config) is not mutated.
+    - For labels missing in `color_dict`, a distinct color is generated but stored
+      only in the returned mapping. This ensures plotting follows your `config.yaml`
+      keys (no silent edits to the config file).
+    """
     existing_colors = set(c.upper() for c in color_dict.values())
-    cmap = plt.get_cmap('tab20') 
+    cmap = plt.get_cmap('tab20')
     idx = 0
+    result = {}
     for label in labels:
-        if label not in color_dict:
+        if label in color_dict:
+            result[label] = color_dict[label]
+        else:
+            # generate a hex color not already used
             while True:
                 c_hex = mcolors.to_hex(cmap(idx % 20)).upper()
                 idx += 1
                 if c_hex not in existing_colors:
-                    color_dict[label] = c_hex
+                    result[label] = c_hex
                     existing_colors.add(c_hex)
-                    break 
-                if idx > 100:
-                    color_dict[label] = c_hex
                     break
-    return color_dict
+                if idx > 100:
+                    result[label] = c_hex
+                    break
+    return result
 
 # Make an array and iterate over possible values of probabilities
 def plot_cond_mut_info(net1, net2 = None, subtitle = '', plot = True, zoom = (0.1, 0.1), step = 0.01, output_dir = None):
@@ -93,8 +104,7 @@ def plot_cond_mut_info(net1, net2 = None, subtitle = '', plot = True, zoom = (0.
     fig, ax = plt.subplots()
     labels = net.get_outcome_ids("Screening") + ["Colonoscopy"]
 
-    assign_missing_colors(labels, cfg["colors"])
-    color_dict = cfg["colors"]
+    color_dict = assign_missing_colors(labels, cfg["colors"])
 
     if net2 is not None:
         for screening in range(arr.shape[0]):
@@ -131,7 +141,7 @@ def plot_cond_mut_info(net1, net2 = None, subtitle = '', plot = True, zoom = (0.
 
     fig, ax = plt.subplots()
     labels = net.get_outcome_ids("Screening") + ["Colonoscopy"]
-    color_dict = cfg["colors"]
+    color_dict = assign_missing_colors(labels, cfg["colors"])
 
     if net2 is not None:
         for screening in range(arr.shape[0]):
@@ -167,7 +177,7 @@ def plot_cond_mut_info(net1, net2 = None, subtitle = '', plot = True, zoom = (0.
 
     fig, ax = plt.subplots()
     labels = net.get_outcome_ids("Screening") + ["Colonoscopy"]
-    color_dict = cfg["colors"]
+    color_dict = assign_missing_colors(labels, cfg["colors"])
 
     if net2 is not None:
         for screening in range(arr.shape[0]):
@@ -295,8 +305,7 @@ def plot_relative_cond_mut_info(net1, net2 = None, subtitle = '', zoom=(0.001, 0
 
     # 3. PLOTTING FUNCTION
     labels = net1.get_outcome_ids("Screening") + ["Colonoscopy"]
-    assign_missing_colors(labels, cfg["colors"])
-    color_dict = cfg["colors"]
+    color_dict = assign_missing_colors(labels, cfg["colors"])
 
     def create_subplot(x_vals, mask, suffix, xlim=None, ylim=None):
         fig, ax = plt.subplots()

@@ -3,7 +3,7 @@ import pysmile_license
 import numpy as np
 import pandas as pd
 
-from network_functions import calculate_network_utilities, new_screening_strategy, old_screening_strategy, create_folders_logger
+from network_functions import calculate_network_utilities, new_screening_strategy, old_screening_strategy, create_folders_logger, compute_treatment_outcomes
 from simulations import plot_classification_results
 from plots import plot_estimations_w_error_bars, plot_screening_counts
 
@@ -24,6 +24,7 @@ matplotlib.use('Agg')
 import logging
 import datetime 
 import os
+import json
 
 np.seterr(divide='ignore', invalid = 'ignore')
 
@@ -80,6 +81,8 @@ def use_case_new_strategy(net = None,
         net.read_file(file_location)
         logger.info(f"Located at: {file_location}")
 
+        # Do not load external name mapping; use internal outcome ids (underscored)
+
     lambdas_comfort = net.get_node_definition("Value_of_comfort")
     logger.info(f"Comfort values: 1 - {lambdas_comfort[1]}, 2 - {lambdas_comfort[-4]}, 3 - {lambdas_comfort[2]}, 4 - {lambdas_comfort[0]}")
 
@@ -101,12 +104,14 @@ def use_case_new_strategy(net = None,
         run_label = 'new_test'
         operational_limit = cfg["operational_limit_new_test"].copy()
 
-        # Ensure all screening outcomes have a limit
+        # Ensure all screening outcomes have a limit (use internal underscored ids)
         screening_outcomes = net.get_outcome_ids("Screening")
         for outcome in screening_outcomes:
-            if outcome not in ["No_screening"] and outcome not in operational_limit:
-                 logger.warning(f"Limit for {outcome} not found in config, setting to default (20000).")
-                 operational_limit[outcome] = 20000
+            if outcome == "No_screening":
+                continue
+            if outcome not in operational_limit:
+                logger.warning(f"Limit for {outcome} not found in config, setting to default (20000).")
+                operational_limit[outcome] = 20000
 
         if "inf" in operational_limit.values():
             operational_limit = {k: np.inf if v == "inf" else v for k, v in operational_limit.items()}
@@ -150,6 +155,12 @@ def use_case_new_strategy(net = None,
         y_true_new = df_test_for_new_str_w_lim_util["CRC"]
         y_pred_new = df_test_for_new_str_w_lim_util["Final_decision"]
 
+        # Compute treatment costs and QALY losses for new strategy (with limits)
+        df_new_treated, treat_cost_new, qaly_loss_new = compute_treatment_outcomes(df_test_for_new_str_w_lim_util, cfg)
+        # compute totals including screening & colonoscopy costs
+        total_cost_new_all = total_cost_w_lim + treat_cost_new
+        logger.info(f"Treatment cost (new strategy, w_lims): {treat_cost_new:.2f} € | QALY loss: {qaly_loss_new:.2f}")
+
         df_test_for_new_str_w_lim_util.to_csv(f"{log_dir}/df_test_new_w_lim.csv")
         counts_new_str_w_lim = df_test_for_new_str_w_lim_util.groupby(["best_option_w_lim", "Prediction_screening", "Prediction_colonoscopy", "Final_decision", "CRC"])[["CRC"]].count()
         counts_new_str_w_lim.to_csv(f"{log_dir}/counts_new_w_lim.csv")
@@ -174,6 +185,11 @@ def use_case_new_strategy(net = None,
 
         y_true_old = df_test_for_old_str["CRC"]
         y_pred_old = df_test_for_old_str["Final_decision"]
+
+        # Compute treatment costs and QALY losses for old strategy
+        df_old_treated, treat_cost_old, qaly_loss_old = compute_treatment_outcomes(df_test_for_old_str, cfg)
+        total_cost_old_all = total_cost_old + treat_cost_old
+        logger.info(f"Treatment cost (old strategy): {treat_cost_old:.2f} € | QALY loss: {qaly_loss_old:.2f}")
 
         df_test_for_old_str.to_csv(f"{log_dir}/df_test_old.csv")
         counts_old = df_test_for_old_str.groupby(["best_option", "Prediction_screening", "Prediction_colonoscopy", "Final_decision", "CRC"])[["CRC"]].count()
@@ -202,6 +218,11 @@ def use_case_new_strategy(net = None,
             y_true_new = df_test["CRC"]
             y_pred_new = df_test["Final_decision"]
 
+            # Treatment outcomes for new strategy (no limits)
+            df_new_nolim, treat_cost_new_nolim, qaly_loss_new_nolim = compute_treatment_outcomes(df_test, cfg)
+            total_cost_new_nolim_all = total_cost + treat_cost_new_nolim
+            logger.info(f"Treatment cost (new strategy, no limits): {treat_cost_new_nolim:.2f} € | QALY loss: {qaly_loss_new_nolim:.2f}")
+
             df_test.to_csv(f"{log_dir}/df_test.csv")
             counts_new = df_test.groupby(["best_option", "Prediction_screening", "Prediction_colonoscopy", "Final_decision","CRC"])[["CRC"]].count()
             counts_new.to_csv(f"{log_dir}/counts_new.csv")
@@ -220,8 +241,11 @@ def use_case_new_strategy(net = None,
                 for outcome in screening_outcomes:
                     if outcome not in operational_limit_comp and outcome != "No_screening":
                         operational_limit_comp[outcome] = 0
-
             df_test_comp, total_cost_comp, time_taken_comp, positive_prediction_counts = new_screening_strategy(df_test_comp, net, possible_outcomes, counts, limit = True, operational_limit = operational_limit_comp, seed=seed ,  logger=logger, verbose = True)
+            # Treatment outcomes for comparison scenario
+            df_comp_treated, treat_cost_comp, qaly_loss_comp = compute_treatment_outcomes(df_test_comp, cfg)
+            total_cost_comp_all = total_cost_comp + treat_cost_comp
+            logger.info(f"Treatment cost (comparison): {treat_cost_comp:.2f} € | QALY loss: {qaly_loss_comp:.2f}")
             counts_best_opt_comp = df_test_comp["best_option_w_lim"].value_counts()
             counts_best_opt_comp= counts_best_opt_comp.reindex(possible_outcomes, fill_value = 0)
             num_participants_comp = df_test_comp.shape[0] - counts_best_opt_comp["No_scr_no_col"]
@@ -241,6 +265,58 @@ def use_case_new_strategy(net = None,
 
             report, conf_matrix = plot_classification_results(y_true_new, y_pred_new, total_cost = total_cost_comp,  label = f"new_strategy_with_limits_{run_label}", log_dir = log_dir)
             logger.info(report)
+            # Save economic summary (new w/lim vs old)
+            try:
+                econ_df = pd.DataFrame([{
+                    "scenario": "new_w_lim",
+                    "screening_colonoscopy_cost": total_cost_w_lim,
+                    "treatment_cost": treat_cost_new,
+                    "total_cost": total_cost_new_all,
+                    "qaly_loss": qaly_loss_new
+                },{
+                    "scenario": "old",
+                    "screening_colonoscopy_cost": total_cost_old,
+                    "treatment_cost": treat_cost_old,
+                    "total_cost": total_cost_old_all,
+                    "qaly_loss": qaly_loss_old
+                }])
+
+                # incremental calculations
+                new_total_cost = float(econ_df.loc[econ_df["scenario"]=="new_w_lim","total_cost"].values[0])
+                old_total_cost = float(econ_df.loc[econ_df["scenario"]=="old","total_cost"].values[0])
+                new_screening_cost = float(econ_df.loc[econ_df["scenario"]=="new_w_lim","screening_colonoscopy_cost"].values[0])
+                old_screening_cost = float(econ_df.loc[econ_df["scenario"]=="old","screening_colonoscopy_cost"].values[0])
+                new_treatment_cost = float(econ_df.loc[econ_df["scenario"]=="new_w_lim","treatment_cost"].values[0])
+                old_treatment_cost = float(econ_df.loc[econ_df["scenario"]=="old","treatment_cost"].values[0])
+                new_qaly_loss = float(econ_df.loc[econ_df["scenario"]=="new_w_lim","qaly_loss"].values[0])
+                old_qaly_loss = float(econ_df.loc[econ_df["scenario"]=="old","qaly_loss"].values[0])
+
+                screening_savings = old_screening_cost - new_screening_cost
+                treatment_savings = old_treatment_cost - new_treatment_cost
+                inc_cost = new_total_cost - old_total_cost
+                qaly_saved = old_qaly_loss - new_qaly_loss
+                wtp = cfg.get("willingness_to_pay", 30000)
+                qaly_monetary_value = qaly_saved * wtp
+                icer = inc_cost / qaly_saved if qaly_saved != 0 else np.inf
+                nmb = qaly_monetary_value - inc_cost
+                total_monetized_benefit = screening_savings + treatment_savings + qaly_monetary_value
+
+                summary = {
+                    "screening_savings": screening_savings,
+                    "treatment_savings": treatment_savings,
+                    "incremental_cost": inc_cost,
+                    "qaly_saved": qaly_saved,
+                    "willingness_to_pay": wtp,
+                    "qaly_monetary_value": qaly_monetary_value,
+                    "total_monetized_benefit": total_monetized_benefit,
+                    "ICER": icer,
+                    "NMB": nmb,
+                }
+                econ_df.to_csv(f"{output_dir}/economic_summary_raw.csv", index=False)
+                pd.DataFrame([summary]).to_csv(f"{output_dir}/economic_summary_incremental.csv", index=False)
+                logger.info(f"Economic summary saved to {output_dir}")
+            except Exception as e:
+                logger.warning(f"Could not save economic summary: {e}")
             report.to_csv(f"{output_dir}/comparison_classification_report.csv")
 
         for handler in logger.handlers:

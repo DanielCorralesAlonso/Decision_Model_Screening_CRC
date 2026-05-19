@@ -27,17 +27,17 @@ new_test: True
 
 # --------- If new_test = True, the following parameters must be defined
 new_tests:
-  ONCOVOC:
+  ONCO_VOC:
     cost: 3
     sensitivity: 0.86
     specificity: 0.95
     comfort_level: 3
-  ONCOCRISPR:
+  ONCO_CRISPR:
     cost: 17
     sensitivity: 0.96
     specificity: 0.96
     comfort_level: 3
-  ONCONMR:
+  ONCO_NMR:
     cost: 30
     sensitivity: 0.73
     specificity: 0.94
@@ -147,9 +147,9 @@ colors:
   Colon_capsule: '#e377c2'
   Colonoscopy: '#bcbd22'   
   H(CRC): '#7f7f7f' 
-  ONCOVOC: '#d4e600'    # lime-yellow  (~90°)
-  ONCOCRISPR: '#00c87a' # teal-green   (~150°)
-  ONCONMR: '#5050e0'     # blue-violet  (~270°)
+  ONCO_VOC: '#d4e600'    # lime-yellow  (~90°)
+  ONCO_CRISPR: '#00c87a' # teal-green   (~150°)
+  ONCO_NMR: '#5050e0'     # blue-violet  (~270°)
 
 
 
@@ -197,7 +197,20 @@ operational_limit_new_test : {
         "CTC": 2000,
         "Colon_capsule": 2000,
         "New_test": 50000,
-        "ONCOVOC": 20000,
-        "ONCOCRISPR": 20000,
-        "ONCONMR": 20000
+        "ONCO_VOC": 20000,
+        "ONCO_CRISPR": 20000,
+        "ONCO_NMR": 20000
         }
+
+
+# -- Health economics assumptions for post-processing (treatment costs and QALY losses)
+treatment_costs:
+  early: 10000    # cost (€) for early-stage treatment when CRC detected by screening
+  late: 30000     # cost (€) for late-stage treatment when CRC detected late
+
+qaly_loss:
+  early: 0.2      # QALYs lost when CRC detected early
+  late: 1.0       # QALYs lost when CRC detected late
+
+# Willingness to pay per QALY (€/QALY)
+willingness_to_pay: 30000

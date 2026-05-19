@@ -96,6 +96,43 @@ def calculate_network_utilities(net, df_test, logger=None, full_calculation = Fa
     return df_test, counts, possible_outcomes
 
 
+def compute_treatment_outcomes(df, cfg):
+    """Compute per-patient treatment cost and QALY loss based on detection.
+
+    Assumptions (configurable in cfg):
+    - If `CRC==1` and `Final_decision==1` -> early detection (early cost, early QALY loss)
+    - If `CRC==1` and `Final_decision==0` -> late detection (late cost, late QALY loss)
+    """
+    try:
+        early_cost = cfg["treatment_costs"]["early"]
+        late_cost = cfg["treatment_costs"]["late"]
+        early_qaly = cfg["qaly_loss"]["early"]
+        late_qaly = cfg["qaly_loss"]["late"]
+    except Exception:
+        # sensible defaults if config missing
+        early_cost, late_cost = 10000.0, 30000.0
+        early_qaly, late_qaly = 0.2, 1.0
+
+    df = df.copy()
+    df["Treatment_cost"] = 0.0
+    df["QALY_loss"] = 0.0
+
+    crc_mask = df.get("CRC") == 1
+    detected_mask = crc_mask & (df.get("Final_decision") == 1)
+    missed_mask = crc_mask & (df.get("Final_decision") == 0)
+
+    df.loc[detected_mask, "Treatment_cost"] = early_cost
+    df.loc[detected_mask, "QALY_loss"] = early_qaly
+
+    df.loc[missed_mask, "Treatment_cost"] = late_cost
+    df.loc[missed_mask, "QALY_loss"] = late_qaly
+
+    total_treatment_cost = float(df["Treatment_cost"].sum())
+    total_qaly_loss = float(df["QALY_loss"].sum())
+
+    return df, total_treatment_cost, total_qaly_loss
+
+
 
 def reorder_df_with_limits(df, limits): 
     # Keep track of rows that have been processed
